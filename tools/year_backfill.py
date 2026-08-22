@@ -17,8 +17,7 @@ from nokku.runtime import living_memory_path
 DOMAIN = "games/chance/lottery/kerala"
 MEMORY_PATH = living_memory_path()
 
-# Operational safeguards, not domain rules.
-MAX_REQUESTS = 650
+# Operational safeguard, not a domain rule.
 MAX_CONSECUTIVE_EMPTY = 100
 
 
@@ -167,7 +166,6 @@ with Memory(MEMORY_PATH) as memory:
     receipts_before, known_before = discover_known_draws(memory)
 
 assert known_before
-
 dated_before = []
 for serial_text, item in known_before.items():
     draw_date_text = item["parsed"].get("draw_date")
@@ -207,6 +205,7 @@ source_connector = DomainRegistry().get_connector(DOMAIN)
 assert source_connector is not None, f"Missing Collector connector for {DOMAIN}"
 
 request_count = 0
+previous_attempted_serial = None
 newly_preserved = []
 boundary_serial = None
 boundary_date = None
@@ -217,8 +216,12 @@ resolver_jumps = []
 print(f"\n3. Walking backward through {YEAR}...\n")
 
 while True:
+    if previous_attempted_serial is not None:
+        assert serial < previous_attempted_serial, (
+            "Traversal must move to a lower source ID on every iteration."
+        )
+    previous_attempted_serial = serial
     request_count += 1
-    assert request_count <= MAX_REQUESTS, f"Safety limit reached before crossing out of {YEAR}."
 
     serial_text = str(serial)
 
@@ -465,6 +468,7 @@ print(f"   pre-{YEAR} boundary:", boundary_serial, boundary_date)
 print("   newly preserved this run:", len(newly_preserved))
 print("   empty source ids directly confirmed during this run:", len(confirmed_empty_ids))
 print("   official history resolver jumps this run:", len(resolver_jumps))
+print("   source addresses attempted this run:", request_count)
 
 print("\n================================================")
 print(f"❤️  YEAR {YEAR} BACKFILL PASSED")

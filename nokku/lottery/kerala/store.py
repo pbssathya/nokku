@@ -3,13 +3,17 @@
 This is intentionally application-specific. It exists only because the living
 use case needs to know which official draws it already owns and which serials
 are missing. It is not a generalized COSsse store.
+
+For the initial ``testrun`` this store is deliberately database-less: a small
+JSON document on disk is enough to prove the living behaviour. A database can
+be introduced later only if real usage provides evidence that it is needed.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+import json
 from pathlib import Path
-import sqlite3
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,62 +28,49 @@ class DrawRecord:
 
 
 class KeralaLotteryStore:
-    """Small SQLite store for known Kerala lottery draw identities."""
+    """Small file-backed store for known Kerala lottery draw identities."""
 
     def __init__(self, path: str | Path):
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._ensure_schema()
+        if not self.path.exists():
+            self._write([])
 
-    def _connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self.path)
+    def _read(self) -> list[dict[str, object]]:
+        raw = self.path.read_text(encoding="utf-8").strip()
+        if not raw:
+            return []
+        data = json.loads(raw)
+        if not isinstance(data, list):
+            raise ValueError("Kerala lottery store must contain a JSON list.")
+        return data
 
-    def _ensure_schema(self) -> None:
-        with self._connect() as connection:
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS draws (
-                    draw_serial INTEGER PRIMARY KEY,
-                    draw_date TEXT,
-                    lottery_code TEXT,
-                    lottery_name TEXT,
-                    source_url TEXT
-                )
-                """
-            )
+    def _write(self, rows: list[dict[str, object]]) -> None:
+        ordered = sorted(rows, key=lambda row: int(row["draw_serial"]))
+        self.path.write_text(
+            json.dumps(ordered, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
 
     def upsert_draw(self, draw: DrawRecord) -> None:
         """Insert or refresh one draw identity without creating duplicates."""
 
-        with self._connect() as connection:
-            connection.execute(
-                """
-                INSERT INTO draws (
-                    draw_serial, draw_date, lottery_code, lottery_name, source_url
-                ) VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT(draw_serial) DO UPDATE SET
-                    draw_date = excluded.draw_date,
-                    lottery_code = excluded.lottery_code,
-                    lottery_name = excluded.lottery_name,
-                    source_url = excluded.source_url
-                """,
-                (
-                    draw.draw_serial,
-                    draw.draw_date,
-                    draw.lottery_code,
-                    draw.lottery_name,
-                    draw.source_url,
-                ),
-            )
+        rows = self._read()
+        replacement = asdict(draw)
+
+        for index, row in enumerate(rows):
+            if int(row["draw_serial"]) == draw.draw_serial:
+                rows[index] = replacement
+                break
+        else:
+            rows.append(replacement)
+
+        self._write(rows)
 
     def known_serials(self) -> tuple[int, ...]:
         """Return known draw serials in ascending order."""
 
-        with self._connect() as connection:
-            rows = connection.execute(
-                "SELECT draw_serial FROM draws ORDER BY draw_serial"
-            ).fetchall()
-        return tuple(int(row[0]) for row in rows)
+        return tuple(sorted(int(row["draw_serial"]) for row in self._read()))
 
     def missing_serials(self) -> tuple[int, ...]:
         """Return internal gaps between the smallest and largest known serial."""
@@ -97,11 +88,8 @@ class KeralaLotteryStore:
     def latest_serial(self) -> int | None:
         """Return the highest verified draw serial Nokku currently owns."""
 
-        with self._connect() as connection:
-            row = connection.execute("SELECT MAX(draw_serial) FROM draws").fetchone()
-        if row is None or row[0] is None:
-            return None
-        return int(row[0])
+        known = self.known_serials()
+        return known[-1] if known else None
 
     def next_expected_serial(self) -> int | None:
         """Return the next sequential serial after the current highest draw."""

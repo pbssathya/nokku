@@ -4,17 +4,17 @@ import sys
 import time
 from collections import Counter, defaultdict
 from datetime import datetime, date, timedelta
-from pathlib import Path
 
 from collector.collect import collect
 from cossse.flow import Flow, Meaning, DispositionStatus
 from cossse.adapters.collector import CollectorAdapter
 from cossse.adapters.memory import MemoryAdapter
 from cossse.memory import Memory
+from nokku.runtime import living_memory_path
 
 
 DOMAIN = "games/chance/lottery/kerala"
-MEMORY_PATH = Path("/tmp/nokku_heartbeat2_memory.sqlite")
+MEMORY_PATH = living_memory_path()
 
 # Operational safeguards, not domain rules.
 MAX_REQUESTS = 650
@@ -156,6 +156,7 @@ for serial_text, item in known_before.items():
 assert dated_before
 
 print("\n1. Nokku wakes")
+print("   memory:", MEMORY_PATH)
 print("   receipts discovered:", len(receipts_before))
 print("   known date range:", min(x[1] for x in dated_before), "→", max(x[1] for x in dated_before))
 

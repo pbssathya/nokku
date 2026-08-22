@@ -15,7 +15,10 @@ from cossse.memory import Memory
 
 DOMAIN = "games/chance/lottery/kerala"
 MEMORY_PATH = Path("/tmp/nokku_heartbeat2_memory.sqlite")
-MAX_REQUESTS = 450
+
+# Operational safeguards, not domain rules.
+MAX_REQUESTS = 650
+MAX_CONSECUTIVE_EMPTY = 100
 
 
 if len(sys.argv) != 2 or not sys.argv[1].isdigit():
@@ -106,6 +109,35 @@ def preserve_experience(result_meaning):
         return disposition.feedback[0].body["memory_id"]
 
 
+def event_types(report):
+    return {
+        event.get("type")
+        for event in report.get("execution", {}).get("events", [])
+        if isinstance(event, dict)
+    }
+
+
+def compress_ranges(values):
+    """Return ascending integer ranges from an iterable of integers."""
+    numbers = sorted(set(values))
+    if not numbers:
+        return []
+
+    ranges = []
+    start = previous = numbers[0]
+
+    for number in numbers[1:]:
+        if number == previous + 1:
+            previous = number
+            continue
+
+        ranges.append((start, previous))
+        start = previous = number
+
+    ranges.append((start, previous))
+    return ranges
+
+
 print(f"\n=== NOKKU LIVING HABITAT — YEAR BACKFILL {YEAR} ===")
 assert MEMORY_PATH.exists(), f"Expected existing Memory at {MEMORY_PATH}"
 
@@ -138,18 +170,20 @@ if known_target:
     serial = oldest_target_serial - 1
     print("\n2. Resume")
     print(f"   existing {YEAR} draws:", len(known_target))
-    print("   resume serial:", serial)
+    print("   resume source id:", serial)
 else:
     oldest_known_serial = min(x[0] for x in dated_before)
     serial = oldest_known_serial - 1
     print("\n2. New yearly backfill")
-    print("   derived start serial:", serial)
+    print("   derived start source id:", serial)
 
 collector_adapter = CollectorAdapter(collect)
 request_count = 0
 newly_preserved = []
 boundary_serial = None
 boundary_date = None
+pending_empty_ids = []
+confirmed_empty_ids = []
 
 print(f"\n3. Walking backward through {YEAR}...\n")
 
@@ -165,10 +199,20 @@ while True:
         if draw_date_text and draw_date_text != "Unknown":
             draw_date = parse_draw_date(draw_date_text)
             print(f"   {serial_text} | {draw_date.isoformat()} | already known")
+
+            if pending_empty_ids:
+                confirmed_empty_ids.extend(pending_empty_ids)
+                print(
+                    "      confirmed sparse source-id range:",
+                    f"{pending_empty_ids[0]} → {pending_empty_ids[-1]}",
+                )
+                pending_empty_ids = []
+
             if draw_date < TARGET_START:
                 boundary_serial = serial_text
                 boundary_date = draw_date
                 break
+
         serial -= 1
         continue
 
@@ -191,21 +235,54 @@ while True:
     status = report["execution"]["status"]
 
     if status not in ("success", "partial"):
+        types = event_types(report)
+
+        # Living Habitat evidence from 2024-01-11 → 2024-01-10 proved that
+        # drawserial/source IDs can be sparse: 74419..74402 were empty while
+        # 74401 was a valid next draw. Empty content is therefore probed past,
+        # but only within a bounded safety window. Other failures still stop.
+        if "empty_content" in types:
+            pending_empty_ids.append(serial)
+            print(f"·  {serial_text} | empty source id — probing backward")
+
+            if len(pending_empty_ids) > MAX_CONSECUTIVE_EMPTY:
+                print("\n❌ UNRESOLVED SOURCE-ID DESERT")
+                print(
+                    "   pending empty range:",
+                    f"{pending_empty_ids[0]} → {pending_empty_ids[-1]}",
+                )
+                print("   safety limit:", MAX_CONSECUTIVE_EMPTY)
+                raise AssertionError(
+                    "Stopped safely: too many consecutive empty source IDs."
+                )
+
+            serial -= 1
+            time.sleep(0.15)
+            continue
+
         print("\n❌ HISTORICAL SOURCE BOUNDARY / FAILURE")
-        print("   serial:", serial_text)
+        print("   source id:", serial_text)
         print("   status:", status)
         for event in report["execution"].get("events", []):
             print("   event:", event)
         raise AssertionError("Stopped safely at first unresolved historical record.")
 
     parsed = report["data"]["parsed"]
-    assert parsed is not None, f"Serial {serial_text}: parsed result missing."
+    assert parsed is not None, f"Source {serial_text}: parsed result missing."
 
     draw_date_text = parsed.get("draw_date")
-    assert draw_date_text and draw_date_text != "Unknown", f"Serial {serial_text}: usable draw date missing."
+    assert draw_date_text and draw_date_text != "Unknown", f"Source {serial_text}: usable draw date missing."
 
     draw_date = parse_draw_date(draw_date_text)
     lottery_name = " ".join(str(parsed.get("lottery_name", "")).split())
+
+    if pending_empty_ids:
+        confirmed_empty_ids.extend(pending_empty_ids)
+        print(
+            "      confirmed sparse source-id range:",
+            f"{pending_empty_ids[0]} → {pending_empty_ids[-1]}",
+        )
+        pending_empty_ids = []
 
     print(f"   {serial_text} | {draw_date.isoformat()} | {lottery_name}")
 
@@ -213,7 +290,7 @@ while True:
         boundary_serial = serial_text
         boundary_date = draw_date
         print(f"\n   Reached pre-{YEAR} boundary.")
-        print("   boundary serial:", boundary_serial)
+        print("   boundary source id:", boundary_serial)
         print("   boundary date:", boundary_date.isoformat())
         break
 
@@ -243,9 +320,13 @@ for serial_text, item in known_after.items():
 target_after.sort()
 assert target_after
 
+# Source IDs are identifiers, not guaranteed event sequence numbers.
+# Report holes; do not mistake them for missing lottery draws.
 serial_numbers = [x[0] for x in target_after]
-expected_serials = list(range(min(serial_numbers), max(serial_numbers) + 1))
-assert serial_numbers == expected_serials, f"Internal serial gap detected in {YEAR}."
+source_id_holes = sorted(
+    set(range(min(serial_numbers), max(serial_numbers) + 1)) - set(serial_numbers)
+)
+source_id_gap_ranges = compress_ranges(source_id_holes)
 
 by_date = defaultdict(list)
 for serial_number, draw_date, name in target_after:
@@ -272,8 +353,14 @@ for month_number in range(1, 13):
     print(f"   {month}: {month_counts.get(month, 0)} draws")
 
 print(f"\n   total {YEAR} draws:", len(target_after))
-print("   serial range:", min(serial_numbers), "→", max(serial_numbers))
-print("   internal serial continuity: YES")
+print("   observed source-id range:", min(serial_numbers), "→", max(serial_numbers))
+print("   source IDs assumed contiguous: NO")
+print("   source-id holes observed:", len(source_id_holes))
+for start, end in source_id_gap_ranges:
+    if start == end:
+        print(f"      {start}")
+    else:
+        print(f"      {start} → {end}")
 
 print("\n   calendar days:", len(all_days))
 print("   dates with NO draw:", len(no_draw_dates))
@@ -289,7 +376,7 @@ for day in sorted(multiple_draw_dates):
 print("   extra draws on multi-draw dates:", extra_draws)
 print("\n   calendar accounting:")
 print(f"      {len(all_days)} - {len(no_draw_dates)} + {extra_draws} = {len(target_after)}")
-print("   calendar accounting reconciled: YES")
+print("   calendar accounting internally reconciled: YES")
 
 print("\n   bumper/special-looking draws:", len(bumper_draws))
 for serial_number, draw_date, name in bumper_draws:
@@ -300,15 +387,16 @@ print("   historical resume derived: YES")
 print("   full-year traversal: YES")
 print("   immediate preservation: YES")
 print("   restart/rediscovery: YES")
-print("   serial continuity: YES")
+print("   sparse source IDs supported: YES")
+print("   empty source IDs silently treated as draws: NO")
 print("   one-draw-per-day assumption: NO")
 print("   calendar accounting verified: YES")
-print("   silent serial gaps allowed: NO")
 print(f"   pre-{YEAR} boundary:", boundary_serial, boundary_date)
 print("   newly preserved this run:", len(newly_preserved))
+print("   empty source ids confirmed during this run:", len(confirmed_empty_ids))
 
 print("\n================================================")
 print(f"❤️  YEAR {YEAR} BACKFILL PASSED")
-print("Discover → Resume → Walk → Preserve → Observe")
+print("Discover → Resume → Probe Sparse Source IDs → Preserve")
 print("→ Cross Boundary → Restart → Reconcile → Verify")
 print("================================================\n")

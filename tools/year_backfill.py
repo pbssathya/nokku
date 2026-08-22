@@ -6,6 +6,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, date, timedelta
 
 from collector.collect import collect
+from collector.domains.registry import DomainRegistry
 from cossse.flow import Flow, Meaning, DispositionStatus
 from cossse.adapters.collector import CollectorAdapter
 from cossse.adapters.memory import MemoryAdapter
@@ -138,6 +139,27 @@ def compress_ranges(values):
     return ranges
 
 
+def resolve_previous_published_source(connector, before_source):
+    """Ask the source-specific Collector connector for an official predecessor."""
+    resolver = getattr(connector, "previous_source", None)
+    if not callable(resolver):
+        return None
+
+    try:
+        resolved = resolver(str(before_source))
+    except Exception as exc:
+        print("   official history resolver error:", repr(exc))
+        return None
+
+    if resolved is None:
+        return None
+
+    try:
+        return int(resolved)
+    except (TypeError, ValueError):
+        return None
+
+
 print(f"\n=== NOKKU LIVING HABITAT — YEAR BACKFILL {YEAR} ===")
 assert MEMORY_PATH.exists(), f"Expected existing Memory at {MEMORY_PATH}"
 
@@ -169,22 +191,28 @@ known_target = [
 if known_target:
     oldest_target_serial = min(x[0] for x in known_target)
     serial = oldest_target_serial - 1
+    last_published_serial = oldest_target_serial
     print("\n2. Resume")
     print(f"   existing {YEAR} draws:", len(known_target))
     print("   resume source id:", serial)
 else:
     oldest_known_serial = min(x[0] for x in dated_before)
     serial = oldest_known_serial - 1
+    last_published_serial = oldest_known_serial
     print("\n2. New yearly backfill")
     print("   derived start source id:", serial)
 
 collector_adapter = CollectorAdapter(collect)
+source_connector = DomainRegistry().get_connector(DOMAIN)
+assert source_connector is not None, f"Missing Collector connector for {DOMAIN}"
+
 request_count = 0
 newly_preserved = []
 boundary_serial = None
 boundary_date = None
 pending_empty_ids = []
 confirmed_empty_ids = []
+resolver_jumps = []
 
 print(f"\n3. Walking backward through {YEAR}...\n")
 
@@ -208,6 +236,8 @@ while True:
                     f"{pending_empty_ids[0]} → {pending_empty_ids[-1]}",
                 )
                 pending_empty_ids = []
+
+            last_published_serial = int(serial_text)
 
             if draw_date < TARGET_START:
                 boundary_serial = serial_text
@@ -238,24 +268,54 @@ while True:
     if status not in ("success", "partial"):
         types = event_types(report)
 
-        # Living Habitat evidence from 2024-01-11 → 2024-01-10 proved that
-        # drawserial/source IDs can be sparse: 74419..74402 were empty while
-        # 74401 was a valid next draw. Empty content is therefore probed past,
-        # but only within a bounded safety window. Other failures still stop.
+        # Small source-ID gaps are directly probed because Living Habitat evidence
+        # proved ordinary sparse IDs. A large desert is different: after a bounded
+        # direct probe, ask the source-specific Collector connector to navigate via
+        # the official older-draw index instead of brute-forcing the address space.
         if "empty_content" in types:
             pending_empty_ids.append(serial)
             print(f"·  {serial_text} | empty source id — probing backward")
 
-            if len(pending_empty_ids) > MAX_CONSECUTIVE_EMPTY:
-                print("\n❌ UNRESOLVED SOURCE-ID DESERT")
+            if len(pending_empty_ids) >= MAX_CONSECUTIVE_EMPTY:
+                resolved = resolve_previous_published_source(
+                    source_connector,
+                    last_published_serial,
+                )
+
+                if resolved is None or resolved >= serial:
+                    print("\n❌ UNRESOLVED SOURCE-ID DESERT")
+                    print(
+                        "   directly probed empty range:",
+                        f"{pending_empty_ids[0]} → {pending_empty_ids[-1]}",
+                    )
+                    print("   safety limit:", MAX_CONSECUTIVE_EMPTY)
+                    print("   official history resolver produced no safe predecessor")
+                    raise AssertionError(
+                        "Stopped safely: source desert unresolved by official history."
+                    )
+
+                confirmed_empty_ids.extend(pending_empty_ids)
+                resolver_jumps.append(
+                    (
+                        last_published_serial,
+                        resolved,
+                        pending_empty_ids[0],
+                        pending_empty_ids[-1],
+                    )
+                )
+
                 print(
-                    "   pending empty range:",
+                    "      bounded direct probe exhausted:",
                     f"{pending_empty_ids[0]} → {pending_empty_ids[-1]}",
                 )
-                print("   safety limit:", MAX_CONSECUTIVE_EMPTY)
-                raise AssertionError(
-                    "Stopped safely: too many consecutive empty source IDs."
+                print(
+                    "      official history resolver jump:",
+                    f"{last_published_serial} → {resolved}",
                 )
+
+                pending_empty_ids = []
+                serial = resolved
+                continue
 
             serial -= 1
             time.sleep(0.15)
@@ -286,6 +346,7 @@ while True:
         pending_empty_ids = []
 
     print(f"   {serial_text} | {draw_date.isoformat()} | {lottery_name}")
+    last_published_serial = int(serial_text)
 
     if draw_date < TARGET_START:
         boundary_serial = serial_text
@@ -383,21 +444,30 @@ print("\n   bumper/special-looking draws:", len(bumper_draws))
 for serial_number, draw_date, name in bumper_draws:
     print(f"      {serial_number} | {draw_date.isoformat()} | {name}")
 
+print("\n   official history resolver jumps:", len(resolver_jumps))
+for before_source, resolved_source, probed_start, probed_end in resolver_jumps:
+    print(
+        f"      {before_source} → {resolved_source} "
+        f"after direct empty probe {probed_start} → {probed_end}"
+    )
+
 print("\n6. Verification")
 print("   historical resume derived: YES")
 print("   full-year traversal: YES")
 print("   immediate preservation: YES")
 print("   restart/rediscovery: YES")
 print("   sparse source IDs supported: YES")
+print("   source deserts use official history resolver: YES")
 print("   empty source IDs silently treated as draws: NO")
 print("   one-draw-per-day assumption: NO")
 print("   calendar accounting verified: YES")
 print(f"   pre-{YEAR} boundary:", boundary_serial, boundary_date)
 print("   newly preserved this run:", len(newly_preserved))
-print("   empty source ids confirmed during this run:", len(confirmed_empty_ids))
+print("   empty source ids directly confirmed during this run:", len(confirmed_empty_ids))
+print("   official history resolver jumps this run:", len(resolver_jumps))
 
 print("\n================================================")
 print(f"❤️  YEAR {YEAR} BACKFILL PASSED")
-print("Discover → Resume → Probe Sparse Source IDs → Preserve")
-print("→ Cross Boundary → Restart → Reconcile → Verify")
+print("Discover → Resume → Probe Sparse Source IDs → Resolve Source Deserts")
+print("→ Preserve → Cross Boundary → Restart → Reconcile → Verify")
 print("================================================\n")

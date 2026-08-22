@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 
 from collector.collect import collect
 from cossse.flow import Flow, Meaning, DispositionStatus
 from cossse.adapters.collector import CollectorAdapter
 from cossse.adapters.memory import MemoryAdapter
 from cossse.memory import Memory
+from nokku.runtime import living_memory_path
 
 
 DOMAIN = "games/chance/lottery/kerala"
-MEMORY_PATH = Path("/tmp/nokku_heartbeat2_memory.sqlite")
+MEMORY_PATH = living_memory_path()
 
 
 if len(sys.argv) < 2 or any(not arg.isdigit() for arg in sys.argv[1:]):
@@ -74,6 +74,7 @@ for source in sources:
     print(f"✅ {source} | {draw_date} | {lottery_name}")
 
 print("\n--- REFRESH SUMMARY ---")
+print("memory:", MEMORY_PATH)
 print("refreshed:", len(refreshed))
 for source, draw_date, lottery_name, memory_id in refreshed:
     print(f"   {source} | {draw_date} | {lottery_name} | {memory_id}")

@@ -13,7 +13,13 @@ from nokku.runtime import living_memory_path
 DOMAIN = "games/chance/lottery/kerala"
 YEAR = 2017
 MEMORY_PATH = living_memory_path()
-CODE_RE = re.compile(r"\b([A-Z]+)-(\d+)\b")
+# Parse the published draw code from the canonical "LOTTERY NO. X-Nth DRAW"
+# portion of the normalized name. The ordinal suffix is part of the prose, not
+# part of the sequence number. Anchoring to "LOTTERY NO." also avoids mistaking
+# labels such as "BUMPER-2017" for the actual draw code.
+CODE_RE = re.compile(
+    r"\bLOTTERY\s+NO\.?\s*([A-Z]+)-(\d+)(?:ST|ND|RD|TH)?\s+DRAW\b"
+)
 
 
 def parse_draw_date(value: str) -> date:
@@ -168,7 +174,7 @@ def main() -> int:
             print("      duplicate sequence values:", ", ".join(map(str, sorted(duplicate_sequences))))
 
     if target_unparsed:
-        print("\n   2017 records without a PREFIX-N sequence code:", len(target_unparsed))
+        print("\n   2017 records without a LOTTERY NO. PREFIX-N sequence code:", len(target_unparsed))
         for source, draw_date, name in target_unparsed[:20]:
             print("      ", source, "|", draw_date.isoformat(), "|", name)
         if len(target_unparsed) > 20:

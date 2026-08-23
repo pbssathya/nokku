@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 
 import pytest
 
@@ -7,7 +7,13 @@ pytest.importorskip("cossse")
 
 from cossse.memory import Memory
 
-from nokku.lottery.kerala.living import run_weekly_decision
+from nokku.lottery.kerala.living import kerala_today, run_weekly_decision
+
+
+def test_kerala_today_uses_ist_not_codespace_utc():
+    utc_late_evening = datetime(2026, 8, 23, 20, 0, tzinfo=timezone.utc)
+
+    assert kerala_today(utc_late_evening) == date(2026, 8, 24)
 
 
 def test_living_loop_preserves_decision_experience(tmp_path):

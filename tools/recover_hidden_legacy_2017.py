@@ -20,6 +20,9 @@ MEMORY_PATH = living_memory_path()
 OLDER_EVIDENCE_TARGET = 8
 MAX_CONSECUTIVE_UNUSABLE = 100
 MAX_CONTINUATION_PROBE = 100
+DRAW_CODE_RE = re.compile(
+    r"\bLOTTERY\s+NO\.?\s*([A-Z]+-\d+)(?:ST|ND|RD|TH)?\s+DRAW\b"
+)
 
 
 def parse_draw_date(value: str) -> date:
@@ -31,8 +34,10 @@ def normalize_name(value: object) -> str:
 
 
 def event_code(lottery_name: str) -> str:
-    match = re.search(r"\b([A-Z]+-\d+)\b", lottery_name.upper())
-    return match.group(1) if match else lottery_name.upper()
+    """Return the published draw code without confusing labels such as BUMPER-2017."""
+    normalized = lottery_name.upper()
+    match = DRAW_CODE_RE.search(normalized)
+    return match.group(1) if match else normalized
 
 
 def discover_known_draws(memory: Memory):

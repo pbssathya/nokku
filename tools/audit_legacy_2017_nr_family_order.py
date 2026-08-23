@@ -80,7 +80,7 @@ def main() -> int:
     print("=== NOKKU READ-ONLY NR FAMILY SOURCE-ORDER AUDIT ===")
     print("preservation: NO")
     print("network retrieval: NO")
-    print("purpose: test whether remembered NR source addresses preserve family-local sequence order")
+    print("purpose: test remembered NR family-local source order and observed address-gap scale")
 
     assert MEMORY_PATH.exists(), f"Expected existing Memory at {MEMORY_PATH}"
     with Memory(MEMORY_PATH) as memory:
@@ -123,6 +123,7 @@ def main() -> int:
     comparable_pairs = 0
     increasing_pairs = 0
     inversions = []
+    single_step_pairs = []
 
     for left, right in zip(records, records[1:]):
         left_seq, left_date, left_drawno, left_source, _ = left
@@ -146,9 +147,46 @@ def main() -> int:
                 )
             )
 
+        if right_seq == left_seq + 1 and right_drawno > left_drawno:
+            single_step_pairs.append(
+                (
+                    right_drawno - left_drawno,
+                    (right_date - left_date).days,
+                    left_seq,
+                    left_date,
+                    left_source,
+                    right_seq,
+                    right_date,
+                    right_source,
+                )
+            )
+
     by_sequence = {row[0]: row for row in records}
     nr12 = by_sequence.get(12)
     nr14 = by_sequence.get(14)
+
+    print("\nObserved NR single-sequence address gaps")
+    print("single-step pairs:", len(single_step_pairs))
+    if single_step_pairs:
+        ordered_gaps = sorted(single_step_pairs, reverse=True)
+        print("maximum observed single-step address gap:", ordered_gaps[0][0])
+        print("single-step gaps greater than 500 addresses:", sum(1 for item in single_step_pairs if item[0] > 500))
+        print("largest observed single-step gaps:")
+        for (
+            address_gap,
+            day_gap,
+            left_seq,
+            left_date,
+            left_source,
+            right_seq,
+            right_date,
+            right_source,
+        ) in ordered_gaps[:10]:
+            print(
+                f"   gap={address_gap} | days={day_gap} | "
+                f"NR-{left_seq} {left_date.isoformat()} {left_source} -> "
+                f"NR-{right_seq} {right_date.isoformat()} {right_source}"
+            )
 
     print("\n=== NR FAMILY SOURCE-ORDER AUDIT SUMMARY ===")
     print("comparable sequence pairs:", comparable_pairs)
@@ -184,6 +222,9 @@ def main() -> int:
 
     monotonic = comparable_pairs > 0 and not inversions
     print("family-local source order monotonic in remembered evidence:", "YES" if monotonic else "NO")
+    if single_step_pairs:
+        print("maximum observed single-step address gap:", max(item[0] for item in single_step_pairs))
+        print("observed single-step gaps >500:", sum(1 for item in single_step_pairs if item[0] > 500))
     print("NR-13 existence proven:", "NO")
     print("Memory changed: NO")
     return 0

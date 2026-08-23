@@ -19,6 +19,7 @@ YEAR = 2017
 MEMORY_PATH = living_memory_path()
 OLDER_EVIDENCE_TARGET = 8
 MAX_CONSECUTIVE_UNUSABLE = 100
+MAX_CONTINUATION_PROBE = 100
 
 
 def parse_draw_date(value: str) -> date:
@@ -167,15 +168,17 @@ def main() -> int:
     print("calendar no-draw classification: DISABLED until source coverage is proven")
     print("cross-year evidence target:", OLDER_EVIDENCE_TARGET, "verified 2016 records after January 2017 is observed")
     print("stall safety:", MAX_CONSECUTIVE_UNUSABLE, "consecutive unusable addresses")
+    print("bounded continuation probe:", MAX_CONTINUATION_PROBE, "addresses after a real stall")
 
     assert MEMORY_PATH.exists(), f"Expected existing Memory at {MEMORY_PATH}"
 
     connector = DomainRegistry().get_connector(DOMAIN)
     assert connector is not None, f"Missing Collector connector for {DOMAIN}"
     address_scan = getattr(connector, "iter_legacy_address_records", None)
-    if not callable(address_scan):
+    continuation_resolver = getattr(connector, "resolve_legacy_address_continuation", None)
+    if not callable(address_scan) or not callable(continuation_resolver):
         raise SystemExit(
-            "Collector does not expose iter_legacy_address_records(). "
+            "Collector does not expose the hidden legacy scan + continuation capabilities. "
             "Use the Collector exp/kerala-hidden-legacy-address-scan branch."
         )
 
@@ -205,7 +208,9 @@ def main() -> int:
     inspected = 0
     usable = 0
     stop_reason = "address space exhausted"
-    stalled = False
+    unresolved_stall = False
+    stalls_encountered = 0
+    continuations_resolved = 0
 
     def progress(source: str, draw_date: datetime | None, is_usable: bool) -> None:
         nonlocal inspected, usable
@@ -216,66 +221,118 @@ def main() -> int:
             suffix = draw_date.date().isoformat() if draw_date else "unusable"
             print(f"   scan progress: {inspected} addresses | {usable} valid | latest {source} {suffix}")
 
+    def handle_record(record) -> bool:
+        nonlocal january_seen, stop_reason
+
+        source = record.source
+        indexed = source in published_sources
+        scanned_valid.append((source, record.draw_date, record.lottery_name, indexed))
+
+        if record.draw_date.year == YEAR:
+            if record.draw_date.month == 1:
+                january_seen = True
+
+            if source in known_before:
+                return False
+
+            result_meaning = collect_source(collector_adapter, source)
+            report = result_meaning.body["outcome"]
+            status = report["execution"]["status"]
+            if status not in ("success", "partial"):
+                print("\n❌ HIDDEN LEGACY COLLECTION FAILURE")
+                print("   source:", source)
+                print("   status:", status)
+                for event in report["execution"].get("events", []):
+                    print("   event:", event)
+                raise AssertionError("Stopped safely at the first unresolved collection result.")
+
+            parsed = (report.get("data") or {}).get("parsed") or {}
+            draw_date_text = parsed.get("draw_date")
+            assert draw_date_text and draw_date_text != "Unknown"
+            draw_date = parse_draw_date(str(draw_date_text))
+            assert draw_date == record.draw_date
+
+            lottery_name = normalize_name(parsed.get("lottery_name"))
+            memory_id = preserve_experience(result_meaning)
+            newly_preserved.append((source, draw_date, lottery_name, memory_id))
+            known_before[source] = {"memory_id": memory_id, "parsed": parsed, "outcome": report}
+            print(
+                f"   RECOVERED {source} | {draw_date.isoformat()} | "
+                f"{'INDEXED' if indexed else 'UNINDEXED'} | {lottery_name}"
+            )
+            return False
+
+        if january_seen and record.draw_date.year < YEAR:
+            older_evidence.append((source, record.draw_date, record.lottery_name))
+            print(
+                f"   OLDER-EVIDENCE {source} | {record.draw_date.isoformat()} | "
+                f"{record.lottery_name}"
+            )
+            if len(older_evidence) >= OLDER_EVIDENCE_TARGET:
+                stop_reason = (
+                    f"cross-year evidence target reached ({OLDER_EVIDENCE_TARGET} verified pre-2017 records)"
+                )
+                return True
+
+        return False
+
     print("\n3. Recovering hidden verified 2017 results...")
-    try:
-        for record in address_scan(
-            start_drawno,
-            max_consecutive_unusable=MAX_CONSECUTIVE_UNUSABLE,
-            progress=progress,
-        ):
-            source = record.source
-            indexed = source in published_sources
-            scanned_valid.append((source, record.draw_date, record.lottery_name, indexed))
+    current_start = start_drawno
+    finished = False
 
-            if record.draw_date.year == YEAR:
-                if record.draw_date.month == 1:
-                    january_seen = True
-
-                if source in known_before:
-                    continue
-
-                result_meaning = collect_source(collector_adapter, source)
-                report = result_meaning.body["outcome"]
-                status = report["execution"]["status"]
-                if status not in ("success", "partial"):
-                    print("\n❌ HIDDEN LEGACY COLLECTION FAILURE")
-                    print("   source:", source)
-                    print("   status:", status)
-                    for event in report["execution"].get("events", []):
-                        print("   event:", event)
-                    raise AssertionError("Stopped safely at the first unresolved collection result.")
-
-                parsed = (report.get("data") or {}).get("parsed") or {}
-                draw_date_text = parsed.get("draw_date")
-                assert draw_date_text and draw_date_text != "Unknown"
-                draw_date = parse_draw_date(str(draw_date_text))
-                assert draw_date == record.draw_date
-
-                lottery_name = normalize_name(parsed.get("lottery_name"))
-                memory_id = preserve_experience(result_meaning)
-                newly_preserved.append((source, draw_date, lottery_name, memory_id))
-                known_before[source] = {"memory_id": memory_id, "parsed": parsed, "outcome": report}
-                print(
-                    f"   RECOVERED {source} | {draw_date.isoformat()} | "
-                    f"{'INDEXED' if indexed else 'UNINDEXED'} | {lottery_name}"
-                )
-                continue
-
-            if january_seen and record.draw_date.year < YEAR:
-                older_evidence.append((source, record.draw_date, record.lottery_name))
-                print(
-                    f"   OLDER-EVIDENCE {source} | {record.draw_date.isoformat()} | "
-                    f"{record.lottery_name}"
-                )
-                if len(older_evidence) >= OLDER_EVIDENCE_TARGET:
-                    stop_reason = (
-                        f"cross-year evidence target reached ({OLDER_EVIDENCE_TARGET} verified pre-2017 records)"
-                    )
+    while current_start >= 1 and not finished:
+        try:
+            for record in address_scan(
+                current_start,
+                max_consecutive_unusable=MAX_CONSECUTIVE_UNUSABLE,
+                progress=progress,
+            ):
+                if handle_record(record):
+                    finished = True
                     break
 
-    except LegacyAddressScanStalled as exc:
-        stalled = True
-        stop_reason = str(exc)
+            if finished:
+                break
+
+            stop_reason = "address space exhausted"
+            break
+
+        except LegacyAddressScanStalled as exc:
+            stalls_encountered += 1
+            print(
+                f"   STALL {stalls_encountered}: legacy:{exc.last_drawno} after "
+                f"{exc.consecutive_unusable} consecutive unusable addresses"
+            )
+            print(
+                f"   asking Collector for a bounded continuation within "
+                f"{MAX_CONTINUATION_PROBE} lower addresses..."
+            )
+
+            continuation = continuation_resolver(
+                exc.last_drawno,
+                max_probe=MAX_CONTINUATION_PROBE,
+                progress=progress,
+            )
+
+            if continuation is None:
+                unresolved_stall = True
+                stop_reason = (
+                    f"{exc} No verified continuation found within "
+                    f"{MAX_CONTINUATION_PROBE} lower addresses."
+                )
+                break
+
+            continuations_resolved += 1
+            print(
+                f"   CONTINUATION {continuations_resolved}: {continuation.source} | "
+                f"{continuation.draw_date.isoformat()} | {continuation.lottery_name}"
+            )
+
+            if handle_record(continuation):
+                finished = True
+                break
+
+            current_start = continuation.drawno - 1
 
     print("\n4. Restarting Nokku/Memory...")
     with Memory(MEMORY_PATH) as memory:
@@ -308,10 +365,12 @@ def main() -> int:
     print("unindexed 2017 records encountered:", len(unindexed_2017_seen))
     print("newly preserved 2017 records:", len(newly_preserved))
     print("verified pre-2017 evidence after January seen:", len(older_evidence))
+    print("scan stalls encountered:", stalls_encountered)
+    print("bounded continuations resolved:", continuations_resolved)
     print("stop reason:", stop_reason)
     print("source coverage status:", "UNRESOLVED — address-order chronology is not assumed")
     print("calendar no-draw classification:", "NOT PERFORMED")
-    print("stall encountered:", "YES" if stalled else "NO")
+    print("unresolved final stall:", "YES" if unresolved_stall else "NO")
 
     print("\n2017 month counts currently in Memory")
     for month_number in range(1, 13):

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import re
 import sys
 import time
@@ -114,6 +115,24 @@ def discover_known_draws(memory: Memory):
     return receipts, known
 
 
+def known_legacy_draw_dates(known: dict[str, dict[str, object]]) -> dict[str, str]:
+    """Return remembered valid legacy held dates as discovery reuse hints."""
+    dates: dict[str, str] = {}
+    for source, item in known.items():
+        if not source.startswith("legacy:"):
+            continue
+        parsed = item["parsed"]
+        draw_date_text = parsed.get("draw_date")
+        if not draw_date_text or draw_date_text == "Unknown":
+            continue
+        try:
+            parse_draw_date(str(draw_date_text))
+        except ValueError:
+            continue
+        dates[source] = str(draw_date_text)
+    return dates
+
+
 def target_records(known: dict[str, dict[str, object]]):
     records: list[tuple[str, date, str]] = []
     for source, item in known.items():
@@ -171,8 +190,15 @@ def main() -> int:
     discover_legacy = getattr(connector, "legacy_sources_for_year", None)
     assert callable(discover_legacy), (
         "Collector does not expose legacy_sources_for_year(). "
-        "Update Collector main before running this backfill."
+        "Update Collector before running this backfill."
     )
+
+    discovery_parameters = inspect.signature(discover_legacy).parameters
+    if "known_draw_dates" not in discovery_parameters or "progress" not in discovery_parameters:
+        raise SystemExit(
+            "Collector does not yet support remembered-date reuse for legacy discovery. "
+            "Use the Collector exp/kerala-legacy-discovery-reuse branch for this habitat gate."
+        )
 
     with Memory(MEMORY_PATH) as memory:
         receipts_before, known_before = discover_known_draws(memory)
@@ -180,21 +206,47 @@ def main() -> int:
     existing_target = target_records(known_before)
     existing_legacy = [item for item in existing_target if item[0].startswith("legacy:")]
     existing_other = [item for item in existing_target if not item[0].startswith("legacy:")]
+    known_dates = known_legacy_draw_dates(known_before)
 
     print("\n1. Nokku wakes")
     print("   memory:", MEMORY_PATH)
     print("   receipts discovered:", len(receipts_before))
     print(f"   existing {YEAR} legacy records:", len(existing_legacy))
     print(f"   existing {YEAR} other-source records:", len(existing_other))
+    print("   remembered legacy dates reusable for discovery:", len(known_dates))
 
     print("\n2. Asking Collector for the official legacy source set...")
-    legacy_sources = list(discover_legacy(YEAR))
+    discovery_counts = {"reused": 0, "live": 0}
+
+    def discovery_progress(source: str, draw_date: datetime, reused_hint: bool) -> None:
+        if reused_hint:
+            discovery_counts["reused"] += 1
+            return
+
+        discovery_counts["live"] += 1
+        live = discovery_counts["live"]
+        if live <= 3 or live % 25 == 0:
+            print(
+                f"   discovery progress: {live} live PDFs checked | "
+                f"{discovery_counts['reused']} remembered dates reused | "
+                f"latest {source} {draw_date.date().isoformat()}"
+            )
+
+    legacy_sources = list(
+        discover_legacy(
+            YEAR,
+            known_draw_dates=known_dates,
+            progress=discovery_progress,
+        )
+    )
     assert legacy_sources, f"Collector discovered no official legacy sources for {YEAR}."
     assert len(legacy_sources) == len(set(legacy_sources)), (
         "Legacy source discovery returned duplicate addresses."
     )
     assert all(source.startswith("legacy:") for source in legacy_sources)
 
+    print("   remembered dates reused:", discovery_counts["reused"])
+    print("   live PDFs checked for discovery:", discovery_counts["live"])
     print("   official legacy sources:", len(legacy_sources))
     print("   first:", legacy_sources[:3])
     print("   last:", legacy_sources[-3:])
@@ -342,6 +394,7 @@ def main() -> int:
 
     print("\n6. Verification")
     print("   legacy source discovery: YES")
+    print("   remembered-date reuse: YES")
     print("   missing-only collection: YES")
     print("   immediate preservation: YES")
     print("   restart recall: YES")

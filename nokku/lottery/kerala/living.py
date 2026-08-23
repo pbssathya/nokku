@@ -8,9 +8,10 @@ weekly participation policy, and preserves the decision experience.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Callable
+from zoneinfo import ZoneInfo
 
 from collector.collect import collect
 from cossse.adapters.collector import CollectorAdapter
@@ -29,6 +30,7 @@ from .decision import KeralaLotteryDecision, KeralaLotteryFact, decide_weekly_pa
 
 
 DOMAIN = "games/chance/lottery/kerala"
+KERALA_TIMEZONE = ZoneInfo("Asia/Kolkata")
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,6 +39,19 @@ class LivingDecisionResult:
     memory_id: str
     refreshed_sources: tuple[str, ...]
     week_start_preference: str
+
+
+def kerala_today(now: datetime | None = None) -> date:
+    """Return the current calendar date for the Kerala Lottery habitat.
+
+    Codespaces commonly run on UTC, while Kerala Lottery operations use Indian
+    Standard Time. An explicit aware ``now`` is accepted to make the boundary
+    behaviour directly testable.
+    """
+    current = now or datetime.now(timezone.utc)
+    if current.tzinfo is None:
+        raise ValueError("kerala_today() requires an aware datetime when now is supplied")
+    return current.astimezone(KERALA_TIMEZONE).date()
 
 
 def _parse_draw_date(value: object) -> date | None:
@@ -221,7 +236,7 @@ def run_weekly_decision(
     preferences_path: str | Path | None = None,
     collector: Callable = collect,
 ) -> LivingDecisionResult:
-    anchor_date = anchor or date.today()
+    anchor_date = anchor or kerala_today()
     memory_target = Path(memory_path) if memory_path is not None else living_memory_path()
 
     preferences = load_kerala_lottery_preferences(preferences_path)

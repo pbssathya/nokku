@@ -23,7 +23,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--date",
         dest="anchor_date",
-        help="Decision date as YYYY-MM-DD. Defaults to today.",
+        help="Decision date as YYYY-MM-DD. Defaults to the current Kerala date.",
     )
     parser.add_argument(
         "--week-start",
@@ -45,7 +45,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    anchor = date.fromisoformat(args.anchor_date) if args.anchor_date else date.today()
+    anchor = date.fromisoformat(args.anchor_date) if args.anchor_date else None
 
     result = run_weekly_decision(
         args.request,

@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from datetime import date
 
-from nokku.lottery.kerala.living import run_weekly_decision
+from nokku.lottery.kerala.living import kerala_today, run_weekly_decision
 from nokku.preferences import VALID_WEEK_STARTS
 
 
@@ -45,7 +45,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    anchor = date.fromisoformat(args.anchor_date) if args.anchor_date else None
+    anchor = date.fromisoformat(args.anchor_date) if args.anchor_date else kerala_today()
 
     result = run_weekly_decision(
         args.request,
@@ -58,6 +58,7 @@ def main() -> int:
 
     print("\n=== NOKKU — KERALA LOTTERY WEEKLY DECISION ===")
     print("request:", args.request)
+    print("decision date:", anchor.isoformat(), "(Kerala local date)")
     print("recommendation:", decision.recommendation)
     print("decision week:", decision.week_start.isoformat(), "->", decision.week_end.isoformat())
     print("week-start preference:", result.week_start_preference)

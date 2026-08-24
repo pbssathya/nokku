@@ -60,6 +60,25 @@ def test_saved_user_birth_profile_round_trips(tmp_path):
     assert loaded.birth == birth
 
 
+def test_partial_user_preference_write_preserves_existing_birth_profile(tmp_path):
+    path = tmp_path / "preferences.json"
+    birth = UserBirthProfile(
+        date="1969-08-12",
+        time="05:23",
+        location="Kannankulangara, North Paravur, Kerala",
+    )
+    save_user_preferences(
+        UserPreferences(timezone="Asia/Kolkata", birth=birth),
+        path,
+    )
+
+    save_user_preferences(UserPreferences(timezone="Europe/London"), path)
+
+    loaded = load_user_preferences(path)
+    assert loaded.timezone == "Europe/London"
+    assert loaded.birth == birth
+
+
 def test_preference_writes_preserve_other_sections(tmp_path):
     path = tmp_path / "preferences.json"
     birth = UserBirthProfile(
@@ -75,10 +94,7 @@ def test_preference_writes_preserve_other_sections(tmp_path):
         KeralaLotteryPreferences(decision_week_start="monday"),
         path,
     )
-    save_user_preferences(
-        UserPreferences(timezone="Europe/London", birth=birth),
-        path,
-    )
+    save_user_preferences(UserPreferences(timezone="Europe/London"), path)
 
     loaded = load_user_preferences(path)
     assert loaded.timezone == "Europe/London"

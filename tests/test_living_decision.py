@@ -13,7 +13,11 @@ from nokku.lottery.kerala.living import (
     local_today,
     run_weekly_decision,
 )
-from nokku.preferences import UserPreferences, save_user_preferences
+from nokku.preferences import (
+    UserBirthProfile,
+    UserPreferences,
+    save_user_preferences,
+)
 
 
 def test_kerala_today_uses_ist_not_codespace_utc():
@@ -87,6 +91,7 @@ def test_living_loop_preserves_decision_experience(tmp_path):
 
     assert result.decision.recommendation == "SKIP"
     assert result.refreshed_sources == ()
+    assert result.numerology_signals == ()
 
     with Memory(memory_path) as memory:
         recalled = memory.recall(result.memory_id)
@@ -95,6 +100,51 @@ def test_living_loop_preserves_decision_experience(tmp_path):
     assert recalled["body"]["application"] == "nokku"
     assert recalled["body"]["decision_type"] == "weekly_participation"
     assert recalled["body"]["decision"]["recommendation"] == "SKIP"
+    assert recalled["body"]["signals"]["numerology"] == []
+
+
+def test_living_loop_observes_saved_profile_numerology_without_changing_policy(tmp_path):
+    memory_path = tmp_path / "living.sqlite"
+    preferences_path = tmp_path / "preferences.json"
+    save_user_preferences(
+        UserPreferences(
+            timezone="Asia/Kolkata",
+            birth=UserBirthProfile(
+                date="1969-08-12",
+                time="05:23",
+                location="Kannankulangara, North Paravur, Kerala",
+            ),
+        ),
+        preferences_path,
+    )
+
+    result = run_weekly_decision(
+        "Should I buy a Kerala lottery this week?",
+        anchor=date(2026, 8, 24),
+        refresh=False,
+        memory_path=memory_path,
+        preferences_path=preferences_path,
+    )
+
+    assert result.decision.recommendation == "SKIP"
+    by_date = {signal.target_date: signal for signal in result.numerology_signals}
+    assert by_date[date(2026, 8, 24)].personal_day == 8
+    assert by_date[date(2026, 8, 25)].personal_day == 9
+    assert by_date[date(2026, 8, 25)].birth_number == 3
+    assert by_date[date(2026, 8, 25)].life_path == 9
+    assert by_date[date(2026, 8, 25)].personal_year == 3
+    assert by_date[date(2026, 8, 25)].personal_month_compound == 11
+    assert by_date[date(2026, 8, 25)].personal_month == 2
+
+    with Memory(memory_path) as memory:
+        recalled = memory.recall(result.memory_id)
+
+    preserved = {
+        item["target_date"]: item
+        for item in recalled["body"]["signals"]["numerology"]
+    }
+    assert preserved["2026-08-25"]["personal_day"] == 9
+    assert preserved["2026-08-25"]["personal_day_in_369_family"] is True
 
 
 def test_living_loop_respects_explicit_buy(tmp_path):

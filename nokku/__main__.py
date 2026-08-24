@@ -110,6 +110,21 @@ def main() -> int:
     print("timing:", decision.preferred_time)
     print("user override detected:", decision.override or "NONE")
     print("current sources refreshed:", ", ".join(result.refreshed_sources) or "NONE")
+
+    if result.numerology_signals:
+        print("\nnumerology observations (selection signals, not win probabilities):")
+        for signal in result.numerology_signals:
+            family = "yes" if signal.personal_day_in_369_family else "no"
+            print(
+                "  -",
+                signal.target_date.isoformat(),
+                f"personal day {signal.personal_day};",
+                f"birth {signal.birth_number};",
+                f"life path {signal.life_path};",
+                f"personal year {signal.personal_year};",
+                f"3/6/9 family: {family}",
+            )
+
     print("\nevidence:")
     for item in decision.evidence_summary:
         print("  -", item)

@@ -4,6 +4,7 @@ import pytest
 
 from nokku.preferences import (
     KeralaLotteryPreferences,
+    UserBirthProfile,
     UserPreferences,
     load_kerala_lottery_preferences,
     load_user_preferences,
@@ -18,10 +19,11 @@ def test_missing_preferences_use_friday_default(tmp_path):
     assert preferences.decision_week_start == "friday"
 
 
-def test_missing_user_preferences_have_no_timezone(tmp_path):
+def test_missing_user_preferences_have_no_timezone_or_birth_profile(tmp_path):
     preferences = load_user_preferences(tmp_path / "missing.json")
 
     assert preferences.timezone is None
+    assert preferences.birth is None
 
 
 def test_saved_kerala_week_start_round_trips(tmp_path):
@@ -41,21 +43,58 @@ def test_saved_user_timezone_round_trips(tmp_path):
     assert load_user_preferences(path).timezone == "Europe/London"
 
 
+def test_saved_user_birth_profile_round_trips(tmp_path):
+    path = tmp_path / "preferences.json"
+    birth = UserBirthProfile(
+        date="1969-08-12",
+        time="05:23",
+        location="Kannankulangara, North Paravur, Kerala",
+    )
+    save_user_preferences(
+        UserPreferences(timezone="Asia/Kolkata", birth=birth),
+        path,
+    )
+
+    loaded = load_user_preferences(path)
+    assert loaded.timezone == "Asia/Kolkata"
+    assert loaded.birth == birth
+
+
 def test_preference_writes_preserve_other_sections(tmp_path):
     path = tmp_path / "preferences.json"
-    save_user_preferences(UserPreferences(timezone="Asia/Kolkata"), path)
+    birth = UserBirthProfile(
+        date="1969-08-12",
+        time="05:23",
+        location="Kannankulangara, North Paravur, Kerala",
+    )
+    save_user_preferences(
+        UserPreferences(timezone="Asia/Kolkata", birth=birth),
+        path,
+    )
     save_kerala_lottery_preferences(
         KeralaLotteryPreferences(decision_week_start="monday"),
         path,
     )
-    save_user_preferences(UserPreferences(timezone="Europe/London"), path)
+    save_user_preferences(
+        UserPreferences(timezone="Europe/London", birth=birth),
+        path,
+    )
 
-    assert load_user_preferences(path).timezone == "Europe/London"
+    loaded = load_user_preferences(path)
+    assert loaded.timezone == "Europe/London"
+    assert loaded.birth == birth
     assert load_kerala_lottery_preferences(path).decision_week_start == "monday"
 
     payload = json.loads(path.read_text(encoding="utf-8"))
     assert payload == {
-        "user": {"timezone": "Europe/London"},
+        "user": {
+            "timezone": "Europe/London",
+            "birth": {
+                "date": "1969-08-12",
+                "time": "05:23",
+                "location": "Kannankulangara, North Paravur, Kerala",
+            },
+        },
         "lottery": {"kerala": {"decision_week_start": "monday"}},
     }
 
@@ -64,5 +103,19 @@ def test_invalid_user_timezone_is_rejected_when_saving(tmp_path):
     with pytest.raises(ValueError, match="Unsupported IANA timezone"):
         save_user_preferences(
             UserPreferences(timezone="Not/A_Timezone"),
+            tmp_path / "preferences.json",
+        )
+
+
+def test_invalid_birth_profile_is_rejected_when_saving(tmp_path):
+    with pytest.raises(ValueError, match="Birth date must be YYYY-MM-DD"):
+        save_user_preferences(
+            UserPreferences(
+                birth=UserBirthProfile(
+                    date="12/08/1969",
+                    time="05:23",
+                    location="Kannankulangara, North Paravur, Kerala",
+                )
+            ),
             tmp_path / "preferences.json",
         )

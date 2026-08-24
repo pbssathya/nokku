@@ -1,7 +1,14 @@
+import json
+
+import pytest
+
 from nokku.preferences import (
     KeralaLotteryPreferences,
+    UserPreferences,
     load_kerala_lottery_preferences,
+    load_user_preferences,
     save_kerala_lottery_preferences,
+    save_user_preferences,
 )
 
 
@@ -9,6 +16,12 @@ def test_missing_preferences_use_friday_default(tmp_path):
     preferences = load_kerala_lottery_preferences(tmp_path / "missing.json")
 
     assert preferences.decision_week_start == "friday"
+
+
+def test_missing_user_preferences_have_no_timezone(tmp_path):
+    preferences = load_user_preferences(tmp_path / "missing.json")
+
+    assert preferences.timezone is None
 
 
 def test_saved_kerala_week_start_round_trips(tmp_path):
@@ -19,3 +32,37 @@ def test_saved_kerala_week_start_round_trips(tmp_path):
     )
 
     assert load_kerala_lottery_preferences(path).decision_week_start == "monday"
+
+
+def test_saved_user_timezone_round_trips(tmp_path):
+    path = tmp_path / "preferences.json"
+    save_user_preferences(UserPreferences(timezone="Europe/London"), path)
+
+    assert load_user_preferences(path).timezone == "Europe/London"
+
+
+def test_preference_writes_preserve_other_sections(tmp_path):
+    path = tmp_path / "preferences.json"
+    save_user_preferences(UserPreferences(timezone="Asia/Kolkata"), path)
+    save_kerala_lottery_preferences(
+        KeralaLotteryPreferences(decision_week_start="monday"),
+        path,
+    )
+    save_user_preferences(UserPreferences(timezone="Europe/London"), path)
+
+    assert load_user_preferences(path).timezone == "Europe/London"
+    assert load_kerala_lottery_preferences(path).decision_week_start == "monday"
+
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload == {
+        "user": {"timezone": "Europe/London"},
+        "lottery": {"kerala": {"decision_week_start": "monday"}},
+    }
+
+
+def test_invalid_user_timezone_is_rejected_when_saving(tmp_path):
+    with pytest.raises(ValueError, match="Unsupported IANA timezone"):
+        save_user_preferences(
+            UserPreferences(timezone="Not/A_Timezone"),
+            tmp_path / "preferences.json",
+        )

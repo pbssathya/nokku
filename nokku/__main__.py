@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from datetime import date
 
-from nokku.lottery.kerala.living import kerala_today, run_weekly_decision
+from nokku.lottery.kerala.living import MissingUserTimezoneError, run_weekly_decision
 from nokku.preferences import VALID_WEEK_STARTS
 
 
@@ -23,7 +23,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--date",
         dest="anchor_date",
-        help="Decision date as YYYY-MM-DD. Defaults to the current Kerala date.",
+        help="Explicit decision date as YYYY-MM-DD. Otherwise Nokku uses the user's local date.",
+    )
+    parser.add_argument(
+        "--timezone",
+        dest="user_timezone",
+        help="IANA user timezone, for example Asia/Kolkata or Europe/London.",
+    )
+    parser.add_argument(
+        "--remember-timezone",
+        action="store_true",
+        help="Persist --timezone as the global user timezone.",
     )
     parser.add_argument(
         "--week-start",
@@ -45,20 +55,41 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    anchor = date.fromisoformat(args.anchor_date) if args.anchor_date else kerala_today()
+    anchor = date.fromisoformat(args.anchor_date) if args.anchor_date else None
 
-    result = run_weekly_decision(
-        args.request,
-        anchor=anchor,
-        week_start_override=args.week_start,
-        remember_week_start=args.remember_week_start,
-        refresh=not args.no_refresh,
-    )
+    try:
+        result = run_weekly_decision(
+            args.request,
+            anchor=anchor,
+            timezone_override=args.user_timezone,
+            remember_timezone=args.remember_timezone,
+            week_start_override=args.week_start,
+            remember_week_start=args.remember_week_start,
+            refresh=not args.no_refresh,
+        )
+    except MissingUserTimezoneError:
+        print("Nokku needs your local timezone before it can interpret 'today' or 'this week'.")
+        print(
+            "Run again with, for example: "
+            "--timezone Asia/Kolkata --remember-timezone"
+        )
+        return 2
+    except ValueError as exc:
+        print("Nokku could not use that setting:", exc)
+        return 2
+
     decision = result.decision
 
     print("\n=== NOKKU — KERALA LOTTERY WEEKLY DECISION ===")
     print("request:", args.request)
-    print("decision date:", anchor.isoformat(), "(Kerala local date)")
+    if result.user_timezone:
+        print(
+            "decision date:",
+            result.decision_date.isoformat(),
+            f"(user local date; timezone: {result.user_timezone})",
+        )
+    else:
+        print("decision date:", result.decision_date.isoformat(), "(explicit date)")
     print("recommendation:", decision.recommendation)
     print("decision week:", decision.week_start.isoformat(), "->", decision.week_end.isoformat())
     print("week-start preference:", result.week_start_preference)

@@ -21,8 +21,12 @@ from cossse.memory import Memory
 
 from nokku.preferences import (
     KeralaLotteryPreferences,
+    UserPreferences,
     load_kerala_lottery_preferences,
+    load_user_preferences,
     save_kerala_lottery_preferences,
+    save_user_preferences,
+    validate_timezone_name,
 )
 from nokku.runtime import living_memory_path
 
@@ -30,28 +34,36 @@ from .decision import KeralaLotteryDecision, KeralaLotteryFact, decide_weekly_pa
 
 
 DOMAIN = "games/chance/lottery/kerala"
-KERALA_TIMEZONE = ZoneInfo("Asia/Kolkata")
+KERALA_TIMEZONE_NAME = "Asia/Kolkata"
+KERALA_TIMEZONE = ZoneInfo(KERALA_TIMEZONE_NAME)
+
+
+class MissingUserTimezoneError(RuntimeError):
+    """Raised when an undated user request has no resolvable local timezone."""
 
 
 @dataclass(frozen=True, slots=True)
 class LivingDecisionResult:
     decision: KeralaLotteryDecision
+    decision_date: date
     memory_id: str
     refreshed_sources: tuple[str, ...]
     week_start_preference: str
+    user_timezone: str | None
+
+
+def local_today(timezone_name: str, now: datetime | None = None) -> date:
+    """Return today's date in an explicit IANA timezone."""
+    normalized = validate_timezone_name(timezone_name)
+    current = now or datetime.now(timezone.utc)
+    if current.tzinfo is None:
+        raise ValueError("local_today() requires an aware datetime when now is supplied")
+    return current.astimezone(ZoneInfo(normalized)).date()
 
 
 def kerala_today(now: datetime | None = None) -> date:
-    """Return the current calendar date for the Kerala Lottery habitat.
-
-    Codespaces commonly run on UTC, while Kerala Lottery operations use Indian
-    Standard Time. An explicit aware ``now`` is accepted to make the boundary
-    behaviour directly testable.
-    """
-    current = now or datetime.now(timezone.utc)
-    if current.tzinfo is None:
-        raise ValueError("kerala_today() requires an aware datetime when now is supplied")
-    return current.astimezone(KERALA_TIMEZONE).date()
+    """Return the current calendar date for the Kerala Lottery domain."""
+    return local_today(KERALA_TIMEZONE_NAME, now)
 
 
 def _parse_draw_date(value: object) -> date | None:
@@ -208,6 +220,7 @@ def preserve_decision_experience(
     request: str,
     anchor: date,
     decision: KeralaLotteryDecision,
+    user_timezone: str | None = None,
     memory_path: str | Path | None = None,
 ) -> str:
     target = Path(memory_path) if memory_path is not None else living_memory_path()
@@ -219,6 +232,7 @@ def preserve_decision_experience(
             "decision_type": "weekly_participation",
             "request": request,
             "anchor_date": anchor.isoformat(),
+            "user_timezone": user_timezone,
             "decision": decision.to_dict(),
         }
     )
@@ -229,15 +243,33 @@ def run_weekly_decision(
     request: str,
     *,
     anchor: date | None = None,
+    timezone_override: str | None = None,
+    remember_timezone: bool = False,
     week_start_override: str | None = None,
     remember_week_start: bool = False,
     refresh: bool = True,
     memory_path: str | Path | None = None,
     preferences_path: str | Path | None = None,
     collector: Callable = collect,
+    now: datetime | None = None,
 ) -> LivingDecisionResult:
-    anchor_date = anchor or kerala_today()
     memory_target = Path(memory_path) if memory_path is not None else living_memory_path()
+
+    user_preferences = load_user_preferences(preferences_path)
+    user_timezone = user_preferences.timezone
+    if timezone_override is not None:
+        user_timezone = validate_timezone_name(timezone_override)
+        if remember_timezone:
+            save_user_preferences(UserPreferences(timezone=user_timezone), preferences_path)
+
+    if anchor is None:
+        if user_timezone is None:
+            raise MissingUserTimezoneError(
+                "Nokku needs the user's timezone to understand an undated local request."
+            )
+        anchor_date = local_today(user_timezone, now)
+    else:
+        anchor_date = anchor
 
     preferences = load_kerala_lottery_preferences(preferences_path)
     week_start = week_start_override.lower() if week_start_override else preferences.decision_week_start
@@ -269,12 +301,15 @@ def run_weekly_decision(
         request=request,
         anchor=anchor_date,
         decision=decision,
+        user_timezone=user_timezone,
         memory_path=memory_target,
     )
 
     return LivingDecisionResult(
         decision=decision,
+        decision_date=anchor_date,
         memory_id=memory_id,
         refreshed_sources=refreshed,
         week_start_preference=week_start,
+        user_timezone=user_timezone,
     )

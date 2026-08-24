@@ -31,6 +31,7 @@ from nokku.preferences import (
 from nokku.runtime import living_memory_path
 
 from .decision import KeralaLotteryDecision, KeralaLotteryFact, decide_weekly_participation
+from .numerology import LakshmiNumerologySignal, lakshmi_numerology_signal
 
 
 DOMAIN = "games/chance/lottery/kerala"
@@ -50,6 +51,7 @@ class LivingDecisionResult:
     refreshed_sources: tuple[str, ...]
     week_start_preference: str
     user_timezone: str | None
+    numerology_signals: tuple[LakshmiNumerologySignal, ...]
 
 
 def local_today(timezone_name: str, now: datetime | None = None) -> date:
@@ -215,12 +217,54 @@ def refresh_current_frontier(
     return tuple(refreshed)
 
 
+def _numerology_signals_for_decision(
+    *,
+    user_preferences: UserPreferences,
+    decision: KeralaLotteryDecision,
+) -> tuple[LakshmiNumerologySignal, ...]:
+    """Observe numerology for the current preferred/backup dates without ranking them."""
+    if user_preferences.birth is None:
+        return ()
+
+    birth_date = date.fromisoformat(user_preferences.birth.date)
+    seen: set[date] = set()
+    signals: list[LakshmiNumerologySignal] = []
+    for candidate in (decision.preferred_date, decision.backup_date):
+        if candidate is None or candidate in seen:
+            continue
+        seen.add(candidate)
+        signals.append(
+            lakshmi_numerology_signal(
+                birth_date=birth_date,
+                target=candidate,
+            )
+        )
+    return tuple(signals)
+
+
+def _numerology_signal_payload(signal: LakshmiNumerologySignal) -> dict[str, object]:
+    return {
+        "target_date": signal.target_date.isoformat(),
+        "birth_number": signal.birth_number,
+        "life_path": signal.life_path,
+        "personal_year": signal.personal_year,
+        "personal_month_compound": signal.personal_month_compound,
+        "personal_month": signal.personal_month,
+        "personal_day_compound": signal.personal_day_compound,
+        "personal_day": signal.personal_day,
+        "draw_number": signal.draw_number,
+        "draw_reduction": signal.draw_reduction,
+        "personal_day_in_369_family": signal.personal_day_in_369_family,
+    }
+
+
 def preserve_decision_experience(
     *,
     request: str,
     anchor: date,
     decision: KeralaLotteryDecision,
     user_timezone: str | None = None,
+    numerology_signals: tuple[LakshmiNumerologySignal, ...] = (),
     memory_path: str | Path | None = None,
 ) -> str:
     target = Path(memory_path) if memory_path is not None else living_memory_path()
@@ -233,6 +277,11 @@ def preserve_decision_experience(
             "request": request,
             "anchor_date": anchor.isoformat(),
             "user_timezone": user_timezone,
+            "signals": {
+                "numerology": [
+                    _numerology_signal_payload(signal) for signal in numerology_signals
+                ]
+            },
             "decision": decision.to_dict(),
         }
     )
@@ -261,6 +310,7 @@ def run_weekly_decision(
         user_timezone = validate_timezone_name(timezone_override)
         if remember_timezone:
             save_user_preferences(UserPreferences(timezone=user_timezone), preferences_path)
+            user_preferences = load_user_preferences(preferences_path)
 
     if anchor is None:
         if user_timezone is None:
@@ -297,11 +347,16 @@ def run_weekly_decision(
         facts=facts,
         week_start_name=week_start,
     )
+    numerology_signals = _numerology_signals_for_decision(
+        user_preferences=user_preferences,
+        decision=decision,
+    )
     memory_id = preserve_decision_experience(
         request=request,
         anchor=anchor_date,
         decision=decision,
         user_timezone=user_timezone,
+        numerology_signals=numerology_signals,
         memory_path=memory_target,
     )
 
@@ -312,4 +367,5 @@ def run_weekly_decision(
         refreshed_sources=refreshed,
         week_start_preference=week_start,
         user_timezone=user_timezone,
+        numerology_signals=numerology_signals,
     )

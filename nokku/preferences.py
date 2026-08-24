@@ -154,6 +154,11 @@ def save_user_preferences(
     preferences: UserPreferences,
     path: str | Path | None = None,
 ) -> Path:
+    """Merge supplied user fields into durable preferences.
+
+    ``None`` means "not supplied" here, so an unrelated settings write cannot
+    silently erase another stable user-owned field.
+    """
     target = Path(path) if path is not None else living_preferences_path()
     payload = _read_payload(target)
 
@@ -163,14 +168,10 @@ def save_user_preferences(
     else:
         user = dict(user)
 
-    if preferences.timezone is None:
-        user.pop("timezone", None)
-    else:
+    if preferences.timezone is not None:
         user["timezone"] = validate_timezone_name(preferences.timezone)
 
-    if preferences.birth is None:
-        user.pop("birth", None)
-    else:
+    if preferences.birth is not None:
         birth = validate_birth_profile(preferences.birth)
         user["birth"] = {
             "date": birth.date,

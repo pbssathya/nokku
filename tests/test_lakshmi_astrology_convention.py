@@ -1,4 +1,9 @@
-from nokku.lottery.kerala.astrology import LAKSHMI_ASTROLOGY_CONVENTION
+from datetime import datetime, timedelta, timezone
+
+from nokku.lottery.kerala.astrology import (
+    LAKSHMI_ASTROLOGY_CONVENTION,
+    vimshottari_snapshot,
+)
 
 
 def test_lakshmi_astrology_convention_is_explicit_and_experimental():
@@ -9,3 +14,21 @@ def test_lakshmi_astrology_convention_is_explicit_and_experimental():
     assert convention.dasha_year_basis == "julian_365_25"
     assert convention.dasha_days_per_year == 365.25
     assert convention.status == "experimental"
+
+
+def test_recovered_natal_moon_resolves_moon_moon_for_28_august_2026():
+    ist = timezone(timedelta(hours=5, minutes=30))
+
+    snapshot = vimshottari_snapshot(
+        102.1541,  # Lahiri sidereal Moon: Cancer 12.1541° / Pushya pada 3
+        datetime(1969, 8, 12, 5, 23, tzinfo=ist),
+        datetime(2026, 8, 28, 12, 0, tzinfo=ist),
+    )
+
+    assert snapshot.natal_nakshatra == "Pushya"
+    assert snapshot.natal_nakshatra_lord == "Saturn"
+    assert snapshot.mahadasha == "Moon"
+    assert snapshot.antardasha == "Moon"
+    assert snapshot.status == "experimental"
+    assert snapshot.mahadasha_start < datetime(2026, 8, 28, 12, 0, tzinfo=ist)
+    assert snapshot.antardasha_end > datetime(2026, 8, 28, 12, 0, tzinfo=ist)

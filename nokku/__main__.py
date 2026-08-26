@@ -122,6 +122,9 @@ def main() -> int:
         print("\nnumerology observations (selection signals, not win probabilities):")
         for signal in result.numerology_signals:
             family = "yes" if signal.personal_day_in_369_family else "no"
+            draw = ""
+            if signal.draw_number is not None:
+                draw = f"; draw {signal.draw_number} -> {signal.draw_reduction}"
             print(
                 "  -",
                 signal.target_date.isoformat(),
@@ -129,7 +132,7 @@ def main() -> int:
                 f"birth {signal.birth_number};",
                 f"life path {signal.life_path};",
                 f"personal year {signal.personal_year};",
-                f"3/6/9 family: {family}",
+                f"3/6/9 family: {family}{draw}",
             )
 
     print("\nevidence:")

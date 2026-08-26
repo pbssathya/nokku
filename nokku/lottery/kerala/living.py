@@ -35,6 +35,8 @@ from .numerology import LakshmiNumerologySignal, lakshmi_numerology_signal
 
 
 DOMAIN = "games/chance/lottery/kerala"
+SCHEDULE_DOMAIN = f"{DOMAIN}/schedule"
+SCHEDULE_SOURCE = "upcoming"
 KERALA_TIMEZONE_NAME = "Asia/Kolkata"
 KERALA_TIMEZONE = ZoneInfo(KERALA_TIMEZONE_NAME)
 
@@ -51,6 +53,7 @@ class LivingDecisionResult:
     refreshed_sources: tuple[str, ...]
     week_start_preference: str
     user_timezone: str | None
+    scheduled_draw_dates: tuple[date, ...]
     numerology_signals: tuple[LakshmiNumerologySignal, ...]
 
 
@@ -217,6 +220,38 @@ def refresh_current_frontier(
     return tuple(refreshed)
 
 
+def collect_upcoming_draw_dates(*, collector: Callable = collect) -> tuple[date, ...]:
+    """Collect currently listed official draw dates; failure yields no eligible dates."""
+    disposition = Flow().encounter(
+        Meaning(
+            body={
+                "need": "collect",
+                "domain_path": SCHEDULE_DOMAIN,
+                "source": SCHEDULE_SOURCE,
+                "store": False,
+                "requester": "nokku",
+            }
+        ),
+        [CollectorAdapter(collector)],
+    )
+    if disposition.status != DispositionStatus.CLAIMED or len(disposition.feedback) != 1:
+        return ()
+
+    report = disposition.feedback[0].body.get("outcome") or {}
+    status = (report.get("execution") or {}).get("status")
+    if status not in ("success", "partial"):
+        return ()
+
+    parsed = (report.get("data") or {}).get("parsed") or {}
+    dates: set[date] = set()
+    for item in parsed.get("upcoming_draws", []):
+        try:
+            dates.add(date.fromisoformat(str(item.get("draw_date") or "")))
+        except ValueError:
+            continue
+    return tuple(sorted(dates))
+
+
 def _numerology_signals_for_decision(
     *,
     user_preferences: UserPreferences,
@@ -264,6 +299,7 @@ def preserve_decision_experience(
     anchor: date,
     decision: KeralaLotteryDecision,
     user_timezone: str | None = None,
+    scheduled_draw_dates: tuple[date, ...] = (),
     numerology_signals: tuple[LakshmiNumerologySignal, ...] = (),
     memory_path: str | Path | None = None,
 ) -> str:
@@ -277,6 +313,11 @@ def preserve_decision_experience(
             "request": request,
             "anchor_date": anchor.isoformat(),
             "user_timezone": user_timezone,
+            "operational_context": {
+                "official_upcoming_draw_dates": [
+                    item.isoformat() for item in scheduled_draw_dates
+                ]
+            },
             "signals": {
                 "numerology": [
                     _numerology_signal_payload(signal) for signal in numerology_signals
@@ -331,6 +372,8 @@ def run_weekly_decision(
 
     facts = recall_kerala_facts(memory_target)
     refreshed: tuple[str, ...] = ()
+    scheduled_draw_dates: tuple[date, ...] = ()
+    eligible_dates: tuple[date, ...] | None = None
     if refresh:
         refreshed = refresh_current_frontier(
             anchor=anchor_date,
@@ -340,12 +383,15 @@ def run_weekly_decision(
         )
         if refreshed:
             facts = recall_kerala_facts(memory_target)
+        scheduled_draw_dates = collect_upcoming_draw_dates(collector=collector)
+        eligible_dates = scheduled_draw_dates
 
     decision = decide_weekly_participation(
         request,
         anchor=anchor_date,
         facts=facts,
         week_start_name=week_start,
+        eligible_dates=eligible_dates,
     )
     numerology_signals = _numerology_signals_for_decision(
         user_preferences=user_preferences,
@@ -356,6 +402,7 @@ def run_weekly_decision(
         anchor=anchor_date,
         decision=decision,
         user_timezone=user_timezone,
+        scheduled_draw_dates=scheduled_draw_dates,
         numerology_signals=numerology_signals,
         memory_path=memory_target,
     )
@@ -367,5 +414,6 @@ def run_weekly_decision(
         refreshed_sources=refreshed,
         week_start_preference=week_start,
         user_timezone=user_timezone,
+        scheduled_draw_dates=scheduled_draw_dates,
         numerology_signals=numerology_signals,
     )

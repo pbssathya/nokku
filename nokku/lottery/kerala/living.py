@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from pathlib import Path
+import re
 from typing import Callable
 from zoneinfo import ZoneInfo
 
@@ -79,6 +80,12 @@ def _parse_draw_date(value: object) -> date | None:
         return datetime.strptime(text, "%d/%m/%Y").date()
     except ValueError:
         return None
+
+
+def _draw_number_from_code(value: object) -> str | None:
+    """Extract the numeric draw number from an official code such as SS-534."""
+    match = re.search(r"(\d+)\s*$", str(value or ""))
+    return match.group(1) if match else None
 
 
 def _discover_values(memory: Memory):
@@ -220,8 +227,10 @@ def refresh_current_frontier(
     return tuple(refreshed)
 
 
-def collect_upcoming_draw_dates(*, collector: Callable = collect) -> tuple[date, ...]:
-    """Collect currently listed official draw dates; failure yields no eligible dates."""
+def collect_upcoming_draw_schedule(
+    *, collector: Callable = collect
+) -> tuple[tuple[date, ...], dict[date, str]]:
+    """Collect official upcoming dates plus numeric draw numbers for signal use."""
     disposition = Flow().encounter(
         Meaning(
             body={
@@ -235,33 +244,47 @@ def collect_upcoming_draw_dates(*, collector: Callable = collect) -> tuple[date,
         [CollectorAdapter(collector)],
     )
     if disposition.status != DispositionStatus.CLAIMED or len(disposition.feedback) != 1:
-        return ()
+        return (), {}
 
     report = disposition.feedback[0].body.get("outcome") or {}
     status = (report.get("execution") or {}).get("status")
     if status not in ("success", "partial"):
-        return ()
+        return (), {}
 
     parsed = (report.get("data") or {}).get("parsed") or {}
     dates: set[date] = set()
+    draw_numbers: dict[date, str] = {}
     for item in parsed.get("upcoming_draws", []):
         try:
-            dates.add(date.fromisoformat(str(item.get("draw_date") or "")))
+            draw_date = date.fromisoformat(str(item.get("draw_date") or ""))
         except ValueError:
             continue
-    return tuple(sorted(dates))
+        dates.add(draw_date)
+        draw_number = _draw_number_from_code(item.get("draw_code"))
+        if draw_number is not None:
+            draw_numbers[draw_date] = draw_number
+
+    return tuple(sorted(dates)), draw_numbers
+
+
+def collect_upcoming_draw_dates(*, collector: Callable = collect) -> tuple[date, ...]:
+    """Compatibility helper returning only currently listed official draw dates."""
+    dates, _draw_numbers = collect_upcoming_draw_schedule(collector=collector)
+    return dates
 
 
 def _numerology_signals_for_decision(
     *,
     user_preferences: UserPreferences,
     decision: KeralaLotteryDecision,
+    draw_numbers: dict[date, str] | None = None,
 ) -> tuple[LakshmiNumerologySignal, ...]:
-    """Observe numerology for the current preferred/backup dates without ranking them."""
+    """Observe numerology for preferred/backup dates without ranking them."""
     if user_preferences.birth is None:
         return ()
 
     birth_date = date.fromisoformat(user_preferences.birth.date)
+    numbers = draw_numbers or {}
     seen: set[date] = set()
     signals: list[LakshmiNumerologySignal] = []
     for candidate in (decision.preferred_date, decision.backup_date):
@@ -272,6 +295,7 @@ def _numerology_signals_for_decision(
             lakshmi_numerology_signal(
                 birth_date=birth_date,
                 target=candidate,
+                draw_number=numbers.get(candidate),
             )
         )
     return tuple(signals)
@@ -373,6 +397,7 @@ def run_weekly_decision(
     facts = recall_kerala_facts(memory_target)
     refreshed: tuple[str, ...] = ()
     scheduled_draw_dates: tuple[date, ...] = ()
+    scheduled_draw_numbers: dict[date, str] = {}
     eligible_dates: tuple[date, ...] | None = None
     if refresh:
         refreshed = refresh_current_frontier(
@@ -383,7 +408,9 @@ def run_weekly_decision(
         )
         if refreshed:
             facts = recall_kerala_facts(memory_target)
-        scheduled_draw_dates = collect_upcoming_draw_dates(collector=collector)
+        scheduled_draw_dates, scheduled_draw_numbers = collect_upcoming_draw_schedule(
+            collector=collector
+        )
         eligible_dates = scheduled_draw_dates
 
     decision = decide_weekly_participation(
@@ -396,6 +423,7 @@ def run_weekly_decision(
     numerology_signals = _numerology_signals_for_decision(
         user_preferences=user_preferences,
         decision=decision,
+        draw_numbers=scheduled_draw_numbers,
     )
     memory_id = preserve_decision_experience(
         request=request,

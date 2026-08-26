@@ -12,7 +12,7 @@ from collections import Counter
 from dataclasses import asdict, dataclass
 from datetime import date, timedelta
 import re
-from typing import Iterable, Literal
+from typing import Iterable, Literal, Mapping
 
 
 WEEKDAYS = (
@@ -97,6 +97,7 @@ def _participation_dates(
     week_end: date,
     facts: Iterable[KeralaLotteryFact],
     eligible_dates: Iterable[date] | None = None,
+    numerology_priority: Mapping[date, tuple[int, int, int]] | None = None,
 ) -> tuple[date | None, date | None]:
     counts = Counter(fact.draw_date.weekday() for fact in facts)
     earliest = max(anchor, week_start)
@@ -119,10 +120,24 @@ def _participation_dates(
     if not candidates:
         return None, None
 
-    # The official schedule decides which dates are operationally eligible.
-    # Historical weekday frequency only orders those eligible dates; it is never
-    # evidence that the user is more likely to win on that weekday.
-    candidates.sort(key=lambda day: (-counts.get(day.weekday(), 0), day))
+    priorities = numerology_priority or {}
+
+    def ranking_key(day: date) -> tuple[int, int, int, int, date]:
+        personal_family, exact_match, draw_family = priorities.get(day, (0, 0, 0))
+        return (
+            -personal_family,
+            -exact_match,
+            -draw_family,
+            -counts.get(day.weekday(), 0),
+            day,
+        )
+
+    # Official schedule decides which dates are operationally eligible. When
+    # recovered Lakshmi numerology is available it now influences ordering, but
+    # only through explicit selection-alignment observations -- never through a
+    # claimed probability advantage. Historical weekday frequency remains a
+    # final tie-breaker rather than a predictive rule.
+    candidates.sort(key=ranking_key)
     preferred = candidates[0]
     backup = candidates[1] if len(candidates) > 1 else None
     return preferred, backup
@@ -135,6 +150,7 @@ def decide_weekly_participation(
     facts: Iterable[KeralaLotteryFact],
     week_start_name: str = "friday",
     eligible_dates: Iterable[date] | None = None,
+    numerology_priority: Mapping[date, tuple[int, int, int]] | None = None,
 ) -> KeralaLotteryDecision:
     fact_list = tuple(facts)
     eligible_date_list = tuple(eligible_dates) if eligible_dates is not None else None
@@ -147,6 +163,7 @@ def decide_weekly_participation(
         week_end,
         fact_list,
         eligible_date_list,
+        numerology_priority,
     )
 
     latest = max((fact.draw_date for fact in fact_list), default=None)
@@ -171,6 +188,12 @@ def decide_weekly_participation(
         )
         if not scheduled_in_week:
             evidence.append("no listed draw date is available for participation in the remaining week")
+    if numerology_priority:
+        evidence.append(
+            "experimental Lakshmi numerology ordering is active for eligible dates: "
+            "personal-day 3/6/9 alignment, then exact birth/life-path/personal-year match, "
+            "then draw-number 3/6/9 alignment; historical weekday frequency only breaks remaining ties"
+        )
 
     if override == "BUY":
         recommendation: Literal["BUY", "SKIP"] = "BUY"
@@ -195,8 +218,9 @@ def decide_weekly_participation(
         preferred_time="before the official sales cutoff; no predictive time advantage inferred",
         evidence_summary=tuple(evidence),
         uncertainty=(
-            "Lottery outcomes are random. Historical result patterns may be useful for "
-            "habitat analysis, but they do not establish that a future ticket is more likely to win."
+            "Lottery outcomes are random. Historical result patterns and numerology selection "
+            "signals may help structure participation choices, but they do not establish that a "
+            "future ticket is more likely to win."
         ),
         override=override,
     )

@@ -48,7 +48,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--no-refresh",
         action="store_true",
-        help="Use durable Memory only; do not probe the current numeric frontier.",
+        help="Use durable Memory only; do not refresh current result or schedule sources.",
     )
     return parser.parse_args()
 
@@ -110,6 +110,13 @@ def main() -> int:
     print("timing:", decision.preferred_time)
     print("user override detected:", decision.override or "NONE")
     print("current sources refreshed:", ", ".join(result.refreshed_sources) or "NONE")
+    if result.scheduled_draw_dates:
+        print(
+            "official upcoming draw dates:",
+            ", ".join(item.isoformat() for item in result.scheduled_draw_dates),
+        )
+    elif not args.no_refresh:
+        print("official upcoming draw dates: NONE AVAILABLE")
 
     if result.numerology_signals:
         print("\nnumerology observations (selection signals, not win probabilities):")

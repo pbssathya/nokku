@@ -96,19 +96,32 @@ def _participation_dates(
     week_start: date,
     week_end: date,
     facts: Iterable[KeralaLotteryFact],
+    eligible_dates: Iterable[date] | None = None,
 ) -> tuple[date | None, date | None]:
     counts = Counter(fact.draw_date.weekday() for fact in facts)
-    cursor = max(anchor, week_start)
-    candidates: list[date] = []
-    while cursor <= week_end:
-        candidates.append(cursor)
-        cursor += timedelta(days=1)
+    earliest = max(anchor, week_start)
+
+    if eligible_dates is None:
+        cursor = earliest
+        candidates: list[date] = []
+        while cursor <= week_end:
+            candidates.append(cursor)
+            cursor += timedelta(days=1)
+    else:
+        candidates = sorted(
+            {
+                candidate
+                for candidate in eligible_dates
+                if earliest <= candidate <= week_end
+            }
+        )
 
     if not candidates:
         return None, None
 
-    # Historical weekday frequency is used only to choose an operational date,
-    # never as evidence that the user is more likely to win on that weekday.
+    # The official schedule decides which dates are operationally eligible.
+    # Historical weekday frequency only orders those eligible dates; it is never
+    # evidence that the user is more likely to win on that weekday.
     candidates.sort(key=lambda day: (-counts.get(day.weekday(), 0), day))
     preferred = candidates[0]
     backup = candidates[1] if len(candidates) > 1 else None
@@ -121,8 +134,10 @@ def decide_weekly_participation(
     anchor: date,
     facts: Iterable[KeralaLotteryFact],
     week_start_name: str = "friday",
+    eligible_dates: Iterable[date] | None = None,
 ) -> KeralaLotteryDecision:
     fact_list = tuple(facts)
+    eligible_date_list = tuple(eligible_dates) if eligible_dates is not None else None
     week_start, week_end = resolve_week(anchor, week_start_name)
     override = detect_user_override(request)
 
@@ -131,6 +146,7 @@ def decide_weekly_participation(
         week_start,
         week_end,
         fact_list,
+        eligible_date_list,
     )
 
     latest = max((fact.draw_date for fact in fact_list), default=None)
@@ -143,6 +159,18 @@ def decide_weekly_participation(
     evidence.append(
         f"{len(in_week)} verified draw facts currently fall inside the decision week"
     )
+    if eligible_date_list is not None:
+        scheduled_in_week = {
+            candidate
+            for candidate in eligible_date_list
+            if max(anchor, week_start) <= candidate <= week_end
+        }
+        evidence.append(
+            f"official upcoming schedule supplies {len(scheduled_in_week)} eligible draw date(s) "
+            "from today through the end of this decision week"
+        )
+        if not scheduled_in_week:
+            evidence.append("no listed draw date is available for participation in the remaining week")
 
     if override == "BUY":
         recommendation: Literal["BUY", "SKIP"] = "BUY"

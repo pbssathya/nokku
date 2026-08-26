@@ -113,7 +113,10 @@ def test_sunday_week_uses_recovered_numerology_to_prefer_28_august(tmp_path):
     assert result.decision.week_end == date(2026, 8, 29)
     assert result.decision.recommendation == "SKIP"
     assert result.decision.preferred_date == date(2026, 8, 28)
-    assert result.decision.backup_date == date(2026, 8, 29)
+    # 27 and 29 have the same recovered numerology priority in this fixture.
+    # With no historical facts in the temporary Memory, the final date tie-break
+    # is chronological, so 27 is the deterministic backup here.
+    assert result.decision.backup_date == date(2026, 8, 27)
 
     by_date = {signal.target_date: signal for signal in result.numerology_signals}
     assert set(by_date) == {

@@ -31,7 +31,12 @@ from nokku.preferences import (
 )
 from nokku.runtime import living_memory_path
 
-from .decision import KeralaLotteryDecision, KeralaLotteryFact, decide_weekly_participation
+from .decision import (
+    KeralaLotteryDecision,
+    KeralaLotteryFact,
+    decide_weekly_participation,
+    resolve_week,
+)
 from .numerology import LakshmiNumerologySignal, lakshmi_numerology_signal
 
 
@@ -273,32 +278,70 @@ def collect_upcoming_draw_dates(*, collector: Callable = collect) -> tuple[date,
     return dates
 
 
+def _numerology_signals_for_candidates(
+    *,
+    user_preferences: UserPreferences,
+    candidate_dates: tuple[date, ...],
+    draw_numbers: dict[date, str] | None = None,
+) -> tuple[LakshmiNumerologySignal, ...]:
+    """Calculate explainable numerology observations for eligible candidate dates."""
+    if user_preferences.birth is None:
+        return ()
+
+    birth_date = date.fromisoformat(user_preferences.birth.date)
+    numbers = draw_numbers or {}
+    return tuple(
+        lakshmi_numerology_signal(
+            birth_date=birth_date,
+            target=candidate,
+            draw_number=numbers.get(candidate),
+        )
+        for candidate in sorted(set(candidate_dates))
+    )
+
+
 def _numerology_signals_for_decision(
     *,
     user_preferences: UserPreferences,
     decision: KeralaLotteryDecision,
     draw_numbers: dict[date, str] | None = None,
 ) -> tuple[LakshmiNumerologySignal, ...]:
-    """Observe numerology for preferred/backup dates without ranking them."""
-    if user_preferences.birth is None:
-        return ()
+    """Fallback observation for preferred/backup dates when no schedule candidates exist."""
+    candidates = tuple(
+        candidate
+        for candidate in (decision.preferred_date, decision.backup_date)
+        if candidate is not None
+    )
+    return _numerology_signals_for_candidates(
+        user_preferences=user_preferences,
+        candidate_dates=candidates,
+        draw_numbers=draw_numbers,
+    )
 
-    birth_date = date.fromisoformat(user_preferences.birth.date)
-    numbers = draw_numbers or {}
-    seen: set[date] = set()
-    signals: list[LakshmiNumerologySignal] = []
-    for candidate in (decision.preferred_date, decision.backup_date):
-        if candidate is None or candidate in seen:
-            continue
-        seen.add(candidate)
-        signals.append(
-            lakshmi_numerology_signal(
-                birth_date=birth_date,
-                target=candidate,
-                draw_number=numbers.get(candidate),
-            )
+
+def _numerology_priority(
+    signals: tuple[LakshmiNumerologySignal, ...],
+) -> dict[date, tuple[int, int, int]]:
+    """Convert recovered selection observations into a lexicographic priority.
+
+    This is an explicitly experimental evolution, not a reconstructed historical
+    score. It uses only signals that the recovered Lakshmi analysis actually
+    described: personal-day 3/6/9 alignment, exact personal-number matches, and
+    draw-number 3/6/9 alignment.
+    """
+    priorities: dict[date, tuple[int, int, int]] = {}
+    for signal in signals:
+        exact_match = (
+            signal.personal_day_matches_birth_number
+            or signal.personal_day_matches_life_path
+            or signal.personal_day_matches_personal_year
         )
-    return tuple(signals)
+        priorities[signal.target_date] = (
+            int(signal.personal_day_in_369_family),
+            int(exact_match),
+            int(signal.draw_in_369_family),
+        )
+    return priorities
 
 
 def _numerology_signal_payload(signal: LakshmiNumerologySignal) -> dict[str, object]:
@@ -413,14 +456,29 @@ def run_weekly_decision(
         )
         eligible_dates = scheduled_draw_dates
 
+    resolved_week_start, resolved_week_end = resolve_week(anchor_date, week_start)
+    earliest = max(anchor_date, resolved_week_start)
+    scheduled_candidates = tuple(
+        candidate
+        for candidate in scheduled_draw_dates
+        if earliest <= candidate <= resolved_week_end
+    )
+    candidate_numerology = _numerology_signals_for_candidates(
+        user_preferences=user_preferences,
+        candidate_dates=scheduled_candidates,
+        draw_numbers=scheduled_draw_numbers,
+    )
+    numerology_priority = _numerology_priority(candidate_numerology)
+
     decision = decide_weekly_participation(
         request,
         anchor=anchor_date,
         facts=facts,
         week_start_name=week_start,
         eligible_dates=eligible_dates,
+        numerology_priority=numerology_priority or None,
     )
-    numerology_signals = _numerology_signals_for_decision(
+    numerology_signals = candidate_numerology or _numerology_signals_for_decision(
         user_preferences=user_preferences,
         decision=decision,
         draw_numbers=scheduled_draw_numbers,

@@ -4,6 +4,7 @@ import pytest
 
 from nokku.lottery.kerala.astrology import (
     LAKSHMI_ASTROLOGY_CONVENTION,
+    LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
     VIMSHOTTARI_SEQUENCE,
     VIMSHOTTARI_YEARS,
     vimshottari_snapshot,
@@ -20,11 +21,11 @@ def test_lakshmi_astrology_convention_is_explicit_and_experimental():
     assert convention.status == "experimental"
 
 
-def test_recovered_natal_moon_resolves_moon_moon_for_28_august_2026():
+def test_experimental_natal_moon_resolves_moon_moon_for_28_august_2026():
     ist = timezone(timedelta(hours=5, minutes=30))
 
     snapshot = vimshottari_snapshot(
-        102.1541,  # Lahiri sidereal Moon: Cancer 12.1541° / Pushya pada 3
+        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
         datetime(1969, 8, 12, 5, 23, tzinfo=ist),
         datetime(2026, 8, 28, 12, 0, tzinfo=ist),
     )
@@ -60,7 +61,7 @@ def test_vimshottari_snapshot_rejects_target_before_birth():
 
     with pytest.raises(ValueError, match="Target instant cannot precede birth instant"):
         vimshottari_snapshot(
-            102.1541,
+            LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
             birth_at,
             birth_at - timedelta(seconds=1),
         )
@@ -71,8 +72,16 @@ def test_vimshottari_snapshot_normalizes_longitude_to_one_zodiac_cycle():
     birth_at = datetime(1969, 8, 12, 5, 23, tzinfo=ist)
     target_at = datetime(2026, 8, 28, 12, 0, tzinfo=ist)
 
-    canonical = vimshottari_snapshot(102.1541, birth_at, target_at)
-    wrapped = vimshottari_snapshot(462.1541, birth_at, target_at)
+    canonical = vimshottari_snapshot(
+        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        birth_at,
+        target_at,
+    )
+    wrapped = vimshottari_snapshot(
+        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE + 360.0,
+        birth_at,
+        target_at,
+    )
 
     assert wrapped.natal_nakshatra == canonical.natal_nakshatra
     assert wrapped.natal_nakshatra_lord == canonical.natal_nakshatra_lord
@@ -94,9 +103,17 @@ def test_vimshottari_snapshot_moves_to_next_antardasha_at_boundary():
     birth_at = datetime(1969, 8, 12, 5, 23, tzinfo=ist)
     target_at = datetime(2026, 8, 28, 12, 0, tzinfo=ist)
 
-    moon_moon = vimshottari_snapshot(102.1541, birth_at, target_at)
+    moon_moon = vimshottari_snapshot(
+        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        birth_at,
+        target_at,
+    )
     boundary = moon_moon.antardasha_end
-    moon_mars = vimshottari_snapshot(102.1541, birth_at, boundary)
+    moon_mars = vimshottari_snapshot(
+        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        birth_at,
+        boundary,
+    )
 
     assert moon_moon.mahadasha == "Moon"
     assert moon_moon.antardasha == "Moon"
@@ -110,9 +127,17 @@ def test_vimshottari_snapshot_moves_to_next_mahadasha_at_boundary():
     birth_at = datetime(1969, 8, 12, 5, 23, tzinfo=ist)
     target_at = datetime(2026, 8, 28, 12, 0, tzinfo=ist)
 
-    moon_moon = vimshottari_snapshot(102.1541, birth_at, target_at)
+    moon_moon = vimshottari_snapshot(
+        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        birth_at,
+        target_at,
+    )
     boundary = moon_moon.mahadasha_end
-    mars_mars = vimshottari_snapshot(102.1541, birth_at, boundary)
+    mars_mars = vimshottari_snapshot(
+        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        birth_at,
+        boundary,
+    )
 
     assert moon_moon.mahadasha == "Moon"
     assert mars_mars.mahadasha == "Mars"

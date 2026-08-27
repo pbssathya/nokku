@@ -1,8 +1,9 @@
 """Application-neutral user-owned settings for the Banyan tree.
 
-These are stable facts/preferences owned by the user and reusable by any Banyan
-application or capability. Derived numerology, astrology, and application
-experience do not belong here.
+These are stable facts/preferences owned by a user and reusable by any Banyan
+application or capability. The store can hold multiple independent user
+profiles while exposing one active user to applications by default. Derived
+numerology, astrology, and application experience do not belong here.
 """
 
 from __future__ import annotations
@@ -13,6 +14,9 @@ import json
 import os
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+
+DEFAULT_USER_ID = "default"
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,7 +41,7 @@ class UserBirthProfile:
 
 @dataclass(frozen=True, slots=True)
 class UserPreferences:
-    """Common user-owned settings available to the whole Banyan tree."""
+    """Common settings belonging to one Banyan user."""
 
     timezone: str | None = None
     birth: UserBirthProfile | None = None
@@ -71,6 +75,14 @@ def _write_payload(target: Path, payload: dict[str, object]) -> Path:
         encoding="utf-8",
     )
     return target
+
+
+def validate_user_id(value: str) -> str:
+    """Normalize a stable store key without inventing identity semantics."""
+    user_id = value.strip()
+    if not user_id:
+        raise ValueError("Banyan user id cannot be empty.")
+    return user_id
 
 
 def validate_timezone_name(value: str) -> str:
@@ -136,14 +148,7 @@ def _load_birth_profile(user: dict[str, object]) -> UserBirthProfile | None:
         return None
 
 
-def load_user_preferences(path: str | Path | None = None) -> UserPreferences:
-    """Load common user settings from the Banyan-owned store."""
-    target = Path(path) if path is not None else user_settings_path()
-    payload = _read_payload(target)
-    user = payload.get("user")
-    if not isinstance(user, dict):
-        return UserPreferences()
-
+def _preferences_from_payload(user: dict[str, object]) -> UserPreferences:
     timezone_name: str | None = None
     raw_timezone = user.get("timezone")
     if raw_timezone is not None:
@@ -158,24 +163,136 @@ def load_user_preferences(path: str | Path | None = None) -> UserPreferences:
     )
 
 
+def _normalized_multi_user_payload(payload: dict[str, object]) -> dict[str, object]:
+    """Return current multi-user shape while preserving unrelated sections.
+
+    The old single-user ``user`` section is interpreted as the neutral
+    ``default`` profile. This function only transforms the in-memory payload;
+    callers decide when to persist the migration.
+    """
+    normalized = dict(payload)
+    users: dict[str, object] = {}
+
+    raw_users = normalized.get("users")
+    if isinstance(raw_users, dict):
+        for raw_id, raw_user in raw_users.items():
+            if not isinstance(raw_user, dict):
+                continue
+            try:
+                user_id = validate_user_id(str(raw_id))
+            except ValueError:
+                continue
+            users[user_id] = dict(raw_user)
+
+    legacy_user = normalized.get("user")
+    if not users and isinstance(legacy_user, dict):
+        users[DEFAULT_USER_ID] = dict(legacy_user)
+
+    normalized.pop("user", None)
+    normalized["users"] = users
+
+    raw_active = normalized.get("active_user")
+    if isinstance(raw_active, str) and raw_active in users:
+        active_user = raw_active
+    elif DEFAULT_USER_ID in users:
+        active_user = DEFAULT_USER_ID
+    elif users:
+        active_user = sorted(users)[0]
+    else:
+        active_user = None
+
+    if active_user is None:
+        normalized.pop("active_user", None)
+    else:
+        normalized["active_user"] = active_user
+
+    return normalized
+
+
+def migrate_user_settings_store(path: str | Path | None = None) -> Path:
+    """Persist the current multi-user shape without changing user facts."""
+    target = Path(path) if path is not None else user_settings_path()
+    payload = _read_payload(target)
+    normalized = _normalized_multi_user_payload(payload)
+    if normalized != payload:
+        _write_payload(target, normalized)
+    return target
+
+
+def list_user_ids(path: str | Path | None = None) -> tuple[str, ...]:
+    """Return all currently stored Banyan user ids in deterministic order."""
+    target = Path(path) if path is not None else user_settings_path()
+    payload = _normalized_multi_user_payload(_read_payload(target))
+    users = payload.get("users")
+    if not isinstance(users, dict):
+        return ()
+    return tuple(sorted(str(user_id) for user_id in users))
+
+
+def get_active_user_id(path: str | Path | None = None) -> str | None:
+    """Return the active Banyan user id, or None when no profile exists."""
+    target = Path(path) if path is not None else user_settings_path()
+    payload = _normalized_multi_user_payload(_read_payload(target))
+    active_user = payload.get("active_user")
+    return str(active_user) if active_user is not None else None
+
+
+def load_user_preferences(
+    path: str | Path | None = None,
+    *,
+    user_id: str | None = None,
+) -> UserPreferences:
+    """Load one user's settings, defaulting to the active Banyan user."""
+    target = Path(path) if path is not None else user_settings_path()
+    payload = _normalized_multi_user_payload(_read_payload(target))
+    users = payload.get("users")
+    if not isinstance(users, dict) or not users:
+        return UserPreferences()
+
+    if user_id is None:
+        selected_id = payload.get("active_user")
+        if selected_id is None:
+            return UserPreferences()
+        selected = str(selected_id)
+    else:
+        selected = validate_user_id(user_id)
+        if selected not in users:
+            raise KeyError(f"Unknown Banyan user: {selected}")
+
+    raw_user = users.get(selected)
+    if not isinstance(raw_user, dict):
+        return UserPreferences()
+    return _preferences_from_payload(raw_user)
+
+
 def save_user_preferences(
     preferences: UserPreferences,
     path: str | Path | None = None,
+    *,
+    user_id: str | None = None,
+    make_active: bool = False,
 ) -> Path:
-    """Merge supplied common user fields into the Banyan-owned store.
+    """Merge supplied common fields into one independent Banyan user profile.
 
-    ``None`` means "not supplied" here, so an unrelated settings write cannot
-    silently erase another stable user-owned field. When an explicit path is
-    supplied, unrelated JSON sections are preserved for compatibility.
+    ``None`` preference fields mean "not supplied", so an unrelated settings
+    write cannot silently erase another stable user-owned field. Saving a named
+    user does not switch the active user unless ``make_active`` is true.
     """
     target = Path(path) if path is not None else user_settings_path()
-    payload = _read_payload(target)
+    payload = _normalized_multi_user_payload(_read_payload(target))
+    raw_users = payload.get("users")
+    users = dict(raw_users) if isinstance(raw_users, dict) else {}
 
-    user = payload.get("user")
-    if not isinstance(user, dict):
-        user = {}
+    active_user = payload.get("active_user")
+    if user_id is not None:
+        selected = validate_user_id(user_id)
+    elif active_user is not None:
+        selected = str(active_user)
     else:
-        user = dict(user)
+        selected = DEFAULT_USER_ID
+
+    raw_user = users.get(selected)
+    user = dict(raw_user) if isinstance(raw_user, dict) else {}
 
     if preferences.timezone is not None:
         user["timezone"] = validate_timezone_name(preferences.timezone)
@@ -191,5 +308,22 @@ def save_user_preferences(
             birth_payload["timezone"] = birth.timezone
         user["birth"] = birth_payload
 
-    payload["user"] = user
+    users[selected] = user
+    payload["users"] = users
+    if make_active or active_user is None:
+        payload["active_user"] = selected
+
+    return _write_payload(target, payload)
+
+
+def set_active_user(user_id: str, path: str | Path | None = None) -> Path:
+    """Select one existing Banyan profile as the active user."""
+    target = Path(path) if path is not None else user_settings_path()
+    payload = _normalized_multi_user_payload(_read_payload(target))
+    users = payload.get("users")
+    selected = validate_user_id(user_id)
+    if not isinstance(users, dict) or selected not in users:
+        raise KeyError(f"Unknown Banyan user: {selected}")
+
+    payload["active_user"] = selected
     return _write_payload(target, payload)

@@ -191,6 +191,39 @@ def test_living_loop_preserves_explicit_astrology_observation_without_changing_p
     assert preserved["status"] == "experimental"
 
 
+def test_living_loop_does_not_substitute_current_timezone_for_birth_timezone(tmp_path):
+    memory_path = tmp_path / "living.sqlite"
+    preferences_path = tmp_path / "preferences.json"
+    save_user_preferences(
+        UserPreferences(
+            timezone="Asia/Kolkata",
+            birth=UserBirthProfile(
+                date="1969-08-12",
+                time="05:23",
+                location="Kannankulangara, North Paravur, Kerala",
+            ),
+        ),
+        preferences_path,
+    )
+
+    result = run_weekly_decision(
+        "Should I buy a Kerala lottery this week?",
+        anchor=date(2026, 8, 24),
+        refresh=False,
+        memory_path=memory_path,
+        preferences_path=preferences_path,
+        astrology_target_at=datetime(2026, 8, 28, 6, 30, tzinfo=timezone.utc),
+    )
+
+    assert result.decision.recommendation == "SKIP"
+    assert result.astrology_observation is None
+
+    with Memory(memory_path) as memory:
+        recalled = memory.recall(result.memory_id)
+
+    assert recalled["body"]["signals"]["astrology"] is None
+
+
 def test_living_loop_respects_explicit_buy(tmp_path):
     result = run_weekly_decision(
         "I want to buy this week",

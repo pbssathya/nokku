@@ -44,3 +44,22 @@ def test_astrology_observation_skips_profile_without_birth_timezone():
     )
 
     assert snapshot is None
+
+
+def test_astrology_observation_abstains_for_different_person():
+    preferences = UserPreferences(
+        timezone="Asia/Kolkata",
+        birth=UserBirthProfile(
+            date="1990-01-01",
+            time="10:00",
+            location="Kochi, Kerala",
+            timezone="Asia/Kolkata",
+        ),
+    )
+
+    snapshot = lakshmi_astrology_observation(
+        user_preferences=preferences,
+        target_at=datetime(2026, 8, 28, 12, 0, tzinfo=timezone.utc),
+    )
+
+    assert snapshot is None

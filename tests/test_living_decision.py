@@ -92,6 +92,7 @@ def test_living_loop_preserves_decision_experience(tmp_path):
     assert result.decision.recommendation == "SKIP"
     assert result.refreshed_sources == ()
     assert result.numerology_signals == ()
+    assert result.astrology_observation is None
 
     with Memory(memory_path) as memory:
         recalled = memory.recall(result.memory_id)
@@ -101,6 +102,7 @@ def test_living_loop_preserves_decision_experience(tmp_path):
     assert recalled["body"]["decision_type"] == "weekly_participation"
     assert recalled["body"]["decision"]["recommendation"] == "SKIP"
     assert recalled["body"]["signals"]["numerology"] == []
+    assert recalled["body"]["signals"]["astrology"] is None
 
 
 def test_living_loop_observes_saved_profile_numerology_without_changing_policy(tmp_path):
@@ -145,6 +147,48 @@ def test_living_loop_observes_saved_profile_numerology_without_changing_policy(t
     }
     assert preserved["2026-08-25"]["personal_day"] == 9
     assert preserved["2026-08-25"]["personal_day_in_369_family"] is True
+
+
+def test_living_loop_preserves_explicit_astrology_observation_without_changing_policy(
+    tmp_path,
+):
+    memory_path = tmp_path / "living.sqlite"
+    preferences_path = tmp_path / "preferences.json"
+    save_user_preferences(
+        UserPreferences(
+            timezone="Europe/London",
+            birth=UserBirthProfile(
+                date="1969-08-12",
+                time="05:23",
+                location="Kannankulangara, North Paravur, Kerala",
+                timezone="Asia/Kolkata",
+            ),
+        ),
+        preferences_path,
+    )
+
+    result = run_weekly_decision(
+        "Should I buy a Kerala lottery this week?",
+        anchor=date(2026, 8, 24),
+        refresh=False,
+        memory_path=memory_path,
+        preferences_path=preferences_path,
+        astrology_target_at=datetime(2026, 8, 28, 6, 30, tzinfo=timezone.utc),
+    )
+
+    assert result.decision.recommendation == "SKIP"
+    assert result.astrology_observation is not None
+    assert result.astrology_observation.mahadasha == "Moon"
+    assert result.astrology_observation.antardasha == "Moon"
+    assert result.astrology_observation.status == "experimental"
+
+    with Memory(memory_path) as memory:
+        recalled = memory.recall(result.memory_id)
+
+    preserved = recalled["body"]["signals"]["astrology"]
+    assert preserved["mahadasha"] == "Moon"
+    assert preserved["antardasha"] == "Moon"
+    assert preserved["status"] == "experimental"
 
 
 def test_living_loop_respects_explicit_buy(tmp_path):

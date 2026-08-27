@@ -55,6 +55,16 @@ def test_lakshmi_astrology_snapshot_binds_declared_experimental_input():
     assert wrapped == explicit
 
 
+def test_lakshmi_astrology_snapshot_rejects_unrelated_birth_instant():
+    ist = timezone(timedelta(hours=5, minutes=30))
+
+    with pytest.raises(ValueError, match="only valid for its reference birth instant"):
+        lakshmi_astrology_snapshot(
+            datetime(1990, 1, 1, 10, 0, tzinfo=ist),
+            datetime(2026, 8, 28, 12, 0, tzinfo=ist),
+        )
+
+
 def test_vimshottari_sequence_and_years_form_120_year_cycle():
     assert VIMSHOTTARI_SEQUENCE == (
         "Ketu",

@@ -29,6 +29,10 @@ LAKSHMI_ASTROLOGY_CONVENTION = LakshmiAstrologyConvention(
     dasha_days_per_year=365.25,
 )
 
+# Derived Lahiri sidereal Moon longitude currently used by the living Lakshmi
+# experiment. It is not a user preference or reconstructed historical rule.
+LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE = 102.1541
+
 VIMSHOTTARI_SEQUENCE = (
     "Ketu",
     "Venus",

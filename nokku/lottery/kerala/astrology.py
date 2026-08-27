@@ -178,3 +178,22 @@ def vimshottari_snapshot(
         antardasha_start=antardasha_start,
         antardasha_end=antardasha_end,
     )
+
+
+def lakshmi_astrology_snapshot(
+    birth_at: datetime,
+    target_at: datetime,
+    *,
+    convention: LakshmiAstrologyConvention = LAKSHMI_ASTROLOGY_CONVENTION,
+) -> VimshottariSnapshot:
+    """Return the current experimental Lakshmi Vimshottari observation.
+
+    This application-facing wrapper binds the declared experimental natal Moon
+    input while keeping the general Vimshottari calculator reusable.
+    """
+    return vimshottari_snapshot(
+        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        birth_at,
+        target_at,
+        convention=convention,
+    )

@@ -2,6 +2,8 @@ from datetime import datetime, timedelta, timezone
 
 from nokku.lottery.kerala.astrology import (
     LAKSHMI_ASTROLOGY_CONVENTION,
+    VIMSHOTTARI_SEQUENCE,
+    VIMSHOTTARI_YEARS,
     vimshottari_snapshot,
 )
 
@@ -32,3 +34,19 @@ def test_recovered_natal_moon_resolves_moon_moon_for_28_august_2026():
     assert snapshot.status == "experimental"
     assert snapshot.mahadasha_start < datetime(2026, 8, 28, 12, 0, tzinfo=ist)
     assert snapshot.antardasha_end > datetime(2026, 8, 28, 12, 0, tzinfo=ist)
+
+
+def test_vimshottari_sequence_and_years_form_120_year_cycle():
+    assert VIMSHOTTARI_SEQUENCE == (
+        "Ketu",
+        "Venus",
+        "Sun",
+        "Moon",
+        "Mars",
+        "Rahu",
+        "Jupiter",
+        "Saturn",
+        "Mercury",
+    )
+
+    assert sum(VIMSHOTTARI_YEARS[lord] for lord in VIMSHOTTARI_SEQUENCE) == 120

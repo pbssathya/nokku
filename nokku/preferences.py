@@ -8,7 +8,7 @@ real use case proves that something more elaborate is needed.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, time
+from datetime import date, datetime, time
 import json
 import os
 from pathlib import Path
@@ -36,6 +36,16 @@ class UserBirthProfile:
     time: str
     location: str
     timezone: str | None = None
+
+    def as_aware_datetime(self) -> datetime | None:
+        """Return the local birth instant when its timezone is explicitly known."""
+        if self.timezone is None:
+            return None
+        return datetime.combine(
+            date.fromisoformat(self.date),
+            time.fromisoformat(self.time),
+            tzinfo=ZoneInfo(self.timezone),
+        )
 
 
 @dataclass(frozen=True, slots=True)

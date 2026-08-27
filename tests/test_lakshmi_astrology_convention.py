@@ -64,3 +64,14 @@ def test_vimshottari_snapshot_rejects_target_before_birth():
             birth_at,
             birth_at - timedelta(seconds=1),
         )
+
+
+def test_vimshottari_snapshot_normalizes_longitude_to_one_zodiac_cycle():
+    ist = timezone(timedelta(hours=5, minutes=30))
+    birth_at = datetime(1969, 8, 12, 5, 23, tzinfo=ist)
+    target_at = datetime(2026, 8, 28, 12, 0, tzinfo=ist)
+
+    canonical = vimshottari_snapshot(102.1541, birth_at, target_at)
+    wrapped = vimshottari_snapshot(462.1541, birth_at, target_at)
+
+    assert wrapped == canonical

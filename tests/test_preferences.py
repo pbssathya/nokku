@@ -60,6 +60,25 @@ def test_saved_user_birth_profile_round_trips(tmp_path):
     assert loaded.birth == birth
 
 
+def test_saved_birth_timezone_round_trips_independently_of_user_timezone(tmp_path):
+    path = tmp_path / "preferences.json"
+    birth = UserBirthProfile(
+        date="1969-08-12",
+        time="05:23",
+        location="Kannankulangara, North Paravur, Kerala",
+        timezone="Asia/Kolkata",
+    )
+    save_user_preferences(
+        UserPreferences(timezone="Europe/London", birth=birth),
+        path,
+    )
+
+    loaded = load_user_preferences(path)
+    assert loaded.timezone == "Europe/London"
+    assert loaded.birth == birth
+    assert loaded.birth.timezone == "Asia/Kolkata"
+
+
 def test_partial_user_preference_write_preserves_existing_birth_profile(tmp_path):
     path = tmp_path / "preferences.json"
     birth = UserBirthProfile(

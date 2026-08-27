@@ -142,14 +142,17 @@ def test_preference_writes_preserve_other_sections(tmp_path):
 
     payload = json.loads(path.read_text(encoding="utf-8"))
     assert payload == {
-        "user": {
-            "timezone": "Europe/London",
-            "birth": {
-                "date": "1969-08-12",
-                "time": "05:23",
-                "location": "Kannankulangara, North Paravur, Kerala",
-            },
+        "users": {
+            "default": {
+                "timezone": "Europe/London",
+                "birth": {
+                    "date": "1969-08-12",
+                    "time": "05:23",
+                    "location": "Kannankulangara, North Paravur, Kerala",
+                },
+            }
         },
+        "active_user": "default",
         "lottery": {"kerala": {"decision_week_start": "monday"}},
     }
 

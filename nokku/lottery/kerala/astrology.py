@@ -8,7 +8,7 @@ must not be presented as recovered historical Project Lakshmi behaviour.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,7 +31,17 @@ LAKSHMI_ASTROLOGY_CONVENTION = LakshmiAstrologyConvention(
 
 # Derived Lahiri sidereal Moon longitude currently used by the living Lakshmi
 # experiment. It is not a user preference or reconstructed historical rule.
+# Until Nokku has a general ephemeris capability, this derived value is valid
+# only for the exact reference birth instant from which it was obtained.
 LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE = 102.1541
+LAKSHMI_EXPERIMENTAL_NATAL_MOON_REFERENCE_AT = datetime(
+    1969,
+    8,
+    12,
+    5,
+    23,
+    tzinfo=timezone(timedelta(hours=5, minutes=30)),
+)
 
 VIMSHOTTARI_SEQUENCE = (
     "Ketu",
@@ -101,6 +111,13 @@ class VimshottariSnapshot:
     antardasha_start: datetime
     antardasha_end: datetime
     status: str = "experimental"
+
+
+def experimental_natal_moon_supports_birth_at(birth_at: datetime) -> bool:
+    """Return whether the fixed experimental Moon input belongs to ``birth_at``."""
+    if birth_at.tzinfo is None or birth_at.utcoffset() is None:
+        return False
+    return birth_at == LAKSHMI_EXPERIMENTAL_NATAL_MOON_REFERENCE_AT
 
 
 def vimshottari_snapshot(
@@ -188,9 +205,15 @@ def lakshmi_astrology_snapshot(
 ) -> VimshottariSnapshot:
     """Return the current experimental Lakshmi Vimshottari observation.
 
-    This application-facing wrapper binds the declared experimental natal Moon
-    input while keeping the general Vimshottari calculator reusable.
+    This temporary application-facing wrapper is safe only for the exact birth
+    instant whose natal Moon longitude has already been derived. Other people
+    must abstain until Nokku can derive their own natal Moon input.
     """
+    if not experimental_natal_moon_supports_birth_at(birth_at):
+        raise ValueError(
+            "Experimental natal Moon input is only valid for its reference birth instant."
+        )
+
     return vimshottari_snapshot(
         LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
         birth_at,

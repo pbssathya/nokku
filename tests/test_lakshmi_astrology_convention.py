@@ -103,3 +103,19 @@ def test_vimshottari_snapshot_moves_to_next_antardasha_at_boundary():
     assert moon_mars.mahadasha == "Moon"
     assert moon_mars.antardasha == "Mars"
     assert moon_mars.antardasha_start == boundary
+
+
+def test_vimshottari_snapshot_moves_to_next_mahadasha_at_boundary():
+    ist = timezone(timedelta(hours=5, minutes=30))
+    birth_at = datetime(1969, 8, 12, 5, 23, tzinfo=ist)
+    target_at = datetime(2026, 8, 28, 12, 0, tzinfo=ist)
+
+    moon_moon = vimshottari_snapshot(102.1541, birth_at, target_at)
+    boundary = moon_moon.mahadasha_end
+    mars_mars = vimshottari_snapshot(102.1541, birth_at, boundary)
+
+    assert moon_moon.mahadasha == "Moon"
+    assert mars_mars.mahadasha == "Mars"
+    assert mars_mars.antardasha == "Mars"
+    assert mars_mars.mahadasha_start == boundary
+    assert mars_mars.antardasha_start == boundary

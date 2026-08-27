@@ -119,3 +119,17 @@ def test_vimshottari_snapshot_moves_to_next_mahadasha_at_boundary():
     assert mars_mars.antardasha == "Mars"
     assert mars_mars.mahadasha_start == boundary
     assert mars_mars.antardasha_start == boundary
+
+
+def test_vimshottari_snapshot_starts_cycle_at_ashwini_ketu():
+    ist = timezone(timedelta(hours=5, minutes=30))
+    birth_at = datetime(2000, 1, 1, 0, 0, tzinfo=ist)
+
+    snapshot = vimshottari_snapshot(0.0, birth_at, birth_at)
+
+    assert snapshot.natal_nakshatra == "Ashwini"
+    assert snapshot.natal_nakshatra_lord == "Ketu"
+    assert snapshot.mahadasha == "Ketu"
+    assert snapshot.antardasha == "Ketu"
+    assert snapshot.mahadasha_start == birth_at
+    assert snapshot.antardasha_start == birth_at

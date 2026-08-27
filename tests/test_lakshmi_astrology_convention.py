@@ -87,3 +87,19 @@ def test_vimshottari_snapshot_normalizes_longitude_to_one_zodiac_cycle():
         (wrapped.antardasha_end, canonical.antardasha_end),
     ):
         assert abs(wrapped_at - canonical_at) <= timedelta(microseconds=10)
+
+
+def test_vimshottari_snapshot_moves_to_next_antardasha_at_boundary():
+    ist = timezone(timedelta(hours=5, minutes=30))
+    birth_at = datetime(1969, 8, 12, 5, 23, tzinfo=ist)
+    target_at = datetime(2026, 8, 28, 12, 0, tzinfo=ist)
+
+    moon_moon = vimshottari_snapshot(102.1541, birth_at, target_at)
+    boundary = moon_moon.antardasha_end
+    moon_mars = vimshottari_snapshot(102.1541, birth_at, boundary)
+
+    assert moon_moon.mahadasha == "Moon"
+    assert moon_moon.antardasha == "Moon"
+    assert moon_mars.mahadasha == "Moon"
+    assert moon_mars.antardasha == "Mars"
+    assert moon_mars.antardasha_start == boundary

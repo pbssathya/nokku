@@ -79,6 +79,26 @@ def test_saved_birth_timezone_round_trips_independently_of_user_timezone(tmp_pat
     assert loaded.birth.timezone == "Asia/Kolkata"
 
 
+def test_birth_profile_builds_aware_datetime_only_with_birth_timezone():
+    zoned = UserBirthProfile(
+        date="1969-08-12",
+        time="05:23",
+        location="Kannankulangara, North Paravur, Kerala",
+        timezone="Asia/Kolkata",
+    )
+    unzoned = UserBirthProfile(
+        date="1969-08-12",
+        time="05:23",
+        location="Kannankulangara, North Paravur, Kerala",
+    )
+
+    birth_at = zoned.as_aware_datetime()
+
+    assert birth_at is not None
+    assert birth_at.isoformat() == "1969-08-12T05:23:00+05:30"
+    assert unzoned.as_aware_datetime() is None
+
+
 def test_partial_user_preference_write_preserves_existing_birth_profile(tmp_path):
     path = tmp_path / "preferences.json"
     birth = UserBirthProfile(

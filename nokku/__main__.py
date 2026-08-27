@@ -3,10 +3,21 @@
 from __future__ import annotations
 
 import argparse
-from datetime import date
+from datetime import date, datetime
 
 from nokku.lottery.kerala.living import MissingUserTimezoneError, run_weekly_decision
 from nokku.preferences import VALID_WEEK_STARTS
+
+
+def parse_aware_datetime(value: str) -> datetime:
+    """Parse an explicit ISO 8601 instant without guessing a timezone."""
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError as exc:
+        raise ValueError("Astrology target must be an ISO 8601 datetime.") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError("Astrology target instant must be timezone-aware.")
+    return parsed
 
 
 def parse_args() -> argparse.Namespace:
@@ -46,6 +57,14 @@ def parse_args() -> argparse.Namespace:
         help="Persist --week-start as the Kerala Lottery preference.",
     )
     parser.add_argument(
+        "--astrology-at",
+        dest="astrology_at",
+        help=(
+            "Optional timezone-aware ISO 8601 instant for the experimental astrology "
+            "observation, for example 2026-08-28T12:00:00+05:30."
+        ),
+    )
+    parser.add_argument(
         "--no-refresh",
         action="store_true",
         help="Use durable Memory only; do not refresh current result or schedule sources.",
@@ -58,6 +77,9 @@ def main() -> int:
     anchor = date.fromisoformat(args.anchor_date) if args.anchor_date else None
 
     try:
+        astrology_target_at = (
+            parse_aware_datetime(args.astrology_at) if args.astrology_at else None
+        )
         result = run_weekly_decision(
             args.request,
             anchor=anchor,
@@ -66,6 +88,7 @@ def main() -> int:
             week_start_override=args.week_start,
             remember_week_start=args.remember_week_start,
             refresh=not args.no_refresh,
+            astrology_target_at=astrology_target_at,
         )
     except MissingUserTimezoneError:
         print("Nokku needs your local timezone before it can interpret 'today' or 'this week'.")
@@ -134,6 +157,17 @@ def main() -> int:
                 f"personal year {signal.personal_year};",
                 f"3/6/9 family: {family}{draw}",
             )
+
+    if result.astrology_observation is not None:
+        astrology = result.astrology_observation
+        print("\nastrology observation (experimental methodology; not a win probability):")
+        if astrology_target_at is not None:
+            print("  target instant:", astrology_target_at.isoformat())
+        print("  natal nakshatra:", astrology.natal_nakshatra)
+        print("  natal lord:", astrology.natal_nakshatra_lord)
+        print("  mahadasha:", astrology.mahadasha)
+        print("  antardasha:", astrology.antardasha)
+        print("  status:", astrology.status)
 
     print("\nevidence:")
     for item in decision.evidence_summary:

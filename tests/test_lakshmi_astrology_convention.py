@@ -133,3 +133,17 @@ def test_vimshottari_snapshot_starts_cycle_at_ashwini_ketu():
     assert snapshot.antardasha == "Ketu"
     assert snapshot.mahadasha_start == birth_at
     assert snapshot.antardasha_start == birth_at
+
+
+def test_vimshottari_snapshot_switches_nakshatra_at_exact_boundary():
+    ist = timezone(timedelta(hours=5, minutes=30))
+    birth_at = datetime(2000, 1, 1, 0, 0, tzinfo=ist)
+    boundary = 360.0 / 27.0
+
+    before = vimshottari_snapshot(boundary - 1e-9, birth_at, birth_at)
+    at_boundary = vimshottari_snapshot(boundary, birth_at, birth_at)
+
+    assert before.natal_nakshatra == "Ashwini"
+    assert before.natal_nakshatra_lord == "Ketu"
+    assert at_boundary.natal_nakshatra == "Bharani"
+    assert at_boundary.natal_nakshatra_lord == "Venus"

@@ -14,4 +14,4 @@ dev = ["pytest>=8"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["nokku*"]
+include = ["nokku*", "banyan*"]

@@ -1,19 +1,22 @@
-"""Small user-owned preferences for Nokku's living applications.
+"""Nokku-owned application preferences plus Banyan user-setting compatibility.
 
-Preferences are configuration, not accumulated experience. Durable experience
-continues to live in COSsse Memory. Keep this file deliberately boring until a
-real use case proves that something more elaborate is needed.
+Common user-owned settings live at the Banyan boundary. Nokku keeps only its
+application-specific persistence and Kerala Lottery preference behavior here.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime, time
 import json
 import os
 from pathlib import Path
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+from banyan.user_settings import (
+    UserBirthProfile,
+    UserPreferences,
+    validate_birth_profile,
+    validate_timezone_name,
+)
 from nokku.runtime import living_memory_path
 
 
@@ -26,34 +29,6 @@ VALID_WEEK_STARTS = (
     "saturday",
     "sunday",
 )
-
-
-@dataclass(frozen=True, slots=True)
-class UserBirthProfile:
-    """Stable user-owned birth inputs used by optional decision signals."""
-
-    date: str
-    time: str
-    location: str
-    timezone: str | None = None
-
-    def as_aware_datetime(self) -> datetime | None:
-        """Return the local birth instant when its timezone is explicitly known."""
-        if self.timezone is None:
-            return None
-        return datetime.combine(
-            date.fromisoformat(self.date),
-            time.fromisoformat(self.time),
-            tzinfo=ZoneInfo(self.timezone),
-        )
-
-
-@dataclass(frozen=True, slots=True)
-class UserPreferences:
-    """Global user-owned preferences shared across Nokku applications."""
-
-    timezone: str | None = None
-    birth: UserBirthProfile | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,46 +64,6 @@ def _write_payload(target: Path, payload: dict[str, object]) -> Path:
     return target
 
 
-def validate_timezone_name(value: str) -> str:
-    """Return a normalized IANA timezone name or raise for an invalid value."""
-    timezone_name = value.strip()
-    if not timezone_name:
-        raise ValueError("User timezone cannot be empty.")
-    try:
-        ZoneInfo(timezone_name)
-    except ZoneInfoNotFoundError as exc:
-        raise ValueError(f"Unsupported IANA timezone: {timezone_name}") from exc
-    return timezone_name
-
-
-def validate_birth_profile(profile: UserBirthProfile) -> UserBirthProfile:
-    """Validate stable birth inputs without deriving astrology/numerology here."""
-    birth_date = profile.date.strip()
-    birth_time = profile.time.strip()
-    location = " ".join(profile.location.split())
-    if not location:
-        raise ValueError("Birth location cannot be empty.")
-    try:
-        date.fromisoformat(birth_date)
-    except ValueError as exc:
-        raise ValueError("Birth date must be YYYY-MM-DD.") from exc
-    try:
-        time.fromisoformat(birth_time)
-    except ValueError as exc:
-        raise ValueError("Birth time must be HH:MM or HH:MM:SS.") from exc
-
-    birth_timezone = None
-    if profile.timezone is not None:
-        birth_timezone = validate_timezone_name(profile.timezone)
-
-    return UserBirthProfile(
-        date=birth_date,
-        time=birth_time,
-        location=location,
-        timezone=birth_timezone,
-    )
-
-
 def _load_birth_profile(user: dict[str, object]) -> UserBirthProfile | None:
     raw_birth = user.get("birth")
     if not isinstance(raw_birth, dict):
@@ -153,6 +88,7 @@ def _load_birth_profile(user: dict[str, object]) -> UserBirthProfile | None:
 
 
 def load_user_preferences(path: str | Path | None = None) -> UserPreferences:
+    """Load Banyan user settings from Nokku's current compatibility store."""
     target = Path(path) if path is not None else living_preferences_path()
     payload = _read_payload(target)
     user = payload.get("user")
@@ -177,7 +113,7 @@ def save_user_preferences(
     preferences: UserPreferences,
     path: str | Path | None = None,
 ) -> Path:
-    """Merge supplied user fields into durable preferences.
+    """Merge Banyan user settings into Nokku's current compatibility store.
 
     ``None`` means "not supplied" here, so an unrelated settings write cannot
     silently erase another stable user-owned field.

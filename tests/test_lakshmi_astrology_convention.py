@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 from nokku.lottery.kerala.astrology import (
     LAKSHMI_ASTROLOGY_CONVENTION,
     VIMSHOTTARI_SEQUENCE,
@@ -50,3 +52,15 @@ def test_vimshottari_sequence_and_years_form_120_year_cycle():
     )
 
     assert sum(VIMSHOTTARI_YEARS[lord] for lord in VIMSHOTTARI_SEQUENCE) == 120
+
+
+def test_vimshottari_snapshot_rejects_target_before_birth():
+    ist = timezone(timedelta(hours=5, minutes=30))
+    birth_at = datetime(1969, 8, 12, 5, 23, tzinfo=ist)
+
+    with pytest.raises(ValueError, match="Target instant cannot precede birth instant"):
+        vimshottari_snapshot(
+            102.1541,
+            birth_at,
+            birth_at - timedelta(seconds=1),
+        )

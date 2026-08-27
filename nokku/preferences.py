@@ -35,6 +35,7 @@ class UserBirthProfile:
     date: str
     time: str
     location: str
+    timezone: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -105,7 +106,17 @@ def validate_birth_profile(profile: UserBirthProfile) -> UserBirthProfile:
         time.fromisoformat(birth_time)
     except ValueError as exc:
         raise ValueError("Birth time must be HH:MM or HH:MM:SS.") from exc
-    return UserBirthProfile(date=birth_date, time=birth_time, location=location)
+
+    birth_timezone = None
+    if profile.timezone is not None:
+        birth_timezone = validate_timezone_name(profile.timezone)
+
+    return UserBirthProfile(
+        date=birth_date,
+        time=birth_time,
+        location=location,
+        timezone=birth_timezone,
+    )
 
 
 def _load_birth_profile(user: dict[str, object]) -> UserBirthProfile | None:
@@ -117,12 +128,14 @@ def _load_birth_profile(user: dict[str, object]) -> UserBirthProfile | None:
     raw_location = raw_birth.get("location")
     if raw_date is None or raw_time is None or raw_location is None:
         return None
+    raw_timezone = raw_birth.get("timezone")
     try:
         return validate_birth_profile(
             UserBirthProfile(
                 date=str(raw_date),
                 time=str(raw_time),
                 location=str(raw_location),
+                timezone=str(raw_timezone) if raw_timezone is not None else None,
             )
         )
     except ValueError:
@@ -173,11 +186,14 @@ def save_user_preferences(
 
     if preferences.birth is not None:
         birth = validate_birth_profile(preferences.birth)
-        user["birth"] = {
+        birth_payload: dict[str, object] = {
             "date": birth.date,
             "time": birth.time,
             "location": birth.location,
         }
+        if birth.timezone is not None:
+            birth_payload["timezone"] = birth.timezone
+        user["birth"] = birth_payload
 
     payload["user"] = user
     return _write_payload(target, payload)

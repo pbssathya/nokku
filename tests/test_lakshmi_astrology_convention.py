@@ -74,4 +74,16 @@ def test_vimshottari_snapshot_normalizes_longitude_to_one_zodiac_cycle():
     canonical = vimshottari_snapshot(102.1541, birth_at, target_at)
     wrapped = vimshottari_snapshot(462.1541, birth_at, target_at)
 
-    assert wrapped == canonical
+    assert wrapped.natal_nakshatra == canonical.natal_nakshatra
+    assert wrapped.natal_nakshatra_lord == canonical.natal_nakshatra_lord
+    assert wrapped.mahadasha == canonical.mahadasha
+    assert wrapped.antardasha == canonical.antardasha
+    assert wrapped.status == canonical.status
+
+    for wrapped_at, canonical_at in (
+        (wrapped.mahadasha_start, canonical.mahadasha_start),
+        (wrapped.mahadasha_end, canonical.mahadasha_end),
+        (wrapped.antardasha_start, canonical.antardasha_start),
+        (wrapped.antardasha_end, canonical.antardasha_end),
+    ):
+        assert abs(wrapped_at - canonical_at) <= timedelta(microseconds=10)

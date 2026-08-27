@@ -1,7 +1,8 @@
 """Nokku-owned application preferences plus Banyan user-setting compatibility.
 
-Common user-owned settings live at the Banyan boundary. Nokku keeps only its
-application-specific persistence and Kerala Lottery preference behavior here.
+Common user-owned settings live at the Banyan boundary. Nokku consumes the
+active Banyan user by default and keeps only its application-specific
+persistence and Kerala Lottery preference behavior here.
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ from banyan.user_settings import (
     UserBirthProfile,
     UserPreferences,
     load_user_preferences as _load_banyan_user_preferences,
+    migrate_user_settings_store as _migrate_banyan_user_settings_store,
     save_user_preferences as _save_banyan_user_preferences,
     user_settings_path,
     validate_birth_profile,
@@ -77,37 +79,61 @@ def _default_user_settings_target() -> Path:
 
 
 def _migrate_legacy_user_settings(target: Path) -> None:
-    """Copy existing Nokku user facts once into the Banyan-owned default store."""
+    """Promote old single-user facts into Banyan's active multi-user store."""
     legacy = living_preferences_path()
-    if target == legacy or target.exists() or not legacy.exists():
+
+    if target == legacy:
+        if target.exists():
+            _migrate_banyan_user_settings_store(target)
         return
 
-    legacy_preferences = _load_banyan_user_preferences(legacy)
-    if legacy_preferences != UserPreferences():
-        _save_banyan_user_preferences(legacy_preferences, target)
+    if not target.exists() and legacy.exists():
+        legacy_preferences = _load_banyan_user_preferences(legacy)
+        if legacy_preferences != UserPreferences():
+            _save_banyan_user_preferences(legacy_preferences, target)
+
+    if target.exists():
+        _migrate_banyan_user_settings_store(target)
 
 
-def load_user_preferences(path: str | Path | None = None) -> UserPreferences:
-    """Load shared user settings, migrating Nokku's legacy default when needed."""
+def load_user_preferences(
+    path: str | Path | None = None,
+    *,
+    user_id: str | None = None,
+) -> UserPreferences:
+    """Load a Banyan user, defaulting to whichever profile is active."""
     if path is not None:
-        return _load_banyan_user_preferences(path)
+        return _load_banyan_user_preferences(path, user_id=user_id)
 
     target = _default_user_settings_target()
     _migrate_legacy_user_settings(target)
-    return _load_banyan_user_preferences(target)
+    return _load_banyan_user_preferences(target, user_id=user_id)
 
 
 def save_user_preferences(
     preferences: UserPreferences,
     path: str | Path | None = None,
+    *,
+    user_id: str | None = None,
+    make_active: bool = False,
 ) -> Path:
-    """Save shared user settings without erasing previously known user facts."""
+    """Save one Banyan user without erasing another user's stable facts."""
     if path is not None:
-        return _save_banyan_user_preferences(preferences, path)
+        return _save_banyan_user_preferences(
+            preferences,
+            path,
+            user_id=user_id,
+            make_active=make_active,
+        )
 
     target = _default_user_settings_target()
     _migrate_legacy_user_settings(target)
-    return _save_banyan_user_preferences(preferences, target)
+    return _save_banyan_user_preferences(
+        preferences,
+        target,
+        user_id=user_id,
+        make_active=make_active,
+    )
 
 
 def load_kerala_lottery_preferences(

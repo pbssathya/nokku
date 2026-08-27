@@ -7,6 +7,7 @@ from nokku.lottery.kerala.astrology import (
     LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
     VIMSHOTTARI_SEQUENCE,
     VIMSHOTTARI_YEARS,
+    lakshmi_astrology_snapshot,
     vimshottari_snapshot,
 )
 
@@ -37,6 +38,21 @@ def test_experimental_natal_moon_resolves_moon_moon_for_28_august_2026():
     assert snapshot.status == "experimental"
     assert snapshot.mahadasha_start < datetime(2026, 8, 28, 12, 0, tzinfo=ist)
     assert snapshot.antardasha_end > datetime(2026, 8, 28, 12, 0, tzinfo=ist)
+
+
+def test_lakshmi_astrology_snapshot_binds_declared_experimental_input():
+    ist = timezone(timedelta(hours=5, minutes=30))
+    birth_at = datetime(1969, 8, 12, 5, 23, tzinfo=ist)
+    target_at = datetime(2026, 8, 28, 12, 0, tzinfo=ist)
+
+    wrapped = lakshmi_astrology_snapshot(birth_at, target_at)
+    explicit = vimshottari_snapshot(
+        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        birth_at,
+        target_at,
+    )
+
+    assert wrapped == explicit
 
 
 def test_vimshottari_sequence_and_years_form_120_year_cycle():

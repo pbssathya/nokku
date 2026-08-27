@@ -224,6 +224,31 @@ def test_living_loop_does_not_substitute_current_timezone_for_birth_timezone(tmp
     assert recalled["body"]["signals"]["astrology"] is None
 
 
+def test_living_loop_rejects_timezone_naive_astrology_target(tmp_path):
+    preferences_path = tmp_path / "preferences.json"
+    save_user_preferences(
+        UserPreferences(
+            birth=UserBirthProfile(
+                date="1969-08-12",
+                time="05:23",
+                location="Kannankulangara, North Paravur, Kerala",
+                timezone="Asia/Kolkata",
+            ),
+        ),
+        preferences_path,
+    )
+
+    with pytest.raises(ValueError, match="astrology target instant must be timezone-aware"):
+        run_weekly_decision(
+            "Should I buy a Kerala lottery this week?",
+            anchor=date(2026, 8, 24),
+            refresh=False,
+            memory_path=tmp_path / "living.sqlite",
+            preferences_path=preferences_path,
+            astrology_target_at=datetime(2026, 8, 28, 12, 0),
+        )
+
+
 def test_living_loop_respects_explicit_buy(tmp_path):
     result = run_weekly_decision(
         "I want to buy this week",

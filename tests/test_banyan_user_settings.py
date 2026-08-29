@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from banyan.user_settings import (
     UserBirthProfile as BanyanUserBirthProfile,
     UserPreferences as BanyanUserPreferences,
@@ -157,3 +159,46 @@ def test_banyan_store_holds_multiple_users_and_switches_active_user(tmp_path):
     assert get_active_user_id(path) == "person_b"
     assert load_banyan_user_preferences(path) == second
     assert load_banyan_user_preferences(path, user_id="sathya") == first
+
+
+def test_invalid_stored_timezone_is_not_treated_as_missing(tmp_path):
+    path = tmp_path / "user_settings.json"
+    path.write_text(
+        json.dumps(
+            {
+                "active_user": "default",
+                "users": {
+                    "default": {
+                        "timezone": "Not/A-Timezone",
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Unsupported IANA timezone"):
+        load_banyan_user_preferences(path)
+
+
+def test_incomplete_stored_birth_is_not_treated_as_missing(tmp_path):
+    path = tmp_path / "user_settings.json"
+    path.write_text(
+        json.dumps(
+            {
+                "active_user": "default",
+                "users": {
+                    "default": {
+                        "birth": {
+                            "date": "1990-01-02",
+                            "location": "London, United Kingdom",
+                        }
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Stored birth setting is incomplete"):
+        load_banyan_user_preferences(path)

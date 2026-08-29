@@ -65,7 +65,9 @@ def _read_payload(target: Path) -> dict[str, object]:
     if not target.exists():
         return {}
     raw = json.loads(target.read_text(encoding="utf-8"))
-    return raw if isinstance(raw, dict) else {}
+    if not isinstance(raw, dict):
+        raise ValueError("Stored Banyan user settings must be a JSON object.")
+    return raw
 
 
 def _write_payload(target: Path, payload: dict[str, object]) -> Path:
@@ -173,17 +175,20 @@ def _normalized_multi_user_payload(payload: dict[str, object]) -> dict[str, obje
     users: dict[str, object] = {}
 
     raw_users = normalized.get("users")
+    if raw_users is not None and not isinstance(raw_users, dict):
+        raise ValueError("Stored users setting must be a JSON object.")
     if isinstance(raw_users, dict):
         for raw_id, raw_user in raw_users.items():
+            user_id = validate_user_id(str(raw_id))
             if not isinstance(raw_user, dict):
-                continue
-            try:
-                user_id = validate_user_id(str(raw_id))
-            except ValueError:
-                continue
+                raise ValueError(
+                    f"Stored Banyan user {user_id!r} must be a JSON object."
+                )
             users[user_id] = dict(raw_user)
 
     legacy_user = normalized.get("user")
+    if legacy_user is not None and not isinstance(legacy_user, dict):
+        raise ValueError("Stored legacy user setting must be a JSON object.")
     if not users and isinstance(legacy_user, dict):
         users[DEFAULT_USER_ID] = dict(legacy_user)
 

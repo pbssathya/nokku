@@ -157,6 +157,18 @@ def main() -> int:
         if frontier.uncertainty:
             print("  uncertainty:", "; ".join(frontier.uncertainty))
 
+    fact_recall = result.fact_recall
+    print("\nKerala fact recall:", fact_recall.status.upper())
+    print("  facts:", len(fact_recall.facts))
+    print("  examined values:", fact_recall.examined_values)
+    print("  matching collection values:", fact_recall.matching_collection_values)
+    print("  usable matching values:", fact_recall.usable_matching_values)
+    print("  memory discovery:", fact_recall.memory_discovery.status.upper())
+    if fact_recall.failures:
+        print("  failures:", "; ".join(fact_recall.failures))
+    if fact_recall.uncertainty:
+        print("  uncertainty:", "; ".join(fact_recall.uncertainty))
+
     if result.scheduled_draw_dates:
         print(
             "official upcoming draw dates:",

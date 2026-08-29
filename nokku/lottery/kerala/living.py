@@ -57,6 +57,20 @@ class MissingUserTimezoneError(RuntimeError):
 
 
 @dataclass(frozen=True, slots=True)
+class FrontierRefreshResult:
+    """Truthful receipt for one current-result frontier refresh attempt."""
+
+    status: str
+    refreshed_sources: tuple[str, ...]
+    attempted_sources: tuple[str, ...]
+    checkpoint_source: str | None
+    checkpoint_draw_date: date | None
+    stop_reason: str
+    failures: tuple[str, ...] = ()
+    uncertainty: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class ScheduleCollectionResult:
     """Truthful lower-layer receipt for one official schedule collection attempt."""
 
@@ -192,36 +206,64 @@ def _preserve_meaning(meaning: Meaning, memory_path: Path) -> str:
     return str(disposition.feedback[0].body["memory_id"])
 
 
-def refresh_current_frontier(
+def refresh_current_frontier_result(
     *,
     anchor: date,
     facts: tuple[KeralaLotteryFact, ...],
     memory_path: str | Path | None = None,
     max_new_sources: int = 7,
     collector: Callable = collect,
-) -> tuple[str, ...]:
-    """Refresh only the small current numeric frontier when Memory is stale.
+) -> FrontierRefreshResult:
+    """Refresh the numeric frontier and report exactly why the attempt stopped."""
+    numeric_facts = tuple(fact for fact in facts if fact.source.isdigit())
+    checkpoint_source = (
+        str(max(int(fact.source) for fact in numeric_facts)) if numeric_facts else None
+    )
+    checkpoint_draw_date = max((fact.draw_date for fact in facts), default=None)
 
-    This is not a historical traversal mechanism. It starts immediately after
-    the highest remembered modern numeric source and stops at the first source
-    that is not a usable published draw.
-    """
     if max_new_sources < 1:
-        return ()
+        return FrontierRefreshResult(
+            status="invalid_input",
+            refreshed_sources=(),
+            attempted_sources=(),
+            checkpoint_source=checkpoint_source,
+            checkpoint_draw_date=checkpoint_draw_date,
+            stop_reason="invalid_max_new_sources",
+            failures=("max_new_sources must be at least 1",),
+        )
+
+    if checkpoint_source is None or checkpoint_draw_date is None:
+        return FrontierRefreshResult(
+            status="unavailable",
+            refreshed_sources=(),
+            attempted_sources=(),
+            checkpoint_source=checkpoint_source,
+            checkpoint_draw_date=checkpoint_draw_date,
+            stop_reason="no_numeric_frontier",
+            failures=("no usable numeric source/date frontier is available",),
+        )
+
+    if checkpoint_draw_date >= anchor:
+        return FrontierRefreshResult(
+            status="current",
+            refreshed_sources=(),
+            attempted_sources=(),
+            checkpoint_source=checkpoint_source,
+            checkpoint_draw_date=checkpoint_draw_date,
+            stop_reason="checkpoint_current_through_anchor",
+        )
 
     target = Path(memory_path) if memory_path is not None else living_memory_path()
-    numeric = [int(fact.source) for fact in facts if fact.source.isdigit()]
-    latest_date = max((fact.draw_date for fact in facts), default=None)
-
-    if not numeric or latest_date is None or latest_date >= anchor:
-        return ()
-
     adapter = CollectorAdapter(collector)
     refreshed: list[str] = []
-    source_id = max(numeric) + 1
+    attempted: list[str] = []
+    uncertainty: list[str] = []
+    source_id = int(checkpoint_source) + 1
+    latest_usable_date = checkpoint_draw_date
 
     for _ in range(max_new_sources):
         source = str(source_id)
+        attempted.append(source)
         disposition = Flow().encounter(
             Meaning(
                 body={
@@ -234,28 +276,114 @@ def refresh_current_frontier(
             ),
             [adapter],
         )
+        disposition_status = _disposition_status_text(disposition.status)
         if disposition.status != DispositionStatus.CLAIMED or len(disposition.feedback) != 1:
-            break
+            return FrontierRefreshResult(
+                status="partial" if refreshed else "failed",
+                refreshed_sources=tuple(refreshed),
+                attempted_sources=tuple(attempted),
+                checkpoint_source=checkpoint_source,
+                checkpoint_draw_date=checkpoint_draw_date,
+                stop_reason="collector_not_singly_claimed",
+                failures=(
+                    f"source {source} was not singly claimed: disposition={disposition_status}, "
+                    f"feedback_count={len(disposition.feedback)}",
+                ),
+                uncertainty=tuple(uncertainty),
+            )
 
         result = disposition.feedback[0]
         report = result.body.get("outcome") or {}
-        status = (report.get("execution") or {}).get("status")
-        if status not in ("success", "partial"):
-            break
+        execution_status = str((report.get("execution") or {}).get("status") or "unknown")
+        if execution_status not in ("success", "partial"):
+            return FrontierRefreshResult(
+                status="partial" if refreshed else "failed",
+                refreshed_sources=tuple(refreshed),
+                attempted_sources=tuple(attempted),
+                checkpoint_source=checkpoint_source,
+                checkpoint_draw_date=checkpoint_draw_date,
+                stop_reason="collector_execution_not_usable",
+                failures=(
+                    f"source {source} collector execution status: {execution_status}",
+                ),
+                uncertainty=tuple(uncertainty),
+            )
 
         parsed = (report.get("data") or {}).get("parsed") or {}
         draw_date = _parse_draw_date(parsed.get("draw_date"))
         lottery_name = " ".join(str(parsed.get("lottery_name") or "").split())
         if draw_date is None or not lottery_name or lottery_name == "Unknown":
-            break
+            return FrontierRefreshResult(
+                status="partial" if refreshed else "failed",
+                refreshed_sources=tuple(refreshed),
+                attempted_sources=tuple(attempted),
+                checkpoint_source=checkpoint_source,
+                checkpoint_draw_date=checkpoint_draw_date,
+                stop_reason="collector_payload_not_usable",
+                failures=(f"source {source} did not contain a usable draw date/name",),
+                uncertainty=tuple(uncertainty),
+            )
+
         if draw_date > anchor:
-            break
+            return FrontierRefreshResult(
+                status="success" if refreshed else "current",
+                refreshed_sources=tuple(refreshed),
+                attempted_sources=tuple(attempted),
+                checkpoint_source=checkpoint_source,
+                checkpoint_draw_date=checkpoint_draw_date,
+                stop_reason="next_draw_after_anchor",
+                uncertainty=tuple(uncertainty),
+            )
 
         _preserve_meaning(result, target)
         refreshed.append(source)
+        latest_usable_date = draw_date
+        if execution_status == "partial":
+            uncertainty.append(f"source {source} collector reported partial execution")
+
+        if draw_date >= anchor:
+            return FrontierRefreshResult(
+                status="partial" if uncertainty else "success",
+                refreshed_sources=tuple(refreshed),
+                attempted_sources=tuple(attempted),
+                checkpoint_source=checkpoint_source,
+                checkpoint_draw_date=checkpoint_draw_date,
+                stop_reason="anchor_reached",
+                uncertainty=tuple(uncertainty),
+            )
+
         source_id += 1
 
-    return tuple(refreshed)
+    return FrontierRefreshResult(
+        status="partial" if latest_usable_date < anchor else "success",
+        refreshed_sources=tuple(refreshed),
+        attempted_sources=tuple(attempted),
+        checkpoint_source=checkpoint_source,
+        checkpoint_draw_date=checkpoint_draw_date,
+        stop_reason="max_new_sources_reached",
+        uncertainty=(
+            tuple(uncertainty)
+            + (("frontier limit reached before anchor",) if latest_usable_date < anchor else ())
+        ),
+    )
+
+
+def refresh_current_frontier(
+    *,
+    anchor: date,
+    facts: tuple[KeralaLotteryFact, ...],
+    memory_path: str | Path | None = None,
+    max_new_sources: int = 7,
+    collector: Callable = collect,
+) -> tuple[str, ...]:
+    """Compatibility helper returning only refreshed source ids."""
+    return refresh_current_frontier_result(
+        anchor=anchor,
+        facts=facts,
+        memory_path=memory_path,
+        max_new_sources=max_new_sources,
+        collector=collector,
+    ).refreshed_sources
 
 
 def collect_upcoming_draw_schedule(

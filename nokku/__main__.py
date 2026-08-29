@@ -169,6 +169,17 @@ def main() -> int:
     if fact_recall.uncertainty:
         print("  uncertainty:", "; ".join(fact_recall.uncertainty))
 
+    if result.schedule_collection is not None:
+        schedule = result.schedule_collection
+        print("\nschedule collection:", schedule.status.upper())
+        print("  dates:", len(schedule.dates))
+        print("  disposition:", schedule.disposition_status)
+        print("  execution:", schedule.execution_status or "NONE")
+        if schedule.failures:
+            print("  failures:", "; ".join(schedule.failures))
+        if schedule.uncertainty:
+            print("  uncertainty:", "; ".join(schedule.uncertainty))
+
     if result.scheduled_draw_dates:
         print(
             "official upcoming draw dates:",

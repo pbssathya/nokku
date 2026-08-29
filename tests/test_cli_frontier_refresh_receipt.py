@@ -50,6 +50,17 @@ def _decision_result() -> SimpleNamespace:
         failures=("source 75364 collector execution status: failed",),
         uncertainty=("frontier state is unresolved",),
     )
+    memory_discovery = SimpleNamespace(status="success")
+    fact_recall = SimpleNamespace(
+        status="success",
+        facts=(),
+        memory_discovery=memory_discovery,
+        examined_values=0,
+        matching_collection_values=0,
+        usable_matching_values=0,
+        failures=(),
+        uncertainty=(),
+    )
     return SimpleNamespace(
         decision=decision,
         decision_date=date(2026, 8, 29),
@@ -57,7 +68,7 @@ def _decision_result() -> SimpleNamespace:
         decision_preservation=preservation,
         refreshed_sources=(),
         frontier_refresh=frontier,
-        fact_recall=SimpleNamespace(status="success"),
+        fact_recall=fact_recall,
         week_start_preference="friday",
         user_timezone=None,
         scheduled_draw_dates=(),

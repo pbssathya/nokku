@@ -65,6 +65,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--natal-moon-longitude",
+        type=float,
+        help=(
+            "Explicit derived sidereal natal Moon longitude in degrees for the astrology "
+            "observation. Nokku does not hardcode or infer this value."
+        ),
+    )
+    parser.add_argument(
         "--no-refresh",
         action="store_true",
         help="Use durable Memory only; do not refresh current result or schedule sources.",
@@ -80,6 +88,9 @@ def main() -> int:
         astrology_target_at = (
             parse_aware_datetime(args.astrology_at) if args.astrology_at else None
         )
+        if args.natal_moon_longitude is not None and astrology_target_at is None:
+            raise ValueError("--natal-moon-longitude requires --astrology-at.")
+
         result = run_weekly_decision(
             args.request,
             anchor=anchor,
@@ -89,6 +100,7 @@ def main() -> int:
             remember_week_start=args.remember_week_start,
             refresh=not args.no_refresh,
             astrology_target_at=astrology_target_at,
+            astrology_natal_moon_longitude=args.natal_moon_longitude,
         )
     except MissingUserTimezoneError:
         print("Nokku needs your local timezone before it can interpret 'today' or 'this week'.")
@@ -168,6 +180,13 @@ def main() -> int:
         print("  mahadasha:", astrology.mahadasha)
         print("  antardasha:", astrology.antardasha)
         print("  status:", astrology.status)
+    elif result.astrology_observation_result is not None:
+        receipt = result.astrology_observation_result
+        print("\nastrology observation:", receipt.status.upper())
+        if receipt.failures:
+            print("  failures:", "; ".join(receipt.failures))
+        if receipt.uncertainty:
+            print("  uncertainty:", "; ".join(receipt.uncertainty))
 
     print("\nevidence:")
     for item in decision.evidence_summary:

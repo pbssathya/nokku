@@ -1,5 +1,7 @@
 {
   "runtime_export_directory": "/workspaces/.banyan/exports/kerala_lottery_government",
   "repository_export_directory": "exports/kerala_lottery_government",
-  "manifest_filename": "manifest.json"
+  "manifest_filename": "manifest.json",
+  "shard_period_format": "%Y-%m",
+  "shard_filename_template": "{period}.json"
 }

@@ -192,7 +192,15 @@ def main() -> int:
     for item in decision.evidence_summary:
         print("  -", item)
     print("\nuncertainty:", decision.uncertainty)
-    print("decision memory receipt:", result.memory_id)
+
+    preservation = result.decision_preservation
+    print("\ndecision memory preservation:", preservation.status.upper())
+    print("  memory id:", preservation.memory_id or "NONE")
+    if preservation.failures:
+        print("  failures:", "; ".join(preservation.failures))
+    if preservation.uncertainty:
+        print("  uncertainty:", "; ".join(preservation.uncertainty))
+
     print("\nBefore you decide... Nokku.")
     return 0
 

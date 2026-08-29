@@ -148,7 +148,7 @@ def refresh_current_frontier_result(
     anchor: date,
     facts: tuple[KeralaLotteryFact, ...],
     memory_path: str | Path | None = None,
-    max_new_sources: int = 7,
+    max_new_sources: int | None = None,
     collector: Callable = collect,
 ) -> FrontierRefreshResult:
     """Refresh the numeric frontier and report exactly why the attempt stopped."""
@@ -158,7 +158,7 @@ def refresh_current_frontier_result(
     )
     checkpoint_draw_date = max((fact.draw_date for fact in facts), default=None)
 
-    if max_new_sources < 1:
+    if max_new_sources is not None and max_new_sources < 1:
         return FrontierRefreshResult(
             status="invalid_input",
             refreshed_sources=(),
@@ -199,7 +199,7 @@ def refresh_current_frontier_result(
     source_id = int(checkpoint_source) + 1
     latest_usable_date = checkpoint_draw_date
 
-    for _ in range(max_new_sources):
+    while max_new_sources is None or len(attempted) < max_new_sources:
         source = str(source_id)
         attempted.append(source)
 
@@ -364,7 +364,7 @@ def refresh_current_frontier(
     anchor: date,
     facts: tuple[KeralaLotteryFact, ...],
     memory_path: str | Path | None = None,
-    max_new_sources: int = 7,
+    max_new_sources: int | None = None,
     collector: Callable = collect,
 ) -> tuple[str, ...]:
     """Compatibility helper returning only refreshed source ids."""

@@ -66,14 +66,14 @@ def discover_preserved_values(
         )
 
     raw_receipts: Any = discovery.feedback[0].body.get("receipts")
-    if not isinstance(raw_receipts, list):
+    if not isinstance(raw_receipts, (list, tuple)):
         return MemoryDiscoveryResult(
             status="failed",
             values=(),
             discovered_receipt_count=0,
             attempted_memory_ids=(),
             discovery_disposition_status=discovery_status,
-            failures=("memory discovery feedback has no receipts list",),
+            failures=("memory discovery feedback has no receipts collection",),
         )
 
     values: list[dict[str, object]] = []

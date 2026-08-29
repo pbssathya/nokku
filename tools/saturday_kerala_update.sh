@@ -57,19 +57,53 @@ PY
 
 REPOSITORY_EXPORT_DIRECTORY="${EXPORT_INFO[0]}"
 REPOSITORY_MANIFEST="${EXPORT_INFO[1]}"
+RECEIPT="$(mktemp)"
+trap 'rm -f "$RECEIPT"' EXIT
 
 printf '%s\n' "=== SATURDAY KERALA GOVERNMENT UPDATE ==="
 printf '%s\n' "Branch: $BRANCH"
 printf '%s\n' "Config: $CONFIG"
 
-# Bring the branch current before collecting anything new.
+# Synchronize the branch before the lower export layer observes local state.
 git pull --ff-only origin "$BRANCH"
 
-# Refresh the living Government frontier and regenerate configured exports.
-python tools/update_kerala_government.py --config "$CONFIG"
+# Lower layer: report reality through a structured receipt. It does not choose recovery.
+python tools/update_kerala_government.py --config "$CONFIG" --receipt "$RECEIPT"
+
+readarray -t RECEIPT_INFO < <(python - "$RECEIPT" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+receipt = json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
+print(receipt.get('status') or 'unknown')
+print(receipt.get('mode') or 'unknown')
+print(receipt.get('manifest_state_before') or 'unknown')
+print('yes' if receipt.get('manifest_changed') else 'no')
+PY
+)
+
+STATUS="${RECEIPT_INFO[0]}"
+MODE="${RECEIPT_INFO[1]}"
+MANIFEST_STATE="${RECEIPT_INFO[2]}"
+MANIFEST_CHANGED="${RECEIPT_INFO[3]}"
+
+printf '%s\n' "=== SATURDAY ORCHESTRATION RECEIPT ==="
+printf '%s\n' "Lower-layer status: $STATUS"
+printf '%s\n' "Mode: $MODE"
+printf '%s\n' "Manifest state before: $MANIFEST_STATE"
+printf '%s\n' "Manifest changed: $MANIFEST_CHANGED"
+
+# Upper layer policy: an unresolved lower-layer condition is surfaced, not repaired silently.
+if [[ "$STATUS" != "success" ]]; then
+  echo "⚠️ Saturday orchestration stopped before Git commit/push."
+  echo "The lower-layer receipt requires an explicit upper-layer decision."
+  python -m json.tool "$RECEIPT"
+  exit 3
+fi
 
 if [[ ! -f "$REPOSITORY_MANIFEST" ]]; then
-  echo "❌ Expected repository manifest was not created: $REPOSITORY_MANIFEST"
+  echo "❌ Successful receipt but repository manifest is missing: $REPOSITORY_MANIFEST"
   exit 1
 fi
 
@@ -91,10 +125,11 @@ PY
   git commit -m "Update Kerala Government export through ${CUTOFF}"
 fi
 
-# Push even when no new commit was needed, so the remote state is explicitly synchronized.
+# Push after a successful receipt; this also confirms remote synchronization on no-op runs.
 git push origin "$BRANCH"
 
 printf '%s\n' "=== SATURDAY UPDATE COMPLETE ==="
+printf '%s\n' "Mode: $MODE"
 printf '%s\n' "GitHub-visible manifest: $REPOSITORY_MANIFEST"
 printf '%s\n' "Export directory: $REPOSITORY_EXPORT_DIRECTORY"
 printf '%s\n' "Remote branch: origin/$BRANCH"

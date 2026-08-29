@@ -41,15 +41,29 @@ def _decision_result() -> SimpleNamespace:
         failures=("memory preservation unavailable",),
         uncertainty=("no preservation receipt was returned",),
     )
+    memory_discovery = SimpleNamespace(status="success")
+    fact_recall = SimpleNamespace(
+        status="success",
+        facts=(),
+        memory_discovery=memory_discovery,
+        examined_values=0,
+        matching_collection_values=0,
+        usable_matching_values=0,
+        failures=(),
+        uncertainty=(),
+    )
     return SimpleNamespace(
         decision=decision,
         decision_date=date(2026, 8, 29),
         memory_id=None,
         decision_preservation=preservation,
         refreshed_sources=(),
+        frontier_refresh=None,
+        fact_recall=fact_recall,
         week_start_preference="friday",
         user_timezone=None,
         scheduled_draw_dates=(),
+        schedule_collection=None,
         numerology_signals=(),
         astrology_observation=None,
         astrology_observation_result=None,

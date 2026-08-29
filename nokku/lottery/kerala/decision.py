@@ -150,6 +150,7 @@ def decide_weekly_participation(
     facts: Iterable[KeralaLotteryFact],
     week_start_name: str = "friday",
     eligible_dates: Iterable[date] | None = None,
+    eligible_dates_status: str | None = None,
     numerology_priority: Mapping[date, tuple[int, int, int]] | None = None,
 ) -> KeralaLotteryDecision:
     fact_list = tuple(facts)
@@ -182,12 +183,22 @@ def decide_weekly_participation(
             for candidate in eligible_date_list
             if max(anchor, week_start) <= candidate <= week_end
         }
-        evidence.append(
-            f"official upcoming schedule supplies {len(scheduled_in_week)} eligible draw date(s) "
-            "from today through the end of this decision week"
-        )
-        if not scheduled_in_week:
-            evidence.append("no listed draw date is available for participation in the remaining week")
+        if eligible_dates_status in {"failed", "unavailable"}:
+            evidence.append(
+                f"official upcoming schedule collection status: {eligible_dates_status}; "
+                "no participation date is trusted from unavailable schedule evidence"
+            )
+        else:
+            evidence.append(
+                f"official upcoming schedule supplies {len(scheduled_in_week)} eligible draw date(s) "
+                "from today through the end of this decision week"
+            )
+            if eligible_dates_status == "partial":
+                evidence.append(
+                    "official upcoming schedule collection is partial; available dates are used with uncertainty"
+                )
+            if not scheduled_in_week:
+                evidence.append("no listed draw date is available for participation in the remaining week")
     if numerology_priority:
         evidence.append(
             "experimental Lakshmi numerology ordering is active for eligible dates: "

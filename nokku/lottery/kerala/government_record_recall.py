@@ -103,6 +103,20 @@ def interpret_government_record_values(
 
         matching += 1
         source = str(request.get("source") or "").strip()
+        if not source:
+            uncertainty.append(
+                f"Government collection evidence at value {index} has no source"
+            )
+            continue
+
+        # The incremental checkpoint scopes the question before payload/status
+        # interpretation. Older evidence remains preserved in Memory, but it is
+        # not part of the current export handoff and must not contaminate it.
+        if min_numeric_source_exclusive is not None:
+            if not source.isdigit() or int(source) <= min_numeric_source_exclusive:
+                filtered_checkpoint += 1
+                continue
+
         execution = outcome.get("execution")
         execution_status = (
             str(execution.get("status") or "unknown")
@@ -111,20 +125,10 @@ def interpret_government_record_values(
         )
         if execution_status not in USABLE_COLLECTION_STATUSES:
             uncertainty.append(
-                f"Government collection evidence {source or f'at value {index}'} "
+                f"Government collection evidence {source} "
                 f"has unusable execution status: {execution_status}"
             )
             continue
-        if not source:
-            uncertainty.append(
-                f"Government collection evidence at value {index} has no source"
-            )
-            continue
-
-        if min_numeric_source_exclusive is not None:
-            if not source.isdigit() or int(source) <= min_numeric_source_exclusive:
-                filtered_checkpoint += 1
-                continue
 
         data = outcome.get("data")
         parsed = data.get("parsed") if isinstance(data, dict) else None

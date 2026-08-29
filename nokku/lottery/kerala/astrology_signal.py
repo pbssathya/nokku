@@ -27,13 +27,13 @@ class AstrologyObservationResult:
     uncertainty: tuple[str, ...] = ()
 
 
-def lakshmi_astrology_observation(
+def lakshmi_astrology_observation_result(
     *,
     user_preferences: UserPreferences,
     target_at: datetime,
     natal_moon_longitude: float | None = None,
 ) -> AstrologyObservationResult:
-    """Return an experimental astrology receipt from explicit inputs.
+    """Return an astrology receipt from explicit user and derived inputs.
 
     Birth date/time/location remain user-owned inputs. ``natal_moon_longitude``
     is derived capability input supplied by the caller; this layer never borrows
@@ -82,3 +82,17 @@ def lakshmi_astrology_observation(
         observation=observation,
         natal_moon_longitude=moon,
     )
+
+
+def lakshmi_astrology_observation(
+    *,
+    user_preferences: UserPreferences,
+    target_at: datetime,
+    natal_moon_longitude: float | None = None,
+) -> VimshottariSnapshot | None:
+    """Compatibility view returning only the observation from the full receipt."""
+    return lakshmi_astrology_observation_result(
+        user_preferences=user_preferences,
+        target_at=target_at,
+        natal_moon_longitude=natal_moon_longitude,
+    ).observation

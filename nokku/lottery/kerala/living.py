@@ -16,7 +16,6 @@ from zoneinfo import ZoneInfo
 
 from collector.collect import collect
 from cossse.adapters.collector import CollectorAdapter
-from cossse.adapters.memory import MemoryAdapter
 from cossse.flow import DispositionStatus, Flow, Meaning
 from cossse.memory import Memory
 
@@ -137,34 +136,6 @@ def _draw_number_from_code(value: object) -> str | None:
 def _disposition_status_text(status: object) -> str:
     value = getattr(status, "value", None)
     return str(value if value is not None else status)
-
-
-def _discover_values(memory: Memory):
-    flow = Flow()
-    adapter = MemoryAdapter(memory)
-    discovery = flow.encounter(
-        Meaning(body={"need": "discover_preserved_experiences", "requester": "nokku"}),
-        [adapter],
-    )
-    assert discovery.status == DispositionStatus.CLAIMED
-    assert len(discovery.feedback) == 1
-
-    for receipt in discovery.feedback[0].body.get("receipts", []):
-        recalled = flow.encounter(
-            Meaning(
-                body={
-                    "need": "recall_preserved_experience",
-                    "memory_id": receipt["memory_id"],
-                    "requester": "nokku",
-                }
-            ),
-            [adapter],
-        )
-        assert recalled.status == DispositionStatus.CLAIMED
-        assert len(recalled.feedback) == 1
-        value = recalled.feedback[0].body.get("value")
-        if value:
-            yield value
 
 
 def recall_kerala_facts(memory_path: str | Path | None = None) -> tuple[KeralaLotteryFact, ...]:

@@ -2,6 +2,7 @@ from types import SimpleNamespace
 
 import nokku.memory_flow as memory_flow
 from cossse.flow import DispositionStatus
+from cossse.memory import Memory
 
 
 class _FakeFlow:
@@ -43,7 +44,7 @@ def test_memory_discovery_reports_successful_discover_and_recall(monkeypatch):
         [
             _disposition(
                 DispositionStatus.CLAIMED,
-                {"receipts": [{"memory_id": "m1"}, {"memory_id": "m2"}]},
+                {"receipts": ({"memory_id": "m1"}, {"memory_id": "m2"})},
             ),
             _disposition(DispositionStatus.CLAIMED, {"value": {"body": {"x": 1}}}),
             _disposition(DispositionStatus.CLAIMED, {"value": {"body": {"x": 2}}}),
@@ -56,6 +57,18 @@ def test_memory_discovery_reports_successful_discover_and_recall(monkeypatch):
     assert result.discovered_receipt_count == 2
     assert result.attempted_memory_ids == ("m1", "m2")
     assert result.values == ({"body": {"x": 1}}, {"body": {"x": 2}})
+    assert result.failures == ()
+    assert result.uncertainty == ()
+
+
+def test_empty_real_memory_is_successful_empty_discovery(tmp_path):
+    with Memory(tmp_path / "living.sqlite") as memory:
+        result = memory_flow.discover_preserved_values(memory)
+
+    assert result.status == "success"
+    assert result.values == ()
+    assert result.discovered_receipt_count == 0
+    assert result.attempted_memory_ids == ()
     assert result.failures == ()
     assert result.uncertainty == ()
 
@@ -82,11 +95,11 @@ def test_memory_discovery_preserves_partial_recall_failures_and_uncertainty(monk
             _disposition(
                 DispositionStatus.CLAIMED,
                 {
-                    "receipts": [
+                    "receipts": (
                         {"memory_id": "m1"},
                         {"memory_id": "m2"},
                         {"memory_id": "m3"},
-                    ]
+                    )
                 },
             ),
             _disposition(object()),

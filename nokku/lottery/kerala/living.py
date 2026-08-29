@@ -54,6 +54,19 @@ class MissingUserTimezoneError(RuntimeError):
 
 
 @dataclass(frozen=True, slots=True)
+class ScheduleCollectionResult:
+    """Truthful lower-layer receipt for one official schedule collection attempt."""
+
+    status: str
+    dates: tuple[date, ...]
+    draw_numbers: dict[date, str]
+    disposition_status: str
+    execution_status: str | None
+    failures: tuple[str, ...] = ()
+    uncertainty: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class LivingDecisionResult:
     decision: KeralaLotteryDecision
     decision_date: date
@@ -62,6 +75,7 @@ class LivingDecisionResult:
     week_start_preference: str
     user_timezone: str | None
     scheduled_draw_dates: tuple[date, ...]
+    schedule_collection: ScheduleCollectionResult | None
     numerology_signals: tuple[LakshmiNumerologySignal, ...]
     astrology_observation: VimshottariSnapshot | None
 
@@ -94,6 +108,11 @@ def _draw_number_from_code(value: object) -> str | None:
     """Extract the numeric draw number from an official code such as SS-534."""
     match = re.search(r"(\d+)\s*$", str(value or ""))
     return match.group(1) if match else None
+
+
+def _disposition_status_text(status: object) -> str:
+    value = getattr(status, "value", None)
+    return str(value if value is not None else status)
 
 
 def _discover_values(memory: Memory):
@@ -237,8 +256,8 @@ def refresh_current_frontier(
 
 def collect_upcoming_draw_schedule(
     *, collector: Callable = collect
-) -> tuple[tuple[date, ...], dict[date, str]]:
-    """Collect official upcoming dates plus numeric draw numbers for signal use."""
+) -> ScheduleCollectionResult:
+    """Collect official upcoming dates and report exactly what the layer observed."""
     disposition = Flow().encounter(
         Meaning(
             body={
@@ -251,34 +270,82 @@ def collect_upcoming_draw_schedule(
         ),
         [CollectorAdapter(collector)],
     )
+    disposition_status = _disposition_status_text(disposition.status)
     if disposition.status != DispositionStatus.CLAIMED or len(disposition.feedback) != 1:
-        return (), {}
+        return ScheduleCollectionResult(
+            status="unavailable",
+            dates=(),
+            draw_numbers={},
+            disposition_status=disposition_status,
+            execution_status=None,
+            failures=(
+                f"schedule collection was not singly claimed: disposition={disposition_status}, "
+                f"feedback_count={len(disposition.feedback)}",
+            ),
+        )
 
     report = disposition.feedback[0].body.get("outcome") or {}
-    status = (report.get("execution") or {}).get("status")
-    if status not in ("success", "partial"):
-        return (), {}
+    execution_status = str((report.get("execution") or {}).get("status") or "unknown")
+    if execution_status not in ("success", "partial"):
+        return ScheduleCollectionResult(
+            status="failed",
+            dates=(),
+            draw_numbers={},
+            disposition_status=disposition_status,
+            execution_status=execution_status,
+            failures=(f"schedule collector execution status: {execution_status}",),
+        )
 
     parsed = (report.get("data") or {}).get("parsed") or {}
+    raw_draws = parsed.get("upcoming_draws")
+    if not isinstance(raw_draws, list):
+        return ScheduleCollectionResult(
+            status="partial",
+            dates=(),
+            draw_numbers={},
+            disposition_status=disposition_status,
+            execution_status=execution_status,
+            uncertainty=("schedule payload has no usable upcoming_draws list",),
+        )
+
     dates: set[date] = set()
     draw_numbers: dict[date, str] = {}
-    for item in parsed.get("upcoming_draws", []):
+    invalid_entries = 0
+    for item in raw_draws:
+        if not isinstance(item, dict):
+            invalid_entries += 1
+            continue
         try:
             draw_date = date.fromisoformat(str(item.get("draw_date") or ""))
         except ValueError:
+            invalid_entries += 1
             continue
         dates.add(draw_date)
         draw_number = _draw_number_from_code(item.get("draw_code"))
         if draw_number is not None:
             draw_numbers[draw_date] = draw_number
 
-    return tuple(sorted(dates)), draw_numbers
+    uncertainty: tuple[str, ...] = ()
+    status = execution_status
+    if invalid_entries:
+        status = "partial"
+        uncertainty = (f"ignored {invalid_entries} malformed upcoming draw entrie(s)",)
+    elif execution_status == "partial":
+        uncertainty = ("collector reported a partial schedule result",)
+
+    return ScheduleCollectionResult(
+        status=status,
+        dates=tuple(sorted(dates)),
+        draw_numbers=draw_numbers,
+        disposition_status=disposition_status,
+        execution_status=execution_status,
+        uncertainty=uncertainty,
+    )
 
 
 def collect_upcoming_draw_dates(*, collector: Callable = collect) -> tuple[date, ...]:
     """Compatibility helper returning only currently listed official draw dates."""
-    dates, _draw_numbers = collect_upcoming_draw_schedule(collector=collector)
-    return dates
+    return collect_upcoming_draw_schedule(collector=collector).dates
 
 
 def _numerology_signals_for_candidates(
@@ -377,6 +444,22 @@ def _astrology_signal_payload(signal: VimshottariSnapshot) -> dict[str, object]:
     }
 
 
+def _schedule_collection_payload(
+    result: ScheduleCollectionResult | None,
+) -> dict[str, object]:
+    if result is None:
+        return {"status": "not_requested"}
+    return {
+        "status": result.status,
+        "disposition_status": result.disposition_status,
+        "execution_status": result.execution_status,
+        "failures": list(result.failures),
+        "uncertainty": list(result.uncertainty),
+        "draw_count": len(result.dates),
+        "draw_dates": [item.isoformat() for item in result.dates],
+    }
+
+
 def preserve_decision_experience(
     *,
     request: str,
@@ -384,6 +467,7 @@ def preserve_decision_experience(
     decision: KeralaLotteryDecision,
     user_timezone: str | None = None,
     scheduled_draw_dates: tuple[date, ...] = (),
+    schedule_collection: ScheduleCollectionResult | None = None,
     numerology_signals: tuple[LakshmiNumerologySignal, ...] = (),
     astrology_observation: VimshottariSnapshot | None = None,
     memory_path: str | Path | None = None,
@@ -401,7 +485,10 @@ def preserve_decision_experience(
             "operational_context": {
                 "official_upcoming_draw_dates": [
                     item.isoformat() for item in scheduled_draw_dates
-                ]
+                ],
+                "official_upcoming_draw_schedule_collection": _schedule_collection_payload(
+                    schedule_collection
+                ),
             },
             "signals": {
                 "numerology": [
@@ -465,6 +552,7 @@ def run_weekly_decision(
     refreshed: tuple[str, ...] = ()
     scheduled_draw_dates: tuple[date, ...] = ()
     scheduled_draw_numbers: dict[date, str] = {}
+    schedule_collection: ScheduleCollectionResult | None = None
     eligible_dates: tuple[date, ...] | None = None
     if refresh:
         refreshed = refresh_current_frontier(
@@ -475,9 +563,9 @@ def run_weekly_decision(
         )
         if refreshed:
             facts = recall_kerala_facts(memory_target)
-        scheduled_draw_dates, scheduled_draw_numbers = collect_upcoming_draw_schedule(
-            collector=collector
-        )
+        schedule_collection = collect_upcoming_draw_schedule(collector=collector)
+        scheduled_draw_dates = schedule_collection.dates
+        scheduled_draw_numbers = schedule_collection.draw_numbers
         eligible_dates = scheduled_draw_dates
 
     resolved_week_start, resolved_week_end = resolve_week(anchor_date, week_start)
@@ -500,6 +588,7 @@ def run_weekly_decision(
         facts=facts,
         week_start_name=week_start,
         eligible_dates=eligible_dates,
+        eligible_dates_status=(schedule_collection.status if schedule_collection is not None else None),
         numerology_priority=numerology_priority or None,
     )
     numerology_signals = candidate_numerology or _numerology_signals_for_decision(
@@ -521,6 +610,7 @@ def run_weekly_decision(
         decision=decision,
         user_timezone=user_timezone,
         scheduled_draw_dates=scheduled_draw_dates,
+        schedule_collection=schedule_collection,
         numerology_signals=numerology_signals,
         astrology_observation=astrology_observation,
         memory_path=memory_target,
@@ -534,6 +624,7 @@ def run_weekly_decision(
         week_start_preference=week_start,
         user_timezone=user_timezone,
         scheduled_draw_dates=scheduled_draw_dates,
+        schedule_collection=schedule_collection,
         numerology_signals=numerology_signals,
         astrology_observation=astrology_observation,
     )

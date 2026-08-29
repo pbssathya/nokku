@@ -74,6 +74,54 @@ def test_frontier_receipt_reports_collector_failure_instead_of_empty_success(tmp
     assert result.failures == ("source 75363 collector execution status: failed",)
 
 
+def test_frontier_receipt_stops_normally_when_next_source_is_not_published(tmp_path):
+    def collector(domain_path, source, store=True, requester=None):
+        assert domain_path == DOMAIN
+        assert source == "75364"
+        assert store is False
+        assert requester == "nokku"
+        return {
+            "request": {
+                "domain_path": domain_path,
+                "source": source,
+                "requester": requester,
+            },
+            "data": {"parsed": None},
+            "execution": {
+                "status": "failed",
+                "events": [
+                    {
+                        "type": "source_not_published",
+                        "message": (
+                            "Requested source is not present in official "
+                            "published-source evidence"
+                        ),
+                    }
+                ],
+            },
+        }
+
+    result = refresh_current_frontier_result(
+        anchor=date(2026, 8, 30),
+        facts=(
+            KeralaLotteryFact(
+                source="75363",
+                draw_date=date(2026, 8, 29),
+                lottery_name="KARUNYA LOTTERY NO.KR-766th DRAW",
+            ),
+        ),
+        memory_path=tmp_path / "living.sqlite",
+        collector=collector,
+    )
+
+    assert result.status == "current"
+    assert result.refreshed_sources == ()
+    assert result.attempted_sources == ("75364",)
+    assert result.stop_reason == "source_not_published"
+    assert result.failures == ()
+    assert result.uncertainty == ()
+
+
 def test_frontier_receipt_reports_success_and_preserved_source(tmp_path):
     def collector(domain_path, source, store=True, requester=None):
         assert domain_path == DOMAIN

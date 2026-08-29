@@ -1,0 +1,103 @@
+{
+  "schema_version": 3,
+  "domain_path": "games/chance/lottery/kerala",
+  "cutoff_date": "2026-08-29",
+  "generated_at": "2026-08-29T13:41:16.395330+00:00",
+  "record_count": 3173,
+  "oldest_source": "legacy:53773",
+  "oldest_draw_date": "2017-01-01",
+  "latest_source": "75363",
+  "latest_draw_date": "2026-08-29",
+  "shards": [
+    {
+      "year": 2017,
+      "file": "2017.json",
+      "record_count": 372,
+      "oldest_source": "legacy:53773",
+      "oldest_draw_date": "2017-01-01",
+      "latest_source": "legacy:59190",
+      "latest_draw_date": "2017-12-31"
+    },
+    {
+      "year": 2018,
+      "file": "2018.json",
+      "record_count": 361,
+      "oldest_source": "legacy:59205",
+      "oldest_draw_date": "2018-01-01",
+      "latest_source": "legacy:64622",
+      "latest_draw_date": "2018-12-31"
+    },
+    {
+      "year": 2019,
+      "file": "2019.json",
+      "record_count": 363,
+      "oldest_source": "legacy:64640",
+      "oldest_draw_date": "2019-01-01",
+      "latest_source": "legacy:69410",
+      "latest_draw_date": "2019-12-31"
+    },
+    {
+      "year": 2020,
+      "file": "2020.json",
+      "record_count": 188,
+      "oldest_source": "legacy:69415",
+      "oldest_draw_date": "2020-01-01",
+      "latest_source": "72107",
+      "latest_draw_date": "2020-12-30"
+    },
+    {
+      "year": 2021,
+      "file": "2021.json",
+      "record_count": 232,
+      "oldest_source": "72108",
+      "oldest_draw_date": "2021-01-01",
+      "latest_source": "73004",
+      "latest_draw_date": "2021-12-31"
+    },
+    {
+      "year": 2022,
+      "file": "2022.json",
+      "record_count": 343,
+      "oldest_source": "73005",
+      "oldest_draw_date": "2022-01-01",
+      "latest_source": "74020",
+      "latest_draw_date": "2022-12-31"
+    },
+    {
+      "year": 2023,
+      "file": "2023.json",
+      "record_count": 360,
+      "oldest_source": "74021",
+      "oldest_draw_date": "2023-01-01",
+      "latest_source": "74391",
+      "latest_draw_date": "2023-12-31"
+    },
+    {
+      "year": 2024,
+      "file": "2024.json",
+      "record_count": 361,
+      "oldest_source": "74392",
+      "oldest_draw_date": "2024-01-01",
+      "latest_source": "74770",
+      "latest_draw_date": "2024-12-31"
+    },
+    {
+      "year": 2025,
+      "file": "2025.json",
+      "record_count": 358,
+      "oldest_source": "74771",
+      "oldest_draw_date": "2025-01-01",
+      "latest_source": "75128",
+      "latest_draw_date": "2025-12-31"
+    },
+    {
+      "year": 2026,
+      "file": "2026.json",
+      "record_count": 235,
+      "oldest_source": "75129",
+      "oldest_draw_date": "2026-01-01",
+      "latest_source": "75363",
+      "latest_draw_date": "2026-08-29"
+    }
+  ]
+}

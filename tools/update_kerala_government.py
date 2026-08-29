@@ -6,12 +6,14 @@ from datetime import date, datetime, timezone
 import json
 from pathlib import Path
 
-from cossse.memory import Memory
 from nokku.lottery.kerala.decision import KeralaLotteryFact
+from nokku.lottery.kerala.government_record_recall import (
+    GovernmentRecordRecallResult,
+    recall_government_records_result,
+)
 from nokku.lottery.kerala.living import (
     DOMAIN,
     FrontierRefreshResult,
-    _discover_values,
     kerala_today,
     refresh_current_frontier_result,
 )
@@ -152,37 +154,13 @@ def export_records(
     memory_path: Path,
     min_numeric_source_exclusive: int | None = None,
 ) -> list[dict[str, object]]:
-    """Return usable preserved Government records, optionally only after a checkpoint."""
-    known: dict[str, dict[str, object]] = {}
-    with Memory(memory_path) as memory:
-        for value in _discover_values(memory):
-            body = value.get("body", {})
-            if body.get("experience") != "capability_attempt" or body.get("capability") != "collect":
-                continue
-            outcome = body.get("outcome") or {}
-            request = outcome.get("request") or {}
-            if request.get("domain_path") != DOMAIN:
-                continue
-            status = (outcome.get("execution") or {}).get("status")
-            if status not in ("success", "partial"):
-                continue
-            source = str(request.get("source") or "")
-            if not source:
-                continue
-            if min_numeric_source_exclusive is not None:
-                if not source.isdigit() or int(source) <= min_numeric_source_exclusive:
-                    continue
-            parsed = (outcome.get("data") or {}).get("parsed") or {}
-            draw_date = _parse_draw_date(parsed.get("draw_date"))
-            if draw_date is None or draw_date > anchor:
-                continue
-            known[source] = {
-                "source": source,
-                "draw_date": parsed.get("draw_date"),
-                "lottery_name": parsed.get("lottery_name"),
-                "parsed": parsed,
-            }
-    return sorted(known.values(), key=_record_sort_key)
+    """Compatibility view returning records from the truthful recall receipt."""
+    result = recall_government_records_result(
+        anchor=anchor,
+        memory_path=memory_path,
+        min_numeric_source_exclusive=min_numeric_source_exclusive,
+    )
+    return list(result.records)
 
 
 def _period_for_record(record: dict[str, object], *, period_format: str) -> str:
@@ -439,6 +417,64 @@ def _incremental_export(*, config: ExportConfig, manifest: dict[str, object], an
     return new_manifest, changed_files, records_added, records_updated, manifest_changed
 
 
+def _government_record_recall_payload(
+    result: GovernmentRecordRecallResult,
+) -> dict[str, object]:
+    memory = result.memory_discovery
+    return {
+        "status": result.status,
+        "record_count": len(result.records),
+        "examined_values": result.examined_values,
+        "matching_collection_values": result.matching_collection_values,
+        "usable_matching_values": result.usable_matching_values,
+        "filtered_by_checkpoint": result.filtered_by_checkpoint,
+        "filtered_after_anchor": result.filtered_after_anchor,
+        "failures": list(result.failures),
+        "uncertainty": list(result.uncertainty),
+        "memory_discovery": {
+            "status": memory.status,
+            "discovered_receipt_count": memory.discovered_receipt_count,
+            "attempted_memory_ids": list(memory.attempted_memory_ids),
+            "discovery_disposition_status": memory.discovery_disposition_status,
+            "failures": list(memory.failures),
+            "uncertainty": list(memory.uncertainty),
+        },
+    }
+
+
+def _apply_government_record_recall(
+    receipt: dict[str, object],
+    result: GovernmentRecordRecallResult,
+) -> bool:
+    """Transfer one Government-record recall receipt to export orchestration."""
+    raw_attempts = receipt.get("government_record_recall_attempts")
+    attempts = list(raw_attempts) if isinstance(raw_attempts, list) else []
+    attempts.append(_government_record_recall_payload(result))
+    receipt["government_record_recall_attempts"] = attempts
+
+    failures = receipt.get("failures")
+    receipt_failures = list(failures) if isinstance(failures, list) else []
+    uncertainty = receipt.get("uncertainty")
+    receipt_uncertainty = (
+        list(uncertainty) if isinstance(uncertainty, list) else []
+    )
+
+    receipt_failures.extend(result.failures)
+    receipt_uncertainty.extend(result.uncertainty)
+    receipt["failures"] = receipt_failures
+    receipt["uncertainty"] = receipt_uncertainty
+
+    if result.status == "success":
+        return True
+
+    receipt["status"] = "needs_decision"
+    if not result.failures and not result.uncertainty:
+        receipt_uncertainty.append(
+            f"government_record_recall_requires_decision:{result.status}"
+        )
+    return False
+
+
 def _frontier_refresh_payload(
     result: FrontierRefreshResult | None,
 ) -> dict[str, object]:
@@ -501,6 +537,7 @@ def _receipt_base(*, anchor: date, manifest_state: str) -> dict[str, object]:
         "anchor_date": anchor.isoformat(),
         "manifest_state_before": manifest_state,
         "checkpoint_before": None,
+        "government_record_recall_attempts": [],
         "memory_sources_found_after_checkpoint": [],
         "frontier_refresh": {"status": "not_requested"},
         "collector_sources_added": [],
@@ -522,6 +559,10 @@ def _print_receipt_summary(receipt: dict[str, object]) -> None:
     print("Mode:", receipt["mode"])
     print("Manifest state before:", receipt["manifest_state_before"])
     print("Checkpoint before:", receipt["checkpoint_before"])
+    print(
+        "Government record recall attempts:",
+        receipt["government_record_recall_attempts"],
+    )
     print("Memory sources after checkpoint:", receipt["memory_sources_found_after_checkpoint"])
     print("Frontier refresh:", receipt["frontier_refresh"])
     print("Collector sources added:", receipt["collector_sources_added"])
@@ -552,7 +593,15 @@ def main(config_path: str | Path, receipt_path: str | Path) -> None:
 
     if manifest_state == "missing":
         receipt["mode"] = "bootstrap"
-        records = export_records(anchor=anchor, memory_path=memory_path)
+        record_recall = recall_government_records_result(
+            anchor=anchor,
+            memory_path=memory_path,
+        )
+        if not _apply_government_record_recall(receipt, record_recall):
+            _write_receipt(Path(receipt_path), receipt)
+            _print_receipt_summary(receipt)
+            return
+        records = list(record_recall.records)
         frontier = _latest_numeric_fact(records)
         frontier_result = refresh_current_frontier_result(
             anchor=anchor,
@@ -565,7 +614,15 @@ def main(config_path: str | Path, receipt_path: str | Path) -> None:
             _print_receipt_summary(receipt)
             return
         if frontier_result.refreshed_sources:
-            records = export_records(anchor=anchor, memory_path=memory_path)
+            record_recall = recall_government_records_result(
+                anchor=anchor,
+                memory_path=memory_path,
+            )
+            if not _apply_government_record_recall(receipt, record_recall):
+                _write_receipt(Path(receipt_path), receipt)
+                _print_receipt_summary(receipt)
+                return
+            records = list(record_recall.records)
         repo_manifest, repo_shards, changed, removed, manifest_changed = _write_bootstrap_export(
             target_directory=config.repository_export_directory,
             config=config,
@@ -610,12 +667,19 @@ def main(config_path: str | Path, receipt_path: str | Path) -> None:
         "record_count": manifest["record_count"],
     }
 
-    preserved_new = export_records(
+    record_recall = recall_government_records_result(
         anchor=anchor,
         memory_path=memory_path,
         min_numeric_source_exclusive=checkpoint_number,
     )
-    receipt["memory_sources_found_after_checkpoint"] = [str(record["source"]) for record in preserved_new]
+    if not _apply_government_record_recall(receipt, record_recall):
+        _write_receipt(Path(receipt_path), receipt)
+        _print_receipt_summary(receipt)
+        return
+    preserved_new = list(record_recall.records)
+    receipt["memory_sources_found_after_checkpoint"] = [
+        str(record["source"]) for record in preserved_new
+    ]
     frontier = _latest_numeric_fact(preserved_new)
     if frontier is None:
         frontier = _frontier_fact_from_manifest(manifest, repository_export_directory=config.repository_export_directory)
@@ -632,11 +696,19 @@ def main(config_path: str | Path, receipt_path: str | Path) -> None:
         return
 
     if frontier_result.refreshed_sources:
-        preserved_new = export_records(
+        record_recall = recall_government_records_result(
             anchor=anchor,
             memory_path=memory_path,
             min_numeric_source_exclusive=checkpoint_number,
         )
+        if not _apply_government_record_recall(receipt, record_recall):
+            _write_receipt(Path(receipt_path), receipt)
+            _print_receipt_summary(receipt)
+            return
+        preserved_new = list(record_recall.records)
+        receipt["memory_sources_found_after_checkpoint"] = [
+            str(record["source"]) for record in preserved_new
+        ]
 
     numeric_sources = sorted(int(str(record["source"])) for record in preserved_new if str(record["source"]).isdigit())
     if numeric_sources:

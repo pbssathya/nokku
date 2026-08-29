@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import argparse
+from dataclasses import dataclass
 from datetime import date, datetime, timezone
 import json
 from pathlib import Path
@@ -15,26 +17,38 @@ from nokku.lottery.kerala.living import (
 from nokku.runtime import living_memory_path
 
 
-EXPORT_FILENAME = "kerala_lottery_government.json"
+@dataclass(frozen=True, slots=True)
+class ExportConfig:
+    runtime_export_path: Path
+    repository_export_path: Path
 
 
-def runtime_export_path() -> Path:
-    """Return the application-neutral Banyan runtime export path."""
-    if Path("/workspaces").exists():
-        return Path("/workspaces/.banyan/exports") / EXPORT_FILENAME
-    return (
-        Path.home()
-        / ".local"
-        / "share"
-        / "banyan"
-        / "exports"
-        / EXPORT_FILENAME
+def _resolve_configured_path(value: object, *, repository_root: Path) -> Path:
+    text = str(value or "").strip()
+    if not text:
+        raise ValueError("Configured export path must not be empty")
+    path = Path(text).expanduser()
+    return path if path.is_absolute() else repository_root / path
+
+
+def load_export_config(config_path: str | Path) -> ExportConfig:
+    """Load operational export paths from an explicit configuration file."""
+    target = Path(config_path).expanduser().resolve()
+    payload = json.loads(target.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("Export configuration must be a JSON object")
+
+    repository_root = Path(__file__).resolve().parents[1]
+    return ExportConfig(
+        runtime_export_path=_resolve_configured_path(
+            payload.get("runtime_export_path"),
+            repository_root=repository_root,
+        ),
+        repository_export_path=_resolve_configured_path(
+            payload.get("repository_export_path"),
+            repository_root=repository_root,
+        ),
     )
-
-
-def repository_export_path() -> Path:
-    """Return the GitHub-visible snapshot path inside this repository."""
-    return Path(__file__).resolve().parents[1] / "exports" / EXPORT_FILENAME
 
 
 def export_records(*, anchor: date, memory_path: Path) -> list[dict[str, object]]:
@@ -107,7 +121,12 @@ def _iso_draw_date(record: dict[str, object] | None) -> str | None:
     return datetime.strptime(str(record["draw_date"]), "%d/%m/%Y").date().isoformat()
 
 
-def _payload_for_export(*, anchor: date, records: list[dict[str, object]]) -> dict[str, object]:
+def _payload_for_export(
+    *,
+    anchor: date,
+    records: list[dict[str, object]],
+    repository_export_path: Path,
+) -> dict[str, object]:
     oldest = records[0] if records else None
     latest = records[-1] if records else None
 
@@ -125,12 +144,11 @@ def _payload_for_export(*, anchor: date, records: list[dict[str, object]]) -> di
         "records": records,
     }
 
-    repo_target = repository_export_path()
-    if not repo_target.exists():
+    if not repository_export_path.exists():
         return candidate
 
     try:
-        existing = json.loads(repo_target.read_text(encoding="utf-8"))
+        existing = json.loads(repository_export_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return candidate
 
@@ -148,7 +166,8 @@ def _write_export(target: Path, payload: dict[str, object]) -> None:
     )
 
 
-def main() -> None:
+def main(config_path: str | Path) -> None:
+    config = load_export_config(config_path)
     anchor = kerala_today()
     memory_path = living_memory_path()
 
@@ -165,12 +184,14 @@ def main() -> None:
     after_latest = max(after, key=lambda item: item.draw_date) if after else None
 
     records = export_records(anchor=anchor, memory_path=memory_path)
-    payload = _payload_for_export(anchor=anchor, records=records)
+    payload = _payload_for_export(
+        anchor=anchor,
+        records=records,
+        repository_export_path=config.repository_export_path,
+    )
 
-    runtime_target = runtime_export_path()
-    repo_target = repository_export_path()
-    _write_export(runtime_target, payload)
-    _write_export(repo_target, payload)
+    _write_export(config.runtime_export_path, payload)
+    _write_export(config.repository_export_path, payload)
 
     print("=== KERALA GOVERNMENT DATA UPDATE ===")
     print("Update through:", anchor)
@@ -186,10 +207,23 @@ def main() -> None:
     print("Latest source:", payload["latest_source"])
     print("Latest draw date:", payload["latest_draw_date"])
     print("Records exported:", len(records))
-    print("Runtime export:", runtime_target)
-    print("Repository export:", repo_target)
-    print("Export bytes:", repo_target.stat().st_size)
+    print("Runtime export:", config.runtime_export_path)
+    print("Repository export:", config.repository_export_path)
+    print("Export bytes:", config.repository_export_path.stat().st_size)
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Refresh Kerala Government lottery evidence and regenerate configured exports."
+    )
+    parser.add_argument(
+        "--config",
+        required=True,
+        help="Path to JSON configuration containing runtime_export_path and repository_export_path.",
+    )
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
-    main()
+    args = _parse_args()
+    main(args.config)

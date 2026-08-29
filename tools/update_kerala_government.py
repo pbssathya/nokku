@@ -491,6 +491,24 @@ def _frontier_refresh_payload(
             else None
         ),
         "stop_reason": result.stop_reason,
+        "preservation_attempts": [
+            {
+                "status": attempt.status,
+                "memory_id": attempt.memory_id,
+                "disposition_status": attempt.disposition_status,
+                "feedback_count": attempt.feedback_count,
+                "memory_event": attempt.memory_event,
+                "stored_at": (
+                    attempt.stored_at.isoformat()
+                    if hasattr(attempt.stored_at, "isoformat")
+                    else attempt.stored_at
+                ),
+                "sha256": attempt.sha256,
+                "failures": list(attempt.failures),
+                "uncertainty": list(attempt.uncertainty),
+            }
+            for attempt in result.preservation_attempts
+        ],
         "failures": list(result.failures),
         "uncertainty": list(result.uncertainty),
     }

@@ -29,6 +29,7 @@ from nokku.preferences import (
     save_user_preferences,
     validate_timezone_name,
 )
+from nokku.memory_flow import MemoryPreservationResult, preserve_meaning
 from nokku.runtime import living_memory_path
 
 from .astrology import VimshottariSnapshot
@@ -67,6 +68,7 @@ class FrontierRefreshResult:
     checkpoint_source: str | None
     checkpoint_draw_date: date | None
     stop_reason: str
+    preservation_attempts: tuple[MemoryPreservationResult, ...] = ()
     failures: tuple[str, ...] = ()
     uncertainty: tuple[str, ...] = ()
 
@@ -228,6 +230,7 @@ def refresh_current_frontier_result(
     adapter = CollectorAdapter(collector)
     refreshed: list[str] = []
     attempted: list[str] = []
+    preservation_attempts: list[MemoryPreservationResult] = []
     uncertainty: list[str] = []
     source_id = int(checkpoint_source) + 1
     latest_usable_date = checkpoint_draw_date
@@ -235,6 +238,7 @@ def refresh_current_frontier_result(
     for _ in range(max_new_sources):
         source = str(source_id)
         attempted.append(source)
+
         disposition = Flow().encounter(
             Meaning(
                 body={
@@ -248,7 +252,11 @@ def refresh_current_frontier_result(
             [adapter],
         )
         disposition_status = _disposition_status_text(disposition.status)
-        if disposition.status != DispositionStatus.CLAIMED or len(disposition.feedback) != 1:
+
+        if (
+            disposition.status != DispositionStatus.CLAIMED
+            or len(disposition.feedback) != 1
+        ):
             return FrontierRefreshResult(
                 status="partial" if refreshed else "failed",
                 refreshed_sources=tuple(refreshed),
@@ -256,16 +264,21 @@ def refresh_current_frontier_result(
                 checkpoint_source=checkpoint_source,
                 checkpoint_draw_date=checkpoint_draw_date,
                 stop_reason="collector_not_singly_claimed",
+                preservation_attempts=tuple(preservation_attempts),
                 failures=(
-                    f"source {source} was not singly claimed: disposition={disposition_status}, "
+                    f"source {source} was not singly claimed: "
+                    f"disposition={disposition_status}, "
                     f"feedback_count={len(disposition.feedback)}",
                 ),
                 uncertainty=tuple(uncertainty),
             )
 
-        result = disposition.feedback[0]
-        report = result.body.get("outcome") or {}
-        execution_status = str((report.get("execution") or {}).get("status") or "unknown")
+        collected_meaning = disposition.feedback[0]
+        report = collected_meaning.body.get("outcome") or {}
+        execution_status = str(
+            (report.get("execution") or {}).get("status") or "unknown"
+        )
+
         if execution_status not in ("success", "partial"):
             return FrontierRefreshResult(
                 status="partial" if refreshed else "failed",
@@ -274,15 +287,20 @@ def refresh_current_frontier_result(
                 checkpoint_source=checkpoint_source,
                 checkpoint_draw_date=checkpoint_draw_date,
                 stop_reason="collector_execution_not_usable",
+                preservation_attempts=tuple(preservation_attempts),
                 failures=(
-                    f"source {source} collector execution status: {execution_status}",
+                    f"source {source} collector execution status: "
+                    f"{execution_status}",
                 ),
                 uncertainty=tuple(uncertainty),
             )
 
         parsed = (report.get("data") or {}).get("parsed") or {}
         draw_date = _parse_draw_date(parsed.get("draw_date"))
-        lottery_name = " ".join(str(parsed.get("lottery_name") or "").split())
+        lottery_name = " ".join(
+            str(parsed.get("lottery_name") or "").split()
+        )
+
         if draw_date is None or not lottery_name or lottery_name == "Unknown":
             return FrontierRefreshResult(
                 status="partial" if refreshed else "failed",
@@ -291,7 +309,10 @@ def refresh_current_frontier_result(
                 checkpoint_source=checkpoint_source,
                 checkpoint_draw_date=checkpoint_draw_date,
                 stop_reason="collector_payload_not_usable",
-                failures=(f"source {source} did not contain a usable draw date/name",),
+                preservation_attempts=tuple(preservation_attempts),
+                failures=(
+                    f"source {source} did not contain a usable draw date/name",
+                ),
                 uncertainty=tuple(uncertainty),
             )
 
@@ -303,14 +324,45 @@ def refresh_current_frontier_result(
                 checkpoint_source=checkpoint_source,
                 checkpoint_draw_date=checkpoint_draw_date,
                 stop_reason="next_draw_after_anchor",
+                preservation_attempts=tuple(preservation_attempts),
                 uncertainty=tuple(uncertainty),
             )
 
-        _preserve_meaning(result, target)
+        # Collection and preservation are separate handoffs.
+        # Do not call a collected source "refreshed" until Memory reports
+        # a successful preservation receipt.
+        with Memory(target) as memory:
+            preservation = preserve_meaning(memory, collected_meaning)
+
+        preservation_attempts.append(preservation)
+
+        if preservation.status != "success":
+            combined_uncertainty = (
+                tuple(uncertainty) + tuple(preservation.uncertainty)
+            )
+            return FrontierRefreshResult(
+                status=(
+                    "partial"
+                    if refreshed or preservation.status == "partial"
+                    else "failed"
+                ),
+                refreshed_sources=tuple(refreshed),
+                attempted_sources=tuple(attempted),
+                checkpoint_source=checkpoint_source,
+                checkpoint_draw_date=checkpoint_draw_date,
+                stop_reason="memory_preservation_not_successful",
+                preservation_attempts=tuple(preservation_attempts),
+                failures=tuple(preservation.failures),
+                uncertainty=combined_uncertainty,
+            )
+
         refreshed.append(source)
         latest_usable_date = draw_date
+
         if execution_status == "partial":
-            uncertainty.append(f"source {source} collector reported partial execution")
+            uncertainty.append(
+                f"source {source} collector reported partial execution"
+            )
 
         if draw_date >= anchor:
             return FrontierRefreshResult(
@@ -320,6 +372,7 @@ def refresh_current_frontier_result(
                 checkpoint_source=checkpoint_source,
                 checkpoint_draw_date=checkpoint_draw_date,
                 stop_reason="anchor_reached",
+                preservation_attempts=tuple(preservation_attempts),
                 uncertainty=tuple(uncertainty),
             )
 
@@ -332,13 +385,16 @@ def refresh_current_frontier_result(
         checkpoint_source=checkpoint_source,
         checkpoint_draw_date=checkpoint_draw_date,
         stop_reason="max_new_sources_reached",
+        preservation_attempts=tuple(preservation_attempts),
         uncertainty=(
             tuple(uncertainty)
-            + (("frontier limit reached before anchor",) if latest_usable_date < anchor else ())
+            + (
+                ("frontier limit reached before anchor",)
+                if latest_usable_date < anchor
+                else ()
+            )
         ),
     )
-
-
 def refresh_current_frontier(
     *,
     anchor: date,
@@ -547,6 +603,30 @@ def _astrology_signal_payload(signal: VimshottariSnapshot) -> dict[str, object]:
     }
 
 
+def _memory_preservation_payload(
+    result: MemoryPreservationResult,
+) -> dict[str, object]:
+    stored_at = result.stored_at
+    if isinstance(stored_at, (date, datetime)):
+        stored_at = stored_at.isoformat()
+    elif stored_at is not None and not isinstance(
+        stored_at, (str, int, float, bool)
+    ):
+        stored_at = str(stored_at)
+
+    return {
+        "status": result.status,
+        "memory_id": result.memory_id,
+        "disposition_status": result.disposition_status,
+        "feedback_count": result.feedback_count,
+        "memory_event": result.memory_event,
+        "stored_at": stored_at,
+        "sha256": result.sha256,
+        "failures": list(result.failures),
+        "uncertainty": list(result.uncertainty),
+    }
+
+
 def _frontier_refresh_payload(
     result: FrontierRefreshResult | None,
 ) -> dict[str, object]:
@@ -563,6 +643,10 @@ def _frontier_refresh_payload(
         "attempted_sources": list(result.attempted_sources),
         "refreshed_sources": list(result.refreshed_sources),
         "stop_reason": result.stop_reason,
+        "preservation_attempts": [
+            _memory_preservation_payload(attempt)
+            for attempt in result.preservation_attempts
+        ],
         "failures": list(result.failures),
         "uncertainty": list(result.uncertainty),
     }

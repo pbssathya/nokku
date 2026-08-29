@@ -17,7 +17,7 @@ from nokku.lottery.kerala.living import (
 from nokku.runtime import living_memory_path
 
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 DRAW_DATE_FORMAT = "%d/%m/%Y"
 
 
@@ -26,6 +26,8 @@ class ExportConfig:
     runtime_export_directory: Path
     repository_export_directory: Path
     manifest_filename: str
+    shard_period_format: str
+    shard_filename_template: str
 
 
 def _resolve_configured_path(value: object, *, repository_root: Path) -> Path:
@@ -37,18 +39,33 @@ def _resolve_configured_path(value: object, *, repository_root: Path) -> Path:
 
 
 def load_export_config(config_path: str | Path) -> ExportConfig:
-    """Load operational export locations from an explicit configuration file."""
+    """Load operational export locations and shard strategy from configuration."""
     target = Path(config_path).expanduser().resolve()
     payload = json.loads(target.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("Export configuration must be a JSON object")
 
     repository_root = Path(__file__).resolve().parents[1]
+
     manifest_filename = str(payload.get("manifest_filename") or "").strip()
     if not manifest_filename:
         raise ValueError("manifest_filename is required")
     if Path(manifest_filename).name != manifest_filename:
         raise ValueError("manifest_filename must be a file name, not a path")
+
+    shard_period_format = str(payload.get("shard_period_format") or "").strip()
+    if not shard_period_format:
+        raise ValueError("shard_period_format is required")
+
+    shard_filename_template = str(payload.get("shard_filename_template") or "").strip()
+    if not shard_filename_template:
+        raise ValueError("shard_filename_template is required")
+    if "{period}" not in shard_filename_template:
+        raise ValueError("shard_filename_template must contain {period}")
+
+    sample_name = shard_filename_template.format(period="sample")
+    if Path(sample_name).name != sample_name:
+        raise ValueError("shard_filename_template must produce a file name, not a path")
 
     return ExportConfig(
         runtime_export_directory=_resolve_configured_path(
@@ -58,6 +75,8 @@ def load_export_config(config_path: str | Path) -> ExportConfig:
             payload.get("repository_export_directory"), repository_root=repository_root
         ),
         manifest_filename=manifest_filename,
+        shard_period_format=shard_period_format,
+        shard_filename_template=shard_filename_template,
     )
 
 
@@ -151,23 +170,33 @@ def _write_json(target: Path, payload: dict[str, object]) -> None:
     )
 
 
-def _group_records_by_year(records: list[dict[str, object]]) -> dict[int, list[dict[str, object]]]:
-    grouped: dict[int, list[dict[str, object]]] = {}
+def _period_for_record(record: dict[str, object], *, period_format: str) -> str:
+    draw_date = _parse_draw_date(record.get("draw_date"))
+    if draw_date is None:
+        raise ValueError("Cannot derive shard period from an invalid draw date")
+    period = draw_date.strftime(period_format).strip()
+    if not period:
+        raise ValueError("Configured shard_period_format produced an empty period")
+    return period
+
+
+def _group_records_by_period(
+    records: list[dict[str, object]], *, period_format: str
+) -> dict[str, list[dict[str, object]]]:
+    grouped: dict[str, list[dict[str, object]]] = {}
     for record in records:
-        draw_date = _parse_draw_date(record.get("draw_date"))
-        if draw_date is None:
-            continue
-        grouped.setdefault(draw_date.year, []).append(record)
+        period = _period_for_record(record, period_format=period_format)
+        grouped.setdefault(period, []).append(record)
     return grouped
 
 
-def _shard_payload(*, year: int, records: list[dict[str, object]]) -> dict[str, object]:
+def _shard_payload(*, period: str, records: list[dict[str, object]]) -> dict[str, object]:
     oldest = records[0] if records else None
     latest = records[-1] if records else None
     return {
         "schema_version": SCHEMA_VERSION,
         "domain_path": DOMAIN,
-        "year": year,
+        "period": period,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "record_count": len(records),
         "oldest_source": str(oldest["source"]) if oldest is not None else None,
@@ -183,6 +212,7 @@ def _manifest_payload(
     anchor: date,
     records: list[dict[str, object]],
     shards: list[dict[str, object]],
+    config: ExportConfig,
 ) -> dict[str, object]:
     oldest = records[0] if records else None
     latest = records[-1] if records else None
@@ -196,34 +226,62 @@ def _manifest_payload(
         "oldest_draw_date": _iso_draw_date(oldest),
         "latest_source": str(latest["source"]) if latest is not None else None,
         "latest_draw_date": _iso_draw_date(latest),
+        "shard_period_format": config.shard_period_format,
+        "shard_filename_template": config.shard_filename_template,
         "shards": shards,
     }
+
+
+def _remove_stale_shards(
+    *, target_directory: Path, expected_filenames: set[str], manifest_filename: str
+) -> None:
+    if not target_directory.exists():
+        return
+    protected = set(expected_filenames)
+    protected.add(manifest_filename)
+    for path in target_directory.iterdir():
+        if not path.is_file():
+            continue
+        if path.name in protected:
+            continue
+        if path.suffix.lower() == ".json":
+            path.unlink()
 
 
 def _write_sharded_export(
     *,
     target_directory: Path,
-    manifest_filename: str,
+    config: ExportConfig,
     anchor: date,
     records: list[dict[str, object]],
 ) -> tuple[Path, list[Path]]:
-    grouped = _group_records_by_year(records)
+    grouped = _group_records_by_period(
+        records,
+        period_format=config.shard_period_format,
+    )
     written_shards: list[Path] = []
     manifest_shards: list[dict[str, object]] = []
+    expected_filenames: set[str] = set()
 
-    for year in sorted(grouped):
-        year_records = grouped[year]
-        shard_filename = f"{year}.json"
+    for period, period_records in sorted(
+        grouped.items(),
+        key=lambda item: _parse_draw_date(item[1][0].get("draw_date")) or date.min,
+    ):
+        shard_filename = config.shard_filename_template.format(period=period)
+        if Path(shard_filename).name != shard_filename:
+            raise ValueError("Configured shard filename resolved outside the export directory")
+        expected_filenames.add(shard_filename)
+
         shard_target = target_directory / shard_filename
         payload = _preserve_generated_at(
             shard_target,
-            _shard_payload(year=year, records=year_records),
+            _shard_payload(period=period, records=period_records),
         )
         _write_json(shard_target, payload)
         written_shards.append(shard_target)
         manifest_shards.append(
             {
-                "year": year,
+                "period": period,
                 "file": shard_filename,
                 "record_count": payload["record_count"],
                 "oldest_source": payload["oldest_source"],
@@ -233,10 +291,21 @@ def _write_sharded_export(
             }
         )
 
-    manifest_target = target_directory / manifest_filename
+    _remove_stale_shards(
+        target_directory=target_directory,
+        expected_filenames=expected_filenames,
+        manifest_filename=config.manifest_filename,
+    )
+
+    manifest_target = target_directory / config.manifest_filename
     manifest = _preserve_generated_at(
         manifest_target,
-        _manifest_payload(anchor=anchor, records=records, shards=manifest_shards),
+        _manifest_payload(
+            anchor=anchor,
+            records=records,
+            shards=manifest_shards,
+            config=config,
+        ),
     )
     _write_json(manifest_target, manifest)
     return manifest_target, written_shards
@@ -262,13 +331,13 @@ def main(config_path: str | Path) -> None:
 
     runtime_manifest, _ = _write_sharded_export(
         target_directory=config.runtime_export_directory,
-        manifest_filename=config.manifest_filename,
+        config=config,
         anchor=anchor,
         records=records,
     )
     repository_manifest, repository_shards = _write_sharded_export(
         target_directory=config.repository_export_directory,
-        manifest_filename=config.manifest_filename,
+        config=config,
         anchor=anchor,
         records=records,
     )
@@ -289,6 +358,7 @@ def main(config_path: str | Path) -> None:
     print("Latest source:", manifest["latest_source"])
     print("Latest draw date:", manifest["latest_draw_date"])
     print("Records exported:", manifest["record_count"])
+    print("Shard period format:", manifest["shard_period_format"])
     print("Shard count:", len(repository_shards))
     print("Runtime manifest:", runtime_manifest)
     print("Repository manifest:", repository_manifest)
@@ -303,7 +373,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--config",
         required=True,
-        help="Path to JSON configuration containing export directories and manifest filename.",
+        help="Path to JSON configuration containing export directories and shard strategy.",
     )
     return parser.parse_args()
 

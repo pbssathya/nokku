@@ -162,12 +162,23 @@ def _preserve_generated_at(target: Path, candidate: dict[str, object]) -> dict[s
     return candidate
 
 
-def _write_json(target: Path, payload: dict[str, object]) -> None:
+def _serialized_json(payload: dict[str, object]) -> str:
+    return json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+
+
+def _write_json_if_changed(target: Path, payload: dict[str, object]) -> bool:
+    """Write JSON only when the exact serialized content differs from disk."""
+    serialized = _serialized_json(payload)
+    if target.exists():
+        try:
+            if target.read_text(encoding="utf-8") == serialized:
+                return False
+        except OSError:
+            pass
+
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    target.write_text(serialized, encoding="utf-8")
+    return True
 
 
 def _period_for_record(record: dict[str, object], *, period_format: str) -> str:
@@ -234,9 +245,11 @@ def _manifest_payload(
 
 def _remove_stale_shards(
     *, target_directory: Path, expected_filenames: set[str], manifest_filename: str
-) -> None:
+) -> list[Path]:
+    removed: list[Path] = []
     if not target_directory.exists():
-        return
+        return removed
+
     protected = set(expected_filenames)
     protected.add(manifest_filename)
     for path in target_directory.iterdir():
@@ -246,6 +259,8 @@ def _remove_stale_shards(
             continue
         if path.suffix.lower() == ".json":
             path.unlink()
+            removed.append(path)
+    return removed
 
 
 def _write_sharded_export(
@@ -254,12 +269,13 @@ def _write_sharded_export(
     config: ExportConfig,
     anchor: date,
     records: list[dict[str, object]],
-) -> tuple[Path, list[Path]]:
+) -> tuple[Path, list[Path], list[Path], list[Path], bool]:
     grouped = _group_records_by_period(
         records,
         period_format=config.shard_period_format,
     )
-    written_shards: list[Path] = []
+    all_shards: list[Path] = []
+    changed_shards: list[Path] = []
     manifest_shards: list[dict[str, object]] = []
     expected_filenames: set[str] = set()
 
@@ -277,8 +293,9 @@ def _write_sharded_export(
             shard_target,
             _shard_payload(period=period, records=period_records),
         )
-        _write_json(shard_target, payload)
-        written_shards.append(shard_target)
+        if _write_json_if_changed(shard_target, payload):
+            changed_shards.append(shard_target)
+        all_shards.append(shard_target)
         manifest_shards.append(
             {
                 "period": period,
@@ -291,7 +308,7 @@ def _write_sharded_export(
             }
         )
 
-    _remove_stale_shards(
+    removed_shards = _remove_stale_shards(
         target_directory=target_directory,
         expected_filenames=expected_filenames,
         manifest_filename=config.manifest_filename,
@@ -307,8 +324,8 @@ def _write_sharded_export(
             config=config,
         ),
     )
-    _write_json(manifest_target, manifest)
-    return manifest_target, written_shards
+    manifest_changed = _write_json_if_changed(manifest_target, manifest)
+    return manifest_target, all_shards, changed_shards, removed_shards, manifest_changed
 
 
 def main(config_path: str | Path) -> None:
@@ -329,13 +346,19 @@ def main(config_path: str | Path) -> None:
     after_latest = max(after, key=lambda item: item.draw_date) if after else None
     records = export_records(anchor=anchor, memory_path=memory_path)
 
-    runtime_manifest, _ = _write_sharded_export(
+    runtime_manifest, _, _, _, _ = _write_sharded_export(
         target_directory=config.runtime_export_directory,
         config=config,
         anchor=anchor,
         records=records,
     )
-    repository_manifest, repository_shards = _write_sharded_export(
+    (
+        repository_manifest,
+        repository_shards,
+        changed_repository_shards,
+        removed_repository_shards,
+        repository_manifest_changed,
+    ) = _write_sharded_export(
         target_directory=config.repository_export_directory,
         config=config,
         anchor=anchor,
@@ -360,6 +383,9 @@ def main(config_path: str | Path) -> None:
     print("Records exported:", manifest["record_count"])
     print("Shard period format:", manifest["shard_period_format"])
     print("Shard count:", len(repository_shards))
+    print("Changed repository shards:", len(changed_repository_shards))
+    print("Removed stale repository shards:", len(removed_repository_shards))
+    print("Repository manifest changed:", "YES" if repository_manifest_changed else "NO")
     print("Runtime manifest:", runtime_manifest)
     print("Repository manifest:", repository_manifest)
     print("Manifest bytes:", repository_manifest.stat().st_size)
@@ -368,7 +394,7 @@ def main(config_path: str | Path) -> None:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Refresh Kerala Government lottery evidence and regenerate configured sharded exports."
+        description="Refresh Kerala Government lottery evidence and incrementally regenerate configured sharded exports."
     )
     parser.add_argument(
         "--config",

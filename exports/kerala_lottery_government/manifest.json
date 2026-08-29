@@ -1,101 +1,1039 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "domain_path": "games/chance/lottery/kerala",
   "cutoff_date": "2026-08-29",
-  "generated_at": "2026-08-29T13:41:16.395330+00:00",
+  "generated_at": "2026-08-29T13:45:56.707416+00:00",
   "record_count": 3173,
   "oldest_source": "legacy:53773",
   "oldest_draw_date": "2017-01-01",
   "latest_source": "75363",
   "latest_draw_date": "2026-08-29",
+  "shard_period_format": "%Y-%m",
+  "shard_filename_template": "{period}.json",
   "shards": [
     {
-      "year": 2017,
-      "file": "2017.json",
-      "record_count": 372,
+      "period": "2017-01",
+      "file": "2017-01.json",
+      "record_count": 31,
       "oldest_source": "legacy:53773",
       "oldest_draw_date": "2017-01-01",
+      "latest_source": "legacy:54185",
+      "latest_draw_date": "2017-01-31"
+    },
+    {
+      "period": "2017-02",
+      "file": "2017-02.json",
+      "record_count": 30,
+      "oldest_source": "legacy:54374",
+      "oldest_draw_date": "2017-02-02",
+      "latest_source": "legacy:54763",
+      "latest_draw_date": "2017-02-28"
+    },
+    {
+      "period": "2017-03",
+      "file": "2017-03.json",
+      "record_count": 34,
+      "oldest_source": "legacy:54772",
+      "oldest_draw_date": "2017-03-01",
+      "latest_source": "legacy:55160",
+      "latest_draw_date": "2017-03-31"
+    },
+    {
+      "period": "2017-04",
+      "file": "2017-04.json",
+      "record_count": 30,
+      "oldest_source": "legacy:55173",
+      "oldest_draw_date": "2017-04-01",
+      "latest_source": "legacy:55524",
+      "latest_draw_date": "2017-04-30"
+    },
+    {
+      "period": "2017-05",
+      "file": "2017-05.json",
+      "record_count": 32,
+      "oldest_source": "legacy:55528",
+      "oldest_draw_date": "2017-05-01",
+      "latest_source": "legacy:55825",
+      "latest_draw_date": "2017-05-31"
+    },
+    {
+      "period": "2017-06",
+      "file": "2017-06.json",
+      "record_count": 30,
+      "oldest_source": "legacy:55856",
+      "oldest_draw_date": "2017-06-01",
+      "latest_source": "legacy:56278",
+      "latest_draw_date": "2017-06-30"
+    },
+    {
+      "period": "2017-07",
+      "file": "2017-07.json",
+      "record_count": 33,
+      "oldest_source": "legacy:56300",
+      "oldest_draw_date": "2017-07-01",
+      "latest_source": "legacy:57057",
+      "latest_draw_date": "2017-07-31"
+    },
+    {
+      "period": "2017-08",
+      "file": "2017-08.json",
+      "record_count": 30,
+      "oldest_source": "legacy:57046",
+      "oldest_draw_date": "2017-08-01",
+      "latest_source": "legacy:57502",
+      "latest_draw_date": "2017-08-31"
+    },
+    {
+      "period": "2017-09",
+      "file": "2017-09.json",
+      "record_count": 30,
+      "oldest_source": "legacy:57515",
+      "oldest_draw_date": "2017-09-01",
+      "latest_source": "legacy:58036",
+      "latest_draw_date": "2017-09-30"
+    },
+    {
+      "period": "2017-10",
+      "file": "2017-10.json",
+      "record_count": 30,
+      "oldest_source": "legacy:58058",
+      "oldest_draw_date": "2017-10-01",
+      "latest_source": "legacy:58421",
+      "latest_draw_date": "2017-10-31"
+    },
+    {
+      "period": "2017-11",
+      "file": "2017-11.json",
+      "record_count": 31,
+      "oldest_source": "legacy:58467",
+      "oldest_draw_date": "2017-11-01",
+      "latest_source": "legacy:58808",
+      "latest_draw_date": "2017-11-30"
+    },
+    {
+      "period": "2017-12",
+      "file": "2017-12.json",
+      "record_count": 31,
+      "oldest_source": "legacy:58836",
+      "oldest_draw_date": "2017-12-01",
       "latest_source": "legacy:59190",
       "latest_draw_date": "2017-12-31"
     },
     {
-      "year": 2018,
-      "file": "2018.json",
-      "record_count": 361,
+      "period": "2018-01",
+      "file": "2018-01.json",
+      "record_count": 31,
       "oldest_source": "legacy:59205",
       "oldest_draw_date": "2018-01-01",
+      "latest_source": "legacy:59565",
+      "latest_draw_date": "2018-01-31"
+    },
+    {
+      "period": "2018-02",
+      "file": "2018-02.json",
+      "record_count": 28,
+      "oldest_source": "legacy:59573",
+      "oldest_draw_date": "2018-02-01",
+      "latest_source": "legacy:59860",
+      "latest_draw_date": "2018-02-28"
+    },
+    {
+      "period": "2018-03",
+      "file": "2018-03.json",
+      "record_count": 32,
+      "oldest_source": "legacy:59877",
+      "oldest_draw_date": "2018-03-01",
+      "latest_source": "legacy:60159",
+      "latest_draw_date": "2018-03-31"
+    },
+    {
+      "period": "2018-04",
+      "file": "2018-04.json",
+      "record_count": 30,
+      "oldest_source": "legacy:60163",
+      "oldest_draw_date": "2018-04-01",
+      "latest_source": "legacy:60525",
+      "latest_draw_date": "2018-04-30"
+    },
+    {
+      "period": "2018-05",
+      "file": "2018-05.json",
+      "record_count": 32,
+      "oldest_source": "legacy:60506",
+      "oldest_draw_date": "2018-05-01",
+      "latest_source": "legacy:60821",
+      "latest_draw_date": "2018-05-31"
+    },
+    {
+      "period": "2018-06",
+      "file": "2018-06.json",
+      "record_count": 30,
+      "oldest_source": "legacy:60845",
+      "oldest_draw_date": "2018-06-01",
+      "latest_source": "legacy:61166",
+      "latest_draw_date": "2018-06-30"
+    },
+    {
+      "period": "2018-07",
+      "file": "2018-07.json",
+      "record_count": 32,
+      "oldest_source": "legacy:61174",
+      "oldest_draw_date": "2018-07-01",
+      "latest_source": "legacy:62056",
+      "latest_draw_date": "2018-07-31"
+    },
+    {
+      "period": "2018-08",
+      "file": "2018-08.json",
+      "record_count": 23,
+      "oldest_source": "legacy:62060",
+      "oldest_draw_date": "2018-08-01",
+      "latest_source": "legacy:62424",
+      "latest_draw_date": "2018-08-31"
+    },
+    {
+      "period": "2018-09",
+      "file": "2018-09.json",
+      "record_count": 31,
+      "oldest_source": "legacy:62466",
+      "oldest_draw_date": "2018-09-01",
+      "latest_source": "legacy:63128",
+      "latest_draw_date": "2018-09-30"
+    },
+    {
+      "period": "2018-10",
+      "file": "2018-10.json",
+      "record_count": 30,
+      "oldest_source": "legacy:63132",
+      "oldest_draw_date": "2018-10-01",
+      "latest_source": "legacy:63584",
+      "latest_draw_date": "2018-10-31"
+    },
+    {
+      "period": "2018-11",
+      "file": "2018-11.json",
+      "record_count": 31,
+      "oldest_source": "legacy:63592",
+      "oldest_draw_date": "2018-11-01",
+      "latest_source": "legacy:64088",
+      "latest_draw_date": "2018-11-30"
+    },
+    {
+      "period": "2018-12",
+      "file": "2018-12.json",
+      "record_count": 31,
+      "oldest_source": "legacy:64092",
+      "oldest_draw_date": "2018-12-01",
       "latest_source": "legacy:64622",
       "latest_draw_date": "2018-12-31"
     },
     {
-      "year": 2019,
-      "file": "2019.json",
-      "record_count": 363,
+      "period": "2019-01",
+      "file": "2019-01.json",
+      "record_count": 31,
       "oldest_source": "legacy:64640",
       "oldest_draw_date": "2019-01-01",
+      "latest_source": "legacy:65093",
+      "latest_draw_date": "2019-01-31"
+    },
+    {
+      "period": "2019-02",
+      "file": "2019-02.json",
+      "record_count": 28,
+      "oldest_source": "legacy:65103",
+      "oldest_draw_date": "2019-02-01",
+      "latest_source": "legacy:65398",
+      "latest_draw_date": "2019-02-28"
+    },
+    {
+      "period": "2019-03",
+      "file": "2019-03.json",
+      "record_count": 32,
+      "oldest_source": "legacy:65519",
+      "oldest_draw_date": "2019-03-01",
+      "latest_source": "legacy:65895",
+      "latest_draw_date": "2019-03-31"
+    },
+    {
+      "period": "2019-04",
+      "file": "2019-04.json",
+      "record_count": 30,
+      "oldest_source": "legacy:65933",
+      "oldest_draw_date": "2019-04-01",
+      "latest_source": "legacy:66308",
+      "latest_draw_date": "2019-04-30"
+    },
+    {
+      "period": "2019-05",
+      "file": "2019-05.json",
+      "record_count": 32,
+      "oldest_source": "legacy:66312",
+      "oldest_draw_date": "2019-05-01",
+      "latest_source": "legacy:66668",
+      "latest_draw_date": "2019-05-31"
+    },
+    {
+      "period": "2019-06",
+      "file": "2019-06.json",
+      "record_count": 30,
+      "oldest_source": "legacy:66677",
+      "oldest_draw_date": "2019-06-01",
+      "latest_source": "legacy:67000",
+      "latest_draw_date": "2019-06-30"
+    },
+    {
+      "period": "2019-07",
+      "file": "2019-07.json",
+      "record_count": 32,
+      "oldest_source": "legacy:67013",
+      "oldest_draw_date": "2019-07-01",
+      "latest_source": "legacy:67259",
+      "latest_draw_date": "2019-07-31"
+    },
+    {
+      "period": "2019-08",
+      "file": "2019-08.json",
+      "record_count": 26,
+      "oldest_source": "legacy:67274",
+      "oldest_draw_date": "2019-08-01",
+      "latest_source": "legacy:67746",
+      "latest_draw_date": "2019-08-31"
+    },
+    {
+      "period": "2019-09",
+      "file": "2019-09.json",
+      "record_count": 30,
+      "oldest_source": "legacy:67742",
+      "oldest_draw_date": "2019-09-01",
+      "latest_source": "legacy:68241",
+      "latest_draw_date": "2019-09-30"
+    },
+    {
+      "period": "2019-10",
+      "file": "2019-10.json",
+      "record_count": 30,
+      "oldest_source": "legacy:68304",
+      "oldest_draw_date": "2019-10-01",
+      "latest_source": "legacy:68643",
+      "latest_draw_date": "2019-10-31"
+    },
+    {
+      "period": "2019-11",
+      "file": "2019-11.json",
+      "record_count": 31,
+      "oldest_source": "legacy:68669",
+      "oldest_draw_date": "2019-11-01",
+      "latest_source": "legacy:69012",
+      "latest_draw_date": "2019-11-30"
+    },
+    {
+      "period": "2019-12",
+      "file": "2019-12.json",
+      "record_count": 31,
+      "oldest_source": "legacy:69021",
+      "oldest_draw_date": "2019-12-01",
       "latest_source": "legacy:69410",
       "latest_draw_date": "2019-12-31"
     },
     {
-      "year": 2020,
-      "file": "2020.json",
-      "record_count": 188,
+      "period": "2020-01",
+      "file": "2020-01.json",
+      "record_count": 30,
       "oldest_source": "legacy:69415",
       "oldest_draw_date": "2020-01-01",
+      "latest_source": "legacy:69777",
+      "latest_draw_date": "2020-01-31"
+    },
+    {
+      "period": "2020-02",
+      "file": "2020-02.json",
+      "record_count": 30,
+      "oldest_source": "legacy:69791",
+      "oldest_draw_date": "2020-02-01",
+      "latest_source": "legacy:70286",
+      "latest_draw_date": "2020-02-29"
+    },
+    {
+      "period": "2020-03",
+      "file": "2020-03.json",
+      "record_count": 19,
+      "oldest_source": "legacy:70303",
+      "oldest_draw_date": "2020-03-01",
+      "latest_source": "legacy:70487",
+      "latest_draw_date": "2020-03-20"
+    },
+    {
+      "period": "2020-06",
+      "file": "2020-06.json",
+      "record_count": 8,
+      "oldest_source": "legacy:70491",
+      "oldest_draw_date": "2020-06-02",
+      "latest_source": "legacy:70397",
+      "latest_draw_date": "2020-06-26"
+    },
+    {
+      "period": "2020-07",
+      "file": "2020-07.json",
+      "record_count": 23,
+      "oldest_source": "legacy:71320",
+      "oldest_draw_date": "2020-07-01",
+      "latest_source": "legacy:71953",
+      "latest_draw_date": "2020-07-30"
+    },
+    {
+      "period": "2020-08",
+      "file": "2020-08.json",
+      "record_count": 13,
+      "oldest_source": "72017",
+      "oldest_draw_date": "2020-08-01",
+      "latest_source": "72028",
+      "latest_draw_date": "2020-08-29"
+    },
+    {
+      "period": "2020-09",
+      "file": "2020-09.json",
+      "record_count": 14,
+      "oldest_source": "72029",
+      "oldest_draw_date": "2020-09-02",
+      "latest_source": "72043",
+      "latest_draw_date": "2020-09-30"
+    },
+    {
+      "period": "2020-10",
+      "file": "2020-10.json",
+      "record_count": 14,
+      "oldest_source": "72044",
+      "oldest_draw_date": "2020-10-03",
+      "latest_source": "72060",
+      "latest_draw_date": "2020-10-30"
+    },
+    {
+      "period": "2020-11",
+      "file": "2020-11.json",
+      "record_count": 14,
+      "oldest_source": "72061",
+      "oldest_draw_date": "2020-11-02",
+      "latest_source": "72075",
+      "latest_draw_date": "2020-11-30"
+    },
+    {
+      "period": "2020-12",
+      "file": "2020-12.json",
+      "record_count": 23,
+      "oldest_source": "72076",
+      "oldest_draw_date": "2020-12-01",
       "latest_source": "72107",
       "latest_draw_date": "2020-12-30"
     },
     {
-      "year": 2021,
-      "file": "2021.json",
-      "record_count": 232,
+      "period": "2021-01",
+      "file": "2021-01.json",
+      "record_count": 22,
       "oldest_source": "72108",
       "oldest_draw_date": "2021-01-01",
+      "latest_source": "72132",
+      "latest_draw_date": "2021-01-30"
+    },
+    {
+      "period": "2021-02",
+      "file": "2021-02.json",
+      "record_count": 25,
+      "oldest_source": "72133",
+      "oldest_draw_date": "2021-02-01",
+      "latest_source": "72197",
+      "latest_draw_date": "2021-02-27"
+    },
+    {
+      "period": "2021-03",
+      "file": "2021-03.json",
+      "record_count": 29,
+      "oldest_source": "72198",
+      "oldest_draw_date": "2021-03-01",
+      "latest_source": "72499",
+      "latest_draw_date": "2021-03-31"
+    },
+    {
+      "period": "2021-04",
+      "file": "2021-04.json",
+      "record_count": 25,
+      "oldest_source": "72500",
+      "oldest_draw_date": "2021-04-01",
+      "latest_source": "72566",
+      "latest_draw_date": "2021-04-30"
+    },
+    {
+      "period": "2021-05",
+      "file": "2021-05.json",
+      "record_count": 1,
+      "oldest_source": "72567",
+      "oldest_draw_date": "2021-05-03",
+      "latest_source": "72567",
+      "latest_draw_date": "2021-05-03"
+    },
+    {
+      "period": "2021-06",
+      "file": "2021-06.json",
+      "record_count": 2,
+      "oldest_source": "72568",
+      "oldest_draw_date": "2021-06-25",
+      "latest_source": "72583",
+      "latest_draw_date": "2021-06-29"
+    },
+    {
+      "period": "2021-07",
+      "file": "2021-07.json",
+      "record_count": 10,
+      "oldest_source": "72584",
+      "oldest_draw_date": "2021-07-02",
+      "latest_source": "72600",
+      "latest_draw_date": "2021-07-30"
+    },
+    {
+      "period": "2021-08",
+      "file": "2021-08.json",
+      "record_count": 12,
+      "oldest_source": "72602",
+      "oldest_draw_date": "2021-08-02",
+      "latest_source": "72613",
+      "latest_draw_date": "2021-08-30"
+    },
+    {
+      "period": "2021-09",
+      "file": "2021-09.json",
+      "record_count": 26,
+      "oldest_source": "72614",
+      "oldest_draw_date": "2021-09-01",
+      "latest_source": "72639",
+      "latest_draw_date": "2021-09-30"
+    },
+    {
+      "period": "2021-10",
+      "file": "2021-10.json",
+      "record_count": 26,
+      "oldest_source": "72640",
+      "oldest_draw_date": "2021-10-01",
+      "latest_source": "72775",
+      "latest_draw_date": "2021-10-30"
+    },
+    {
+      "period": "2021-11",
+      "file": "2021-11.json",
+      "record_count": 27,
+      "oldest_source": "72776",
+      "oldest_draw_date": "2021-11-01",
+      "latest_source": "72977",
+      "latest_draw_date": "2021-11-30"
+    },
+    {
+      "period": "2021-12",
+      "file": "2021-12.json",
+      "record_count": 27,
+      "oldest_source": "72978",
+      "oldest_draw_date": "2021-12-01",
       "latest_source": "73004",
       "latest_draw_date": "2021-12-31"
     },
     {
-      "year": 2022,
-      "file": "2022.json",
-      "record_count": 343,
+      "period": "2022-01",
+      "file": "2022-01.json",
+      "record_count": 25,
       "oldest_source": "73005",
       "oldest_draw_date": "2022-01-01",
+      "latest_source": "73029",
+      "latest_draw_date": "2022-01-31"
+    },
+    {
+      "period": "2022-02",
+      "file": "2022-02.json",
+      "record_count": 24,
+      "oldest_source": "73030",
+      "oldest_draw_date": "2022-02-01",
+      "latest_source": "73053",
+      "latest_draw_date": "2022-02-28"
+    },
+    {
+      "period": "2022-03",
+      "file": "2022-03.json",
+      "record_count": 26,
+      "oldest_source": "73054",
+      "oldest_draw_date": "2022-03-01",
+      "latest_source": "73740",
+      "latest_draw_date": "2022-03-31"
+    },
+    {
+      "period": "2022-04",
+      "file": "2022-04.json",
+      "record_count": 28,
+      "oldest_source": "73741",
+      "oldest_draw_date": "2022-04-01",
+      "latest_source": "73776",
+      "latest_draw_date": "2022-04-30"
+    },
+    {
+      "period": "2022-05",
+      "file": "2022-05.json",
+      "record_count": 28,
+      "oldest_source": "73777",
+      "oldest_draw_date": "2022-05-02",
+      "latest_source": "73808",
+      "latest_draw_date": "2022-05-31"
+    },
+    {
+      "period": "2022-06",
+      "file": "2022-06.json",
+      "record_count": 30,
+      "oldest_source": "73809",
+      "oldest_draw_date": "2022-06-01",
+      "latest_source": "73838",
+      "latest_draw_date": "2022-06-30"
+    },
+    {
+      "period": "2022-07",
+      "file": "2022-07.json",
+      "record_count": 32,
+      "oldest_source": "73839",
+      "oldest_draw_date": "2022-07-01",
+      "latest_source": "73870",
+      "latest_draw_date": "2022-07-31"
+    },
+    {
+      "period": "2022-08",
+      "file": "2022-08.json",
+      "record_count": 30,
+      "oldest_source": "73871",
+      "oldest_draw_date": "2022-08-01",
+      "latest_source": "73900",
+      "latest_draw_date": "2022-08-31"
+    },
+    {
+      "period": "2022-09",
+      "file": "2022-09.json",
+      "record_count": 29,
+      "oldest_source": "73901",
+      "oldest_draw_date": "2022-09-01",
+      "latest_source": "73929",
+      "latest_draw_date": "2022-09-30"
+    },
+    {
+      "period": "2022-10",
+      "file": "2022-10.json",
+      "record_count": 30,
+      "oldest_source": "73930",
+      "oldest_draw_date": "2022-10-01",
+      "latest_source": "73959",
+      "latest_draw_date": "2022-10-31"
+    },
+    {
+      "period": "2022-11",
+      "file": "2022-11.json",
+      "record_count": 30,
+      "oldest_source": "73960",
+      "oldest_draw_date": "2022-11-01",
+      "latest_source": "73989",
+      "latest_draw_date": "2022-11-30"
+    },
+    {
+      "period": "2022-12",
+      "file": "2022-12.json",
+      "record_count": 31,
+      "oldest_source": "73990",
+      "oldest_draw_date": "2022-12-01",
       "latest_source": "74020",
       "latest_draw_date": "2022-12-31"
     },
     {
-      "year": 2023,
-      "file": "2023.json",
-      "record_count": 360,
+      "period": "2023-01",
+      "file": "2023-01.json",
+      "record_count": 30,
       "oldest_source": "74021",
       "oldest_draw_date": "2023-01-01",
+      "latest_source": "74050",
+      "latest_draw_date": "2023-01-31"
+    },
+    {
+      "period": "2023-02",
+      "file": "2023-02.json",
+      "record_count": 28,
+      "oldest_source": "74051",
+      "oldest_draw_date": "2023-02-01",
+      "latest_source": "74079",
+      "latest_draw_date": "2023-02-28"
+    },
+    {
+      "period": "2023-03",
+      "file": "2023-03.json",
+      "record_count": 31,
+      "oldest_source": "74080",
+      "oldest_draw_date": "2023-03-01",
+      "latest_source": "74117",
+      "latest_draw_date": "2023-03-31"
+    },
+    {
+      "period": "2023-04",
+      "file": "2023-04.json",
+      "record_count": 30,
+      "oldest_source": "74118",
+      "oldest_draw_date": "2023-04-01",
+      "latest_source": "74147",
+      "latest_draw_date": "2023-04-30"
+    },
+    {
+      "period": "2023-05",
+      "file": "2023-05.json",
+      "record_count": 30,
+      "oldest_source": "74148",
+      "oldest_draw_date": "2023-05-02",
+      "latest_source": "74179",
+      "latest_draw_date": "2023-05-31"
+    },
+    {
+      "period": "2023-06",
+      "file": "2023-06.json",
+      "record_count": 30,
+      "oldest_source": "74180",
+      "oldest_draw_date": "2023-06-01",
+      "latest_source": "74209",
+      "latest_draw_date": "2023-06-30"
+    },
+    {
+      "period": "2023-07",
+      "file": "2023-07.json",
+      "record_count": 31,
+      "oldest_source": "74210",
+      "oldest_draw_date": "2023-07-01",
+      "latest_source": "74240",
+      "latest_draw_date": "2023-07-31"
+    },
+    {
+      "period": "2023-08",
+      "file": "2023-08.json",
+      "record_count": 29,
+      "oldest_source": "74241",
+      "oldest_draw_date": "2023-08-01",
+      "latest_source": "74270",
+      "latest_draw_date": "2023-08-31"
+    },
+    {
+      "period": "2023-09",
+      "file": "2023-09.json",
+      "record_count": 30,
+      "oldest_source": "74271",
+      "oldest_draw_date": "2023-09-01",
+      "latest_source": "74300",
+      "latest_draw_date": "2023-09-30"
+    },
+    {
+      "period": "2023-10",
+      "file": "2023-10.json",
+      "record_count": 30,
+      "oldest_source": "74301",
+      "oldest_draw_date": "2023-10-01",
+      "latest_source": "74330",
+      "latest_draw_date": "2023-10-31"
+    },
+    {
+      "period": "2023-11",
+      "file": "2023-11.json",
+      "record_count": 30,
+      "oldest_source": "74331",
+      "oldest_draw_date": "2023-11-01",
+      "latest_source": "74360",
+      "latest_draw_date": "2023-11-30"
+    },
+    {
+      "period": "2023-12",
+      "file": "2023-12.json",
+      "record_count": 31,
+      "oldest_source": "74361",
+      "oldest_draw_date": "2023-12-01",
       "latest_source": "74391",
       "latest_draw_date": "2023-12-31"
     },
     {
-      "year": 2024,
-      "file": "2024.json",
-      "record_count": 361,
+      "period": "2024-01",
+      "file": "2024-01.json",
+      "record_count": 30,
       "oldest_source": "74392",
       "oldest_draw_date": "2024-01-01",
+      "latest_source": "74439",
+      "latest_draw_date": "2024-01-31"
+    },
+    {
+      "period": "2024-02",
+      "file": "2024-02.json",
+      "record_count": 29,
+      "oldest_source": "74440",
+      "oldest_draw_date": "2024-02-01",
+      "latest_source": "74468",
+      "latest_draw_date": "2024-02-29"
+    },
+    {
+      "period": "2024-03",
+      "file": "2024-03.json",
+      "record_count": 31,
+      "oldest_source": "74469",
+      "oldest_draw_date": "2024-03-01",
+      "latest_source": "74499",
+      "latest_draw_date": "2024-03-31"
+    },
+    {
+      "period": "2024-04",
+      "file": "2024-04.json",
+      "record_count": 30,
+      "oldest_source": "74500",
+      "oldest_draw_date": "2024-04-01",
+      "latest_source": "74529",
+      "latest_draw_date": "2024-04-30"
+    },
+    {
+      "period": "2024-05",
+      "file": "2024-05.json",
+      "record_count": 30,
+      "oldest_source": "74530",
+      "oldest_draw_date": "2024-05-02",
+      "latest_source": "74559",
+      "latest_draw_date": "2024-05-31"
+    },
+    {
+      "period": "2024-06",
+      "file": "2024-06.json",
+      "record_count": 30,
+      "oldest_source": "74560",
+      "oldest_draw_date": "2024-06-01",
+      "latest_source": "74589",
+      "latest_draw_date": "2024-06-30"
+    },
+    {
+      "period": "2024-07",
+      "file": "2024-07.json",
+      "record_count": 31,
+      "oldest_source": "74590",
+      "oldest_draw_date": "2024-07-01",
+      "latest_source": "74620",
+      "latest_draw_date": "2024-07-31"
+    },
+    {
+      "period": "2024-08",
+      "file": "2024-08.json",
+      "record_count": 30,
+      "oldest_source": "74621",
+      "oldest_draw_date": "2024-08-01",
+      "latest_source": "74650",
+      "latest_draw_date": "2024-08-31"
+    },
+    {
+      "period": "2024-09",
+      "file": "2024-09.json",
+      "record_count": 29,
+      "oldest_source": "74651",
+      "oldest_draw_date": "2024-09-01",
+      "latest_source": "74679",
+      "latest_draw_date": "2024-09-30"
+    },
+    {
+      "period": "2024-10",
+      "file": "2024-10.json",
+      "record_count": 30,
+      "oldest_source": "74680",
+      "oldest_draw_date": "2024-10-01",
+      "latest_source": "74709",
+      "latest_draw_date": "2024-10-31"
+    },
+    {
+      "period": "2024-11",
+      "file": "2024-11.json",
+      "record_count": 30,
+      "oldest_source": "74710",
+      "oldest_draw_date": "2024-11-01",
+      "latest_source": "74739",
+      "latest_draw_date": "2024-11-30"
+    },
+    {
+      "period": "2024-12",
+      "file": "2024-12.json",
+      "record_count": 31,
+      "oldest_source": "74740",
+      "oldest_draw_date": "2024-12-01",
       "latest_source": "74770",
       "latest_draw_date": "2024-12-31"
     },
     {
-      "year": 2025,
-      "file": "2025.json",
-      "record_count": 358,
+      "period": "2025-01",
+      "file": "2025-01.json",
+      "record_count": 30,
       "oldest_source": "74771",
       "oldest_draw_date": "2025-01-01",
+      "latest_source": "74800",
+      "latest_draw_date": "2025-01-31"
+    },
+    {
+      "period": "2025-02",
+      "file": "2025-02.json",
+      "record_count": 28,
+      "oldest_source": "74801",
+      "oldest_draw_date": "2025-02-01",
+      "latest_source": "74828",
+      "latest_draw_date": "2025-02-28"
+    },
+    {
+      "period": "2025-03",
+      "file": "2025-03.json",
+      "record_count": 31,
+      "oldest_source": "74829",
+      "oldest_draw_date": "2025-03-01",
+      "latest_source": "74859",
+      "latest_draw_date": "2025-03-31"
+    },
+    {
+      "period": "2025-04",
+      "file": "2025-04.json",
+      "record_count": 29,
+      "oldest_source": "74860",
+      "oldest_draw_date": "2025-04-01",
+      "latest_source": "74888",
+      "latest_draw_date": "2025-04-30"
+    },
+    {
+      "period": "2025-05",
+      "file": "2025-05.json",
+      "record_count": 30,
+      "oldest_source": "74889",
+      "oldest_draw_date": "2025-05-02",
+      "latest_source": "74918",
+      "latest_draw_date": "2025-05-31"
+    },
+    {
+      "period": "2025-06",
+      "file": "2025-06.json",
+      "record_count": 30,
+      "oldest_source": "74919",
+      "oldest_draw_date": "2025-06-01",
+      "latest_source": "74948",
+      "latest_draw_date": "2025-06-30"
+    },
+    {
+      "period": "2025-07",
+      "file": "2025-07.json",
+      "record_count": 31,
+      "oldest_source": "74949",
+      "oldest_draw_date": "2025-07-01",
+      "latest_source": "74979",
+      "latest_draw_date": "2025-07-31"
+    },
+    {
+      "period": "2025-08",
+      "file": "2025-08.json",
+      "record_count": 30,
+      "oldest_source": "74980",
+      "oldest_draw_date": "2025-08-01",
+      "latest_source": "75009",
+      "latest_draw_date": "2025-08-31"
+    },
+    {
+      "period": "2025-09",
+      "file": "2025-09.json",
+      "record_count": 28,
+      "oldest_source": "75010",
+      "oldest_draw_date": "2025-09-01",
+      "latest_source": "75037",
+      "latest_draw_date": "2025-09-30"
+    },
+    {
+      "period": "2025-10",
+      "file": "2025-10.json",
+      "record_count": 31,
+      "oldest_source": "75038",
+      "oldest_draw_date": "2025-10-01",
+      "latest_source": "75068",
+      "latest_draw_date": "2025-10-31"
+    },
+    {
+      "period": "2025-11",
+      "file": "2025-11.json",
+      "record_count": 30,
+      "oldest_source": "75069",
+      "oldest_draw_date": "2025-11-01",
+      "latest_source": "75098",
+      "latest_draw_date": "2025-11-30"
+    },
+    {
+      "period": "2025-12",
+      "file": "2025-12.json",
+      "record_count": 30,
+      "oldest_source": "75099",
+      "oldest_draw_date": "2025-12-01",
       "latest_source": "75128",
       "latest_draw_date": "2025-12-31"
     },
     {
-      "year": 2026,
-      "file": "2026.json",
-      "record_count": 235,
+      "period": "2026-01",
+      "file": "2026-01.json",
+      "record_count": 30,
       "oldest_source": "75129",
       "oldest_draw_date": "2026-01-01",
+      "latest_source": "75158",
+      "latest_draw_date": "2026-01-31"
+    },
+    {
+      "period": "2026-02",
+      "file": "2026-02.json",
+      "record_count": 27,
+      "oldest_source": "75159",
+      "oldest_draw_date": "2026-02-01",
+      "latest_source": "75185",
+      "latest_draw_date": "2026-02-28"
+    },
+    {
+      "period": "2026-03",
+      "file": "2026-03.json",
+      "record_count": 31,
+      "oldest_source": "75186",
+      "oldest_draw_date": "2026-03-01",
+      "latest_source": "75216",
+      "latest_draw_date": "2026-03-31"
+    },
+    {
+      "period": "2026-04",
+      "file": "2026-04.json",
+      "record_count": 29,
+      "oldest_source": "75217",
+      "oldest_draw_date": "2026-04-01",
+      "latest_source": "75245",
+      "latest_draw_date": "2026-04-30"
+    },
+    {
+      "period": "2026-05",
+      "file": "2026-05.json",
+      "record_count": 30,
+      "oldest_source": "75246",
+      "oldest_draw_date": "2026-05-02",
+      "latest_source": "75275",
+      "latest_draw_date": "2026-05-31"
+    },
+    {
+      "period": "2026-06",
+      "file": "2026-06.json",
+      "record_count": 30,
+      "oldest_source": "75276",
+      "oldest_draw_date": "2026-06-01",
+      "latest_source": "75305",
+      "latest_draw_date": "2026-06-30"
+    },
+    {
+      "period": "2026-07",
+      "file": "2026-07.json",
+      "record_count": 31,
+      "oldest_source": "75306",
+      "oldest_draw_date": "2026-07-01",
+      "latest_source": "75336",
+      "latest_draw_date": "2026-07-31"
+    },
+    {
+      "period": "2026-08",
+      "file": "2026-08.json",
+      "record_count": 27,
+      "oldest_source": "75337",
+      "oldest_draw_date": "2026-08-01",
       "latest_source": "75363",
       "latest_draw_date": "2026-08-29"
     }

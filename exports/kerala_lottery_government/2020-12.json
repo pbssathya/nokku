@@ -1,0 +1,3518 @@
+{
+  "schema_version": 4,
+  "domain_path": "games/chance/lottery/kerala",
+  "period": "2020-12",
+  "generated_at": "2026-08-29T13:45:56.396544+00:00",
+  "record_count": 23,
+  "oldest_source": "72076",
+  "oldest_draw_date": "2020-12-01",
+  "latest_source": "72107",
+  "latest_draw_date": "2020-12-30",
+  "records": [
+    {
+      "source": "72076",
+      "draw_date": "01/12/2020",
+      "lottery_name": "STHREE-SAKTHI LOTTERY NO.SS-238th DRAW",
+      "parsed": {
+        "lottery_name": "STHREE-SAKTHI LOTTERY NO.SS-238th DRAW",
+        "draw_date": "01/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7500000",
+            "entries": [
+              "SU 161958 (PALAKKAD)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "8000",
+            "entries": [
+              "SN 161958 SO 161958 SP 161958 SR 161958",
+              "SS 161958 ST 161958 SV 161958 SW 161958",
+              "SX 161958 SY 161958 SZ 161958"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "1000000",
+            "entries": [
+              "SX 123459 (PATTAMBI)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "5000",
+            "entries": [
+              "0477 0670 1223 1424 1976",
+              "2125 3216 4252 4323 4422",
+              "5111 5366 6197 6318 6584",
+              "6858 8343 9098"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "2000",
+            "entries": [
+              "0405 4659 5118 6019 6330",
+              "7175 7856 8298 9421 9971"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "1000",
+            "entries": [
+              "0861 1114 1278 1725 1812",
+              "2047 2554 5435 5646 5811",
+              "6257 6577 7493 7877 8579",
+              "8669 9557 9755"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "500",
+            "entries": [
+              "0201 0419 0534 0749 0915",
+              "1193 1315 1721 1807 1896",
+              "2138 2587 2909 2998 3266",
+              "3321 3718 3855 3960 4019",
+              "4348 5029 5652 5776 5949",
+              "6031 6343 6365 6462 6526",
+              "6545 6571 6836 6839 6880",
+              "7164 7351 7943 8535 8589",
+              "8784 8807 8864 8909 8959",
+              "9028 9460 9858",
+              "IT Support : NIC Kerala",
+              "01/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "200",
+            "entries": [
+              "0018 0380 0425 1510 1517",
+              "1540 1745 2259 2914 3106",
+              "3160 3232 3390 3393 3764",
+              "3812 4179 4280 4983 5531",
+              "5884 6052 6250 6304 6469",
+              "6471 6774 6818 7329 7532",
+              "7599 7911 8082 8351 8533",
+              "8563 8600 8889 9120 9265",
+              "9454 9553 9613 9824 9898"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0073 0091 0125 0142 0228",
+              "0298 0317 0400 0418 0492",
+              "0517 0603 0608 0772 0862",
+              "0920 0968 1074 1197 1201",
+              "1247 1340 1595 1608 1633",
+              "1707 1723 1770 1784 1813",
+              "1900 1919 2113 2205 2361",
+              "2430 2460 2482 2830 2901",
+              "2983 3023 3026 3070 3210",
+              "3415 3421 3549 3605 3793",
+              "3823 3828 3837 3926 3994",
+              "4157 4322 4356 4523 4708",
+              "4717 4766 4895 5323 5485",
+              "5696 5792 5914 5943 5950",
+              "5951 5974 6018 6184 6295",
+              "6336 6417 6478 6552 6623",
+              "6942 6974 7026 7053 7274",
+              "7275 7302 7382 7400 7420",
+              "7439 7559 7659 7776 7798",
+              "7895 8055 8058 8198 8379",
+              "8432 8565 8567 8599 8698",
+              "8753 8824 8839 8900 9012",
+              "9227 9229 9273 9287 9288",
+              "9396 9457 9472 9533 9959",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "MANOJ P",
+              "Deputy Director",
+              "at GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "01/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72077",
+      "draw_date": "02/12/2020",
+      "lottery_name": "AKSHAYA LOTTERY NO.AK-474th DRAW",
+      "parsed": {
+        "lottery_name": "AKSHAYA LOTTERY NO.AK-474th DRAW",
+        "draw_date": "02/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7000000",
+            "entries": [
+              "AN 222347 (KOTTAYAM)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "8000",
+            "entries": [
+              "AO 222347 AP 222347 AR 222347 AS 222347",
+              "AT 222347 AU 222347 AV 222347 AW 222347",
+              "AX 222347 AY 222347 AZ 222347"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "AO 869317 (PATTAMBI)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "AN 109605 (PATTAMBI)",
+              "AO 159203 (PALAKKAD)",
+              "AP 698960 (PATTAMBI)",
+              "AR 651481 (KARUNAGAPALLY)",
+              "AS 643288 (KOZHIKKODE)",
+              "AT 178421 (KOTTAYAM)",
+              "AU 870457 (PATTAMBI)",
+              "AV 474840 (KAYAMKULAM)",
+              "AW 390911 (KOTTAYAM)",
+              "AX 503069 (KANHANGAD)",
+              "AY 582753 (PALAKKAD)",
+              "AZ 671668 (IRINJALAKUDA)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0611 1055 2151 2855 3149",
+              "3294 4235 4753 5442 5462",
+              "6957 7157 8182 8455 9050",
+              "9443 9897 9922"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "1349 1945 3319 3884 6647",
+              "8435 9679"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "0595 0756 1162 1832 1966",
+              "2217 2803 3309 3987 4247",
+              "4734 4927 5029 6782 7039",
+              "7377 7415 7512 7666 8013",
+              "8148 8194 8420 8576 9377",
+              "9994",
+              "IT Support : NIC Kerala",
+              "02/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0426 0541 0713 0736 0839",
+              "1370 1438 1506 1930 1934",
+              "1976 2389 2701 2962 3088",
+              "3301 3687 3925 4384 4601",
+              "4669 5012 5062 5162 5221",
+              "5307 5460 5552 5587 5605",
+              "5671 5681 5827 6181 6667",
+              "6817 6847 6910 6953 7050",
+              "7131 7216 7284 7317 7397",
+              "7441 7756 7812 7824 8210",
+              "8230 8232 8368 8480 8587",
+              "8639 9063 9209 9220 9309",
+              "9468 9519 9907 9952"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0010 0057 0058 0079 0109",
+              "0250 0429 0723 0828 0918",
+              "0949 1062 1064 1211 1221",
+              "1304 1484 1501 1543 1794",
+              "1821 1874 2083 2239 2261",
+              "2376 2489 2659 2737 3075",
+              "3096 3116 3144 3220 3236",
+              "3379 3446 3535 3656 3938",
+              "4068 4193 4248 4259 4366",
+              "4439 4441 4470 4510 4560",
+              "4722 4803 4830 5015 5239",
+              "5441 5574 5603 5609 5847",
+              "5887 5908 5967 5986 6131",
+              "6165 6313 6347 6360 6410",
+              "6440 6492 6693 6718 6933",
+              "6962 6991 7051 7253 7270",
+              "7304 7332 7411 7452 7456",
+              "7504 7514 7545 7562 7596",
+              "7683 7716 7748 7907 7953",
+              "8042 8120 8396 8539 8594",
+              "8598 8613 8897 8912 8915",
+              "8954 8965 8971 9314 9505",
+              "9563 9620 9632 9651 9663",
+              "9806 9860 9912 9991 9999",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "INDIRADEVI S",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "02/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72079",
+      "draw_date": "04/12/2020",
+      "lottery_name": "NIRMAL LOTTERY NO.NR-201st DRAW",
+      "parsed": {
+        "lottery_name": "NIRMAL LOTTERY NO.NR-201st DRAW",
+        "draw_date": "04/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7000000",
+            "entries": [
+              "NY 246268 (IDUKKI)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "8000",
+            "entries": [
+              "NN 246268 NO 246268 NP 246268 NR 246268",
+              "NS 246268 NT 246268 NU 246268 NV 246268",
+              "NW 246268 NX 246268 NZ 246268"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "1000000",
+            "entries": [
+              "NZ 653210 (IRINJALAKUDA)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "NN 571757 (WAYANADU)",
+              "NO 522911 (KAYAMKULAM)",
+              "NP 188556 (THIRUVANANTHAPURAM)",
+              "NR 819933 (PALAKKAD)",
+              "NS 390480 (KOLLAM)",
+              "NT 406766 (KANNUR)",
+              "NU 694190 (KAYAMKULAM)",
+              "NV 495269 (ADIMALY)",
+              "NW 396087 (ALAPPUZHA)",
+              "NX 641354 (NEYYATTINKARA)",
+              "NY 607314 (ERNAKULAM)",
+              "NZ 128765 (THAMARASSERY)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0240 0624 0761 0835 1035",
+              "1939 2313 3093 3755 4951",
+              "6021 6836 7596 8166 8357",
+              "8443 8676 8895"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "1000",
+            "entries": [
+              "0155 0443 0491 0527 1021",
+              "1064 1081 1222 1529 1750",
+              "2345 2475 2592 2756 2857",
+              "3422 3436 4235 5662 5758",
+              "5914 6189 6473 6529 6672",
+              "7410 7535 7861 7900 7936",
+              "8015 8196 8969 9006 9842",
+              "9971",
+              "IT Support : NIC Kerala",
+              "04/12/2020"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "500",
+            "entries": [
+              "0090 0110 0222 0265 0789",
+              "0966 0993 1046 1253 1309",
+              "1395 1492 1854 1947 2171",
+              "2200 2435 2663 2707 3012",
+              "3170 3239 3594 3867 4102",
+              "4104 4139 4294 4303 4361",
+              "4658 4707 4818 4840 4849",
+              "4931 5090 5114 5118 5123",
+              "5193 5332 5492 5706 5943",
+              "5988 6175 6193 6330 6706",
+              "7014 7078 7671 7837 7843",
+              "8008 8075 8201 8241 8334",
+              "8433 8525 8692 8740 8855",
+              "9143 9251 9291 9677 9900"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "100",
+            "entries": [
+              "0113 0144 0205 0508 0625",
+              "0785 0795 0848 0859 1002",
+              "1024 1127 1153 1214 1234",
+              "1236 1381 1382 1426 1514",
+              "1692 1697 1869 1943 2080",
+              "2318 2388 2423 2466 2505",
+              "2506 2568 2655 2743 2797",
+              "2985 3070 3091 3341 3693",
+              "3798 3832 3866 3987 4070",
+              "4118 4126 4134 4246 4299",
+              "4373 4435 4874 4884 4917",
+              "4954 5015 5070 5084 5221",
+              "5304 5320 5441 5449 5868",
+              "5919 5994 6048 6276 6373",
+              "6376 6415 6442 6503 6507",
+              "6583 6670 6805 6912 7003",
+              "7029 7035 7050 7090 7158",
+              "7184 7285 7561 7628 7741",
+              "7791 7924 7965 8039 8133",
+              "8159 8189 8253 8275 8302",
+              "8374 8482 8612 8615 8889",
+              "9001 9075 9207 9473 9506",
+              "9519 9563 9722 9727 9745",
+              "9869 9870 9979 9991 9997",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "SHEEBA MATHEW",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "04/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72080",
+      "draw_date": "05/12/2020",
+      "lottery_name": "KARUNYA LOTTERY NO.KR-476th DRAW",
+      "parsed": {
+        "lottery_name": "KARUNYA LOTTERY NO.KR-476th DRAW",
+        "draw_date": "05/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "8000000",
+            "entries": [
+              "KF 221819 (KOTTAYAM)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "8000",
+            "entries": [
+              "KA 221819 KB 221819 KC 221819 KD 221819",
+              "KE 221819 KG 221819 KH 221819 KJ 221819",
+              "KK 221819 KL 221819 KM 221819"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "KK 411016 (IDUKKI)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "KA 519708 (MOOVATTUPUZHA)",
+              "KB 728572 (ATTINGAL)",
+              "KC 173650 (IDUKKI)",
+              "KD 859100 (THIRUR)",
+              "KE 528703 (IRINJALAKUDA)",
+              "KF 138618 (ALAPPUZHA)",
+              "KG 530121 (THAMARASSERY)",
+              "KH 279161 (KAYAMKULAM)",
+              "KJ 387095 (KANNUR)",
+              "KK 382989 (PALAKKAD)",
+              "KL 508569 (NEYYATTINKARA)",
+              "KM 612833 (PALAKKAD)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0331 0518 1954 2859 3586",
+              "4213 5376 5534 5754 6199",
+              "7039 7046 7400 7529 7654",
+              "7907 7976 9185"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "0853 0910 1064 1571 2588",
+              "3151 3980 5257 7713 9090"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "1151 2902 2962 3088 3423",
+              "3832 4709 5595 5924 6066",
+              "6133 7877 8625 9148",
+              "IT Support : NIC Kerala",
+              "05/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0009 0105 0185 0232 0316",
+              "0337 0557 0573 0674 0805",
+              "1050 1222 1381 1441 1651",
+              "1900 1935 2280 2363 2428",
+              "2450 2484 2740 2862 2922",
+              "3005 3109 3451 3459 3598",
+              "3824 4033 4042 4141 4195",
+              "4526 4553 4626 4811 4942",
+              "5227 5518 5900 5980 6100",
+              "6103 6131 6181 6411 6586",
+              "7264 7376 7674 7764 7773",
+              "7909 7968 8159 8175 8191",
+              "8282 8307 8545 8667 8850",
+              "8984 9017 9322 9343 9563",
+              "9664 9784"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0019 0123 0133 0307 0345",
+              "0375 0495 0634 0668 0825",
+              "0918 0939 0965 1179 1185",
+              "1201 1219 1271 1327 1373",
+              "1508 1560 1650 1735 1901",
+              "1971 2004 2275 2276 2316",
+              "2460 2490 2559 2589 2632",
+              "2682 2693 2844 2952 2985",
+              "2999 3153 3168 3291 3432",
+              "3438 3500 3505 3560 3566",
+              "3576 3758 3817 3831 4019",
+              "4134 4143 4166 4324 4377",
+              "4551 4572 4660 4726 4885",
+              "5347 5559 5560 5711 5712",
+              "5944 6232 6236 6239 6245",
+              "6254 6292 6417 6464 6595",
+              "6649 6759 6895 6928 6937",
+              "6942 6968 7015 7190 7220",
+              "7227 7366 7467 7570 7600",
+              "7669 7694 7903 7927 8049",
+              "8056 8072 8185 8533 8583",
+              "8618 8630 8695 8729 8731",
+              "8870 9242 9555 9655 9673",
+              "9705 9764 9818 9838 9849",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "MANOJ P",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "05/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72081",
+      "draw_date": "06/12/2020",
+      "lottery_name": "BHAGYAMITHRA LOTTERY NO.BM-1st DRAW",
+      "parsed": {
+        "lottery_name": "BHAGYAMITHRA LOTTERY NO.BM-1st DRAW",
+        "draw_date": "06/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "10000000",
+            "entries": [
+              "BA 247741 (MALAPPURAM)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "25000",
+            "entries": [
+              "BB 247741 BC 247741 BD 247741 BE 247741",
+              "BF 247741 BG 247741 BH 247741",
+              "BB 391162 (PUNALUR)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "25000",
+            "entries": [
+              "BA 391162 BC 391162 BD 391162 BE 391162",
+              "BF 391162 BG 391162 BH 391162",
+              "BD 461013 (PAYYANUR)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "25000",
+            "entries": [
+              "BA 461013 BB 461013 BC 461013 BE 461013",
+              "BF 461013 BG 461013 BH 461013",
+              "BE 122895 (PALAKKAD)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "25000",
+            "entries": [
+              "BA 122895 BB 122895 BC 122895 BD 122895",
+              "BF 122895 BG 122895 BH 122895",
+              "BF 508234 (MALAPPURAM)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "25000",
+            "entries": [
+              "BA 508234 BB 508234 BC 508234 BD 508234",
+              "BE 508234 BG 508234 BH 508234"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "1000000",
+            "entries": [
+              "BA 411455 (PALAKKAD)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "200000",
+            "entries": [
+              "BA 316399 (THRISSUR)",
+              "BB 434540 (KANNUR)",
+              "BC 616068 (THRISSUR)",
+              "BD 115276 (KANHANGAD)",
+              "BE 561042 (ADIMALY)",
+              "BF 645670 (IRINJALAKUDA)",
+              "BG 420843 (THIRUVANANTHAPURAM)",
+              "BH 557066 (ERNAKULAM)",
+              "IT Support : NIC Kerala",
+              "06/12/2020"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0124 0277 2319 2804 3057",
+              "3504 3596 3736 3829 3876",
+              "5114 6467 6575 6842 7503",
+              "7521 7682 8348 8523 8690",
+              "8962 8966 9010 9656"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "0254 0353 0745 1424 1620",
+              "1944 4546 4561 4965 5366",
+              "5558 6728 8238 8459 8646",
+              "9961"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "0379 0408 0769 1493 2120",
+              "2806 2943 5005 5007 5237",
+              "5476 5808 5937 6044 6053",
+              "6324 6632 6678 6747 6968",
+              "7714 7917 8364 8564 8705",
+              "9031 9162 9173 9179 9291"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0030 0070 0425 0511 0553",
+              "0676 0828 1212 1279 1411",
+              "1534 1692 1698 2075 2111",
+              "2282 2284 2289 2618 2691",
+              "2949 3025 3078 3163 3288",
+              "3532 3636 3696 3715 3726",
+              "3862 3896 4040 4092 4195",
+              "4340 4397 4869 5073 5221",
+              "5228 5348 5839 5952 6245",
+              "6249 6371 6496 6568 6641",
+              "6685 6700 6908 7176 7263",
+              "7634 7672 7759 7808 7940",
+              "8007 8205 8473 8642 9086",
+              "9183 9299 9473 9504 9717",
+              "9846 9946",
+              "IT Support : NIC Kerala",
+              "06/12/2020"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "300",
+            "entries": [
+              "0113 0148 0206 0225 0355",
+              "0394 0512 0523 0529 0759",
+              "0816 0911 0942 0954 0958",
+              "0965 1084 1145 1165 1372",
+              "1378 1466 1542 1569 1583",
+              "1599 1616 1676 1809 1866",
+              "2002 2009 2055 2098 2138",
+              "2224 2261 2353 2377 2503",
+              "2529 2791 2816 2892 2948",
+              "2974 3221 3252 3333 3356",
+              "3375 3425 3432 3552 3593",
+              "3608 3695 3706 3805 3847",
+              "4032 4495 4571 4596 4623",
+              "4627 4696 4719 4782 4950",
+              "4953 4978 4979 4990 5144",
+              "5268 5356 5381 5715 5810",
+              "5942 6005 6014 6017 6233",
+              "6234 6320 6322 6349 6363",
+              "6440 6455 6512 6595 6674",
+              "6800 6821 7058 7071 7644",
+              "7668 7746 7768 7803 7823",
+              "7860 8056 8109 8189 8271",
+              "8341 8432 8439 8453 8482",
+              "8526 8578 8591 8653 8688",
+              "8714 8727 8761 8781 8924",
+              "8925 8977 9007 9044 9131",
+              "9141 9224 9383 9400 9431",
+              "9468 9492 9550 9601 9646",
+              "9730 9743 9830 9972",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "MANOJ P",
+              "Deputy Director",
+              "at GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "06/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72082",
+      "draw_date": "07/12/2020",
+      "lottery_name": "WIN-WIN LOTTERY NO.W-593rd DRAW",
+      "parsed": {
+        "lottery_name": "WIN-WIN LOTTERY NO.W-593rd DRAW",
+        "draw_date": "07/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7500000",
+            "entries": [
+              "WS 716735 (KARUNAGAPALLY)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "8000",
+            "entries": [
+              "WN 716735 WO 716735 WP 716735 WR 716735",
+              "WT 716735 WU 716735 WV 716735 WW",
+              "716735 WX 716735 WY 716735 WZ 716735"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "WV 194133 (THIRUVANANTHAPURAM)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "WN 819215 (KANNUR)",
+              "WO 125472 (NEYYATTINKARA)",
+              "WP 293002 (CHITTUR)",
+              "WR 284499 (THAMARASSERY)",
+              "WS 482066 (CHITTUR)",
+              "WT 173982 (KOZHIKKODE)",
+              "WU 347752 (KARUNAGAPALLY)",
+              "WV 496782 (IRINJALAKUDA)",
+              "WW 674767 (IRINJALAKUDA)",
+              "WX 443903 (ERNAKULAM)",
+              "WY 850124 (IRINJALAKUDA)",
+              "WZ 311996 (VADAKARA)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0025 0358 0872 1221 1673",
+              "3113 4212 4914 5101 5105",
+              "5655 6995 7370 7627 7730",
+              "7977 9005 9109"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "0141 0648 2478 3011 3413",
+              "4071 4495 5718 6296 9242"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "0832 1093 2036 2549 3103",
+              "3261 4047 4546 4555 4754",
+              "6840 7922",
+              "IT Support : NIC Kerala",
+              "07/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0037 0071 0083 0534 0618",
+              "0805 1067 1079 1143 1330",
+              "1535 1680 1724 2018 2268",
+              "2391 2733 2755 2967 3001",
+              "3174 3186 3253 3298 3357",
+              "3430 3435 3461 3494 3561",
+              "3694 3810 3973 4360 4443",
+              "4540 4583 4627 4664 4801",
+              "5151 5182 5429 5532 5636",
+              "5696 5777 5788 5815 5905",
+              "6094 6172 6239 6321 6326",
+              "6398 6434 6626 6766 6953",
+              "7400 7511 7544 7663 7751",
+              "7850 7970 8003 8570 8700",
+              "8714 8977 9298 9363 9606",
+              "9687 9716 9799"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0027 0033 0041 0121 0214",
+              "0247 0289 0457 0484 0512",
+              "0660 0687 0840 0946 0949",
+              "0959 1313 1429 1534 1579",
+              "1588 1598 1749 1829 1848",
+              "1907 1919 1932 1947 2121",
+              "2151 2159 2180 2333 2407",
+              "2412 2449 2481 2484 2511",
+              "2542 2576 2797 2954 2988",
+              "3086 3132 3207 3294 3385",
+              "3438 3510 3643 3783 3876",
+              "4074 4078 4086 4198 4245",
+              "4455 4517 4580 4644 4849",
+              "5286 5341 5441 5482 5511",
+              "5512 5528 5557 5660 5794",
+              "5813 5865 6082 6123 6255",
+              "6310 6392 6461 6535 6583",
+              "6654 6669 6834 6962 7114",
+              "7321 7331 7469 7624 7691",
+              "7721 7764 7983 8057 8116",
+              "8169 8172 8247 8402 8612",
+              "8630 8773 8838 8908 8939",
+              "8959 8979 9454 9534 9559",
+              "9572 9843 9895 9953 9990",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "MANOJ P",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "07/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72083",
+      "draw_date": "09/12/2020",
+      "lottery_name": "AKSHAYA LOTTERY NO.AK-475th DRAW",
+      "parsed": {
+        "lottery_name": "AKSHAYA LOTTERY NO.AK-475th DRAW",
+        "draw_date": "09/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7000000",
+            "entries": [
+              "AA 548999 (THIRUVANANTHAPURAM)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "8000",
+            "entries": [
+              "AB 548999 AC 548999 AD 548999 AE 548999",
+              "AF 548999 AG 548999 AH 548999 AJ 548999",
+              "AK 548999 AL 548999 AM 548999"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "AJ 255537 (ERNAKULAM)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "AA 275776 (MANANTHAVADY)",
+              "AB 446670 (KOTTAYAM)",
+              "AC 631830 (NEYYATTINKARA)",
+              "AD 146443 (KOTTAYAM)",
+              "AE 737306 (PATTAMBI)",
+              "AF 211929 (PALAKKAD)",
+              "AG 320058 (NEYYATTINKARA)",
+              "AH 197704 (THRISSUR)",
+              "AJ 644287 (ATTINGAL)",
+              "AK 391042 (THRISSUR)",
+              "AL 725419 (KOTTAYAM)",
+              "AM 594479 (PALAKKAD)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0227 1114 1176 1391 2531",
+              "2831 3057 3071 4203 4436",
+              "4467 4680 5378 6087 6900",
+              "8728 9020 9310"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "1021 1998 5214 5990 6464",
+              "9340 9892"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "1195 1325 2335 2987 3003",
+              "3125 3140 3517 4729 5180",
+              "5375 5419 5474 6342 6348",
+              "6396 7137 7276 7381 7646",
+              "7671 7991 8224 8794 8802",
+              "8885",
+              "IT Support : NIC Kerala",
+              "09/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0156 0195 0202 0221 0541",
+              "0636 0840 0911 1041 1113",
+              "1437 1458 1525 1768 1911",
+              "1942 2360 2599 2649 2725",
+              "2798 2985 3390 3426 3991",
+              "4073 4239 4261 4581 5091",
+              "5182 5295 5345 5363 5379",
+              "5457 5595 5643 6207 6295",
+              "6447 6692 7369 7515 7591",
+              "7610 7655 7663 7922 8055",
+              "8190 8206 8462 8540 8804",
+              "8901 9143 9300 9360 9471",
+              "9701 9742 9840 9911"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0095 0182 0237 0351 0389",
+              "0494 0521 0534 0672 0829",
+              "0873 0960 1085 1090 1224",
+              "1238 1246 1327 1433 1688",
+              "1819 1891 1961 1989 2015",
+              "2072 2299 2364 2487 2574",
+              "2794 2800 2896 2906 2966",
+              "2991 3008 3043 3106 3112",
+              "3158 3220 3264 3565 3679",
+              "3754 3823 3895 3954 4022",
+              "4061 4065 4103 4167 4385",
+              "4429 4615 4626 4868 5010",
+              "5069 5138 5147 5364 5454",
+              "5503 5603 5695 5742 5784",
+              "6124 6142 6215 6245 6263",
+              "6308 6392 6632 6634 6872",
+              "6959 7044 7101 7200 7255",
+              "7273 7331 7374 7494 7621",
+              "7647 7793 7795 7879 7919",
+              "7923 7974 8104 8106 8128",
+              "8231 8286 8347 8438 8447",
+              "8456 8501 8518 8670 8671",
+              "8838 8860 8877 8972 9103",
+              "9456 9687 9729 9956 9983",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "INDIRADEVI S",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "09/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72084",
+      "draw_date": "10/12/2020",
+      "lottery_name": "STHREE-SAKTHI LOTTERY NO.SS-239th DRAW",
+      "parsed": {
+        "lottery_name": "STHREE-SAKTHI LOTTERY NO.SS-239th DRAW",
+        "draw_date": "10/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7500000",
+            "entries": [
+              "SM 864192 (CHERTHALA)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "8000",
+            "entries": [
+              "SA 864192 SB 864192 SC 864192 SD 864192",
+              "SE 864192 SF 864192 SG 864192 SH 864192",
+              "SJ 864192 SK 864192 SL 864192"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "1000000",
+            "entries": [
+              "SJ 487577 (KAYAMKULAM)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "5000",
+            "entries": [
+              "2116 2758 3725 4068 4216",
+              "4256 4793 4910 4983 6500",
+              "6663 7089 7105 7251 7804",
+              "9067 9149 9927"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "2000",
+            "entries": [
+              "0367 2380 3127 3219 5425",
+              "6843 8614 8761 8930 9809"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "1000",
+            "entries": [
+              "0767 1337 2295 2416 3177",
+              "3538 3612 3669 3737 4075",
+              "5141 5511 5724 5989 6390",
+              "7018 8661 9675"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "500",
+            "entries": [
+              "0142 0414 0664 0799 0810",
+              "1134 1182 1321 1826 1926",
+              "2102 2318 2372 2375 3278",
+              "3293 3573 4408 4447 4961",
+              "5026 5111 5163 5998 6213",
+              "6826 6981 7398 7560 7631",
+              "7701 8022 8142 8407 8479",
+              "8914 9073 9097 9202 9207",
+              "9279 9411 9453 9584 9611",
+              "9724 9755 9761",
+              "IT Support : NIC Kerala",
+              "10/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "200",
+            "entries": [
+              "0081 0291 0541 0706 0826",
+              "1519 1648 1708 1914 2245",
+              "2474 2523 2944 2985 3025",
+              "3049 3118 3208 3275 3284",
+              "3448 3698 4197 4220 4980",
+              "6280 6307 6461 7015 7034",
+              "7077 7135 7310 7437 7490",
+              "7569 8100 8543 8565 8601",
+              "8741 8813 9491 9643 9747"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0063 0118 0289 0303 0459",
+              "0504 0753 0791 0896 0942",
+              "0990 1018 1100 1111 1198",
+              "1275 1330 1346 1467 1479",
+              "1539 1563 1583 1646 1935",
+              "1959 1994 1999 2093 2118",
+              "2240 2280 2546 2898 2964",
+              "3043 3220 3221 3240 3564",
+              "3604 3674 3779 3859 4240",
+              "4284 4316 4477 4487 4635",
+              "4663 4745 4814 4841 4941",
+              "4959 5019 5091 5100 5249",
+              "5253 5314 5439 5467 5492",
+              "5814 5930 5954 6171 6216",
+              "6531 6600 6652 6942 6956",
+              "6963 6982 6996 7026 7048",
+              "7221 7304 7380 7405 7453",
+              "7476 7487 7673 7777 7846",
+              "7854 7860 7936 8053 8072",
+              "8103 8152 8312 8324 8346",
+              "8461 8485 8728 8750 9056",
+              "9106 9128 9169 9201 9351",
+              "9363 9398 9420 9561 9600",
+              "9713 9833 9835 9880 9952",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "MANOJ P",
+              "Deputy Director",
+              "at GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "10/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72085",
+      "draw_date": "11/12/2020",
+      "lottery_name": "NIRMAL LOTTERY NO.NR-202nd DRAW",
+      "parsed": {
+        "lottery_name": "NIRMAL LOTTERY NO.NR-202nd DRAW",
+        "draw_date": "11/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7000000",
+            "entries": [
+              "NA 613424 (THRISSUR)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "8000",
+            "entries": [
+              "NB 613424 NC 613424 ND 613424 NE 613424",
+              "NF 613424 NG 613424 NH 613424 NJ 613424",
+              "NK 613424 NL 613424 NM 613424"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "1000000",
+            "entries": [
+              "ND 636029 (KANNUR)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "NA 189484 (ALAPPUZHA)",
+              "NB 382971 (ERNAKULAM)",
+              "NC 241976 (IDUKKI)",
+              "ND 620418 (KOZHIKKODE)",
+              "NE 432632 (MALAPPURAM)",
+              "NF 826570 (PALAKKAD)",
+              "NG 263988 (PALAKKAD)",
+              "NH 157291 (THRISSUR)",
+              "NJ 355861 (KOZHIKKODE)",
+              "NK 722232 (PAYYANUR)",
+              "NL 193044 (THIRUVANANTHAPURAM)",
+              "NM 273195 (CHITTUR)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0443 0999 1345 1771 2150",
+              "2165 2892 2988 6164 7661",
+              "7893 8477 8863 9070 9418",
+              "9869 9879 9987"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "1000",
+            "entries": [
+              "0593 0607 0639 0930 1289",
+              "1427 2219 2284 2322 2555",
+              "4306 4841 5329 5355 5374",
+              "5521 5859 5941 5951 6543",
+              "6620 7164 7299 7416 7491",
+              "7740 8035 8168 8380 8684",
+              "8828 9161 9278 9486 9894",
+              "9924",
+              "IT Support : NIC Kerala",
+              "11/12/2020"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "500",
+            "entries": [
+              "0020 0043 0146 0176 0323",
+              "0348 0428 0499 0625 0647",
+              "0742 1081 1304 1355 1651",
+              "1728 1988 2059 2070 2345",
+              "2554 2569 2729 2973 2976",
+              "3167 3323 3432 3633 3740",
+              "3819 3880 3967 4146 4190",
+              "4511 4799 5062 5220 5369",
+              "5408 5452 5506 5670 6023",
+              "6238 6309 6409 6507 6583",
+              "6590 7016 7120 7424 7583",
+              "7863 7885 7897 8064 8092",
+              "8286 8798 8928 8992 9317",
+              "9354 9386 9540 9804 9967"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "100",
+            "entries": [
+              "0116 0209 0313 0525 0532",
+              "0775 0790 0819 0822 0847",
+              "0869 0908 1064 1086 1512",
+              "1601 1750 1849 1875 2202",
+              "2290 2320 2365 2473 2500",
+              "2607 2609 2777 2820 2994",
+              "3033 3120 3162 3181 3199",
+              "3217 3470 3608 3662 3668",
+              "3865 3867 3923 3929 4035",
+              "4091 4169 4172 4177 4189",
+              "4312 4330 4529 4589 4592",
+              "4629 4743 4810 4868 5070",
+              "5089 5119 5216 5223 5403",
+              "5513 5620 5832 5852 5895",
+              "6157 6196 6231 6394 6567",
+              "6599 6608 6692 6766 6772",
+              "6797 6877 6990 7025 7099",
+              "7386 7448 7466 7479 7505",
+              "7568 7576 7707 7739 8133",
+              "8193 8212 8329 8364 8432",
+              "8609 8799 8857 8890 8954",
+              "8956 9119 9144 9332 9377",
+              "9404 9422 9572 9615 9621",
+              "9632 9687 9775 9819 9920",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "INDIRADEVI S",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "11/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72086",
+      "draw_date": "12/12/2020",
+      "lottery_name": "KARUNYA LOTTERY NO.KR-477th DRAW",
+      "parsed": {
+        "lottery_name": "KARUNYA LOTTERY NO.KR-477th DRAW",
+        "draw_date": "12/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "8000000",
+            "entries": [
+              "KO 507606 (CHITTUR)"
+            ]
+          },
+          {
+            "label": "Consolation Prize",
+            "amount": "8000",
+            "entries": [
+              "KN 507606 KP 507606 KR 507606 KS 507606",
+              "KT 507606 KU 507606 KV 507606 KW 507606",
+              "KX 507606 KY 507606 KZ 507606"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "KO 346191 (ERNAKULAM)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "KN 301351 (ADOOR)",
+              "KO 448406 (THIRUR)",
+              "KP 843400 (VAIKKOM)",
+              "KR 161426 (KOLLAM)",
+              "KS 420728 (KOTTAYAM)",
+              "KT 302731 (VADAKARA)",
+              "KU 435056 (ALAPPUZHA)",
+              "KV 319317 (CHERTHALA)",
+              "KW 824546 (THRISSUR)",
+              "KX 632344 (THRISSUR)",
+              "KY 225706 (PALAKKAD)",
+              "KZ 653103 (IRINJALAKUDA)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "1457 1524 1997 2073 2760",
+              "2933 4810 5426 5656 6863",
+              "7371 8691 8872 8979 9492",
+              "9511 9583 9892"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "0346 0505 0780 0881 6354",
+              "7872 8414 8467 9027 9030"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "0707 1681 1763 2065 2515",
+              "2552 3390 3412 4571 5235",
+              "5382 7746 7820 8855",
+              "IT Support : NIC Kerala",
+              "12/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0113 0367 0405 0573 0696",
+              "1286 1394 1550 1648 1721",
+              "2291 2431 2461 2471 2752",
+              "2797 2832 3051 3124 3404",
+              "3534 3690 4329 4416 4667",
+              "4857 4926 4999 5246 5278",
+              "5456 5628 5692 6022 6070",
+              "6171 6210 6235 6302 6371",
+              "6380 6410 6690 6819 6825",
+              "6959 6981 7051 7223 7288",
+              "7293 7493 7565 7621 7693",
+              "7900 8009 8040 8058 8639",
+              "8641 8725 8882 8909 8950",
+              "9015 9236 9325 9332 9413",
+              "9504 9529"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0047 0120 0297 0612 0629",
+              "1075 1082 1122 1129 1159",
+              "1180 1230 1307 1319 1370",
+              "1454 1640 1655 1713 1828",
+              "2317 2542 2577 2591 2894",
+              "2942 3419 3479 3503 3686",
+              "3743 3845 3879 3888 4007",
+              "4017 4090 4100 4266 4270",
+              "4338 4421 4504 4525 4645",
+              "4652 4797 5030 5064 5146",
+              "5213 5388 5414 5431 5452",
+              "5466 5516 5659 5671 5720",
+              "5732 5736 5753 5809 6025",
+              "6048 6100 6150 6437 6439",
+              "6452 6528 6561 6581 6585",
+              "6618 6626 6719 6776 6924",
+              "6933 7020 7068 7118 7316",
+              "7377 7489 7609 7685 7722",
+              "7736 7908 8004 8019 8050",
+              "8236 8254 8668 8708 8825",
+              "8867 8934 8998 9017 9206",
+              "9214 9233 9277 9299 9344",
+              "9455 9464 9475 9594 9604",
+              "9610 9781 9827 9860 9900",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "INDIRADEVI S",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "12/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72087",
+      "draw_date": "14/12/2020",
+      "lottery_name": "WIN-WIN LOTTERY NO.W-594th DRAW",
+      "parsed": {
+        "lottery_name": "WIN-WIN LOTTERY NO.W-594th DRAW",
+        "draw_date": "14/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7500000",
+            "entries": [
+              "WL 860666 (GURUVAYOOR)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "WA 860666 WB 860666 WC 860666 WD",
+              "860666 WE 860666 WF 860666 WG 860666",
+              "WH 860666 WJ 860666 WK 860666 WM",
+              "860666"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "WE 153505 (PALAKKAD)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "WA 302378 (VAIKKOM)",
+              "WB 706988 (WAYANADU)",
+              "WC 757174 (KANNUR)",
+              "WD 275240 (NEYYATTINKARA)",
+              "WE 870111 (KANHANGAD)",
+              "WF 820106 (ADIMALY)",
+              "WG 444214 (GURUVAYOOR)",
+              "WH 609709 (KOTTAYAM)",
+              "WJ 230858 (KOTTAYAM)",
+              "WK 511051 (PATTAMBI)",
+              "WL 813777 (PALAKKAD)",
+              "WM 358984 (THRISSUR)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0617 0970 1447 1619 1637",
+              "1935 2424 3294 3659 3699",
+              "4336 4824 5310 6164 6894",
+              "7430 8049 8554"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "3957 4762 4800 5486 5884",
+              "6486 7383 8698 8772 9018"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "0002 1522 3605 3911 4609",
+              "5164 5351 7462 7923 8587",
+              "9283 9908",
+              "IT Support : NIC Kerala",
+              "14/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0777 0896 0964 1008 1179",
+              "1486 1624 1649 1821 1894",
+              "1914 1973 2000 2154 2236",
+              "2464 2575 2714 2869 2930",
+              "2945 3010 3164 3469 3554",
+              "3566 3618 3643 3975 4129",
+              "4247 4533 4585 4642 4854",
+              "5050 5084 5165 5333 5340",
+              "5436 5775 5871 5945 6116",
+              "6212 6305 6491 6692 6795",
+              "6910 7018 7103 7173 7268",
+              "7726 7842 8061 8119 8140",
+              "8345 8538 8659 8837 8894",
+              "8944 8960 9003 9070 9129",
+              "9147 9218 9425 9470 9540",
+              "9688 9910 9999"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0349 0366 0649 0839 0955",
+              "1133 1224 1232 1235 1294",
+              "1566 1666 1708 1760 1850",
+              "2014 2099 2121 2192 2291",
+              "2363 2426 2570 2654 2658",
+              "2659 2724 2802 2889 2896",
+              "3088 3182 3196 3247 3572",
+              "3592 3626 3646 3729 3776",
+              "3786 3908 3938 3940 4023",
+              "4025 4217 4221 4614 4654",
+              "4698 4769 4776 5161 5356",
+              "5392 5396 5413 5455 5568",
+              "5952 6005 6086 6141 6185",
+              "6188 6199 6247 6261 6318",
+              "6417 6424 6585 6784 6802",
+              "6843 6845 6852 6903 6957",
+              "7075 7128 7176 7360 7380",
+              "7381 7412 7444 7610 7612",
+              "7622 7662 7779 8002 8023",
+              "8096 8115 8173 8233 8323",
+              "8353 8444 8513 8580 8590",
+              "8680 8754 8868 9174 9322",
+              "9363 9369 9442 9483 9526",
+              "9596 9630 9750 9922 9966",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "SHEEBA MATHEW",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "14/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72096",
+      "draw_date": "15/12/2020",
+      "lottery_name": "STHREE-SAKTHI LOTTERY NO.SS-240th DRAW",
+      "parsed": {
+        "lottery_name": "STHREE-SAKTHI LOTTERY NO.SS-240th DRAW",
+        "draw_date": "15/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7500000",
+            "entries": [
+              "SV 647444 (KARUNAGAPALLY)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "SN 647444 SO 647444 SP 647444 SR",
+              "647444 SS 647444 ST 647444 SU 647444",
+              "SW 647444 SX 647444 SY 647444 SZ",
+              "647444"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "1000000",
+            "entries": [
+              "SZ 716320 (CHERTHALA)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "5000",
+            "entries": [
+              "1923 2078 2370 2375 3356",
+              "4156 4267 4320 7408 7616",
+              "8011 8404 8870 9234 9422",
+              "9431 9523 9875"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "2000",
+            "entries": [
+              "0094 0305 0990 2602 5099",
+              "5658 6354 6415 7953 8113"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "1000",
+            "entries": [
+              "0675 2325 3445 3568 4328",
+              "4576 4812 4874 6088 6532",
+              "6826 8448 8509 8535 9015",
+              "9319 9820 9922"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "500",
+            "entries": [
+              "0341 0589 0612 1106 1365",
+              "1386 1571 1726 1940 2071",
+              "2202 2307 2461 2758 2800",
+              "3001 3284 3486 4020 4514",
+              "4668 4863 5162 5390 5528",
+              "5701 5750 5857 6275 6537",
+              "6893 7074 7513 7544 7574",
+              "7666 7840 8410 8424 8533",
+              "8576 8600 8608 9076 9151",
+              "9411 9563 9819",
+              "IT Support : NIC Kerala",
+              "15/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "200",
+            "entries": [
+              "0029 0241 0259 0921 1324",
+              "1376 1398 1687 2067 2089",
+              "2127 2182 2571 2610 2692",
+              "2868 3020 3598 3632 3820",
+              "4041 4222 4482 4544 4626",
+              "4809 4837 5111 5243 5252",
+              "5548 5925 6245 6332 6386",
+              "6403 7769 7822 8414 8434",
+              "8864 8906 8924 9341 9857"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0149 0157 0178 0263 0505",
+              "0617 0686 0737 0763 0790",
+              "0840 0911 0955 0977 1054",
+              "1059 1098 1301 1380 1611",
+              "1621 1730 1744 1817 1920",
+              "1922 1977 2317 2436 2508",
+              "2551 2647 2764 2816 2840",
+              "2992 3002 3279 3508 3609",
+              "3642 3664 3668 3794 3904",
+              "4410 4481 4567 4582 4648",
+              "4685 4719 4759 4807 4852",
+              "4856 4936 5039 5059 5121",
+              "5176 5192 5271 5490 5503",
+              "5516 5551 5796 5899 5905",
+              "6016 6060 6100 6113 6116",
+              "6141 6258 6265 6273 6283",
+              "6571 6664 6785 6827 6859",
+              "6929 6942 7003 7126 7161",
+              "7353 7659 7720 7785 7903",
+              "7918 7970 8013 8058 8070",
+              "8604 8636 8766 8782 8802",
+              "8893 8914 8978 9110 9132",
+              "9532 9537 9578 9580 9581",
+              "9670 9790 9870 9888 9905",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "INDIRADEVI S",
+              "Deputy Director",
+              "at GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "15/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72097",
+      "draw_date": "16/12/2020",
+      "lottery_name": "AKSHAYA LOTTERY NO.AK-476th DRAW",
+      "parsed": {
+        "lottery_name": "AKSHAYA LOTTERY NO.AK-476th DRAW",
+        "draw_date": "16/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7000000",
+            "entries": [
+              "AS 468435 (ATTINGAL)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "AN 468435 AO 468435 AP 468435 AR",
+              "468435 AT 468435 AU 468435 AV 468435",
+              "AW 468435 AX 468435 AY 468435 AZ",
+              "468435"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "AV 728588 (KOTTAYAM)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "AN 163211 (ERNAKULAM)",
+              "AO 735084 (CHITTUR)",
+              "AP 756731 (KASARAGOD)",
+              "AR 468839 (ATTINGAL)",
+              "AS 276855 (GURUVAYOOR)",
+              "AT 594152 (PATHANAMTHITTA)",
+              "AU 322981 (THAMARASSERY)",
+              "AV 788512 (ADOOR)",
+              "AW 814532 (ALAPPUZHA)",
+              "AX 349241 (PATHANAMTHITTA)",
+              "AY 861059 (KARUNAGAPALLY)",
+              "AZ 742970 (THIRUVANANTHAPURAM)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0070 0444 0849 1209 1597",
+              "1706 2383 4054 4929 5023",
+              "6016 6222 6546 6727 7555",
+              "8384 8943 9738"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "1403 3138 3488 4075 7646",
+              "8325 9605"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "0135 0144 0903 1393 1931",
+              "3171 3469 3684 4340 4620",
+              "4749 5261 5270 5552 5590",
+              "5602 6284 6604 6606 7101",
+              "7881 7914 8113 8593 9926",
+              "9987",
+              "IT Support : NIC Kerala",
+              "16/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0041 0200 0322 0395 0423",
+              "0682 0865 1085 1198 1348",
+              "1518 2202 2219 2434 2703",
+              "2988 3237 3300 3625 3736",
+              "3781 3819 3829 3876 4389",
+              "4544 4631 4653 4773 4806",
+              "4937 5045 5177 5193 5237",
+              "5451 5968 5975 6156 6484",
+              "6578 6663 6848 6882 7006",
+              "7378 7430 7534 7601 7932",
+              "7953 7955 7969 8638 8670",
+              "8810 8867 8907 9159 9311",
+              "9409 9630 9709 9771"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0066 0067 0113 0129 0188",
+              "0190 0230 0260 0416 0421",
+              "0561 0570 0674 0727 1032",
+              "1033 1071 1202 1383 1391",
+              "1399 1478 1523 1528 1599",
+              "1640 1762 1855 2042 2053",
+              "2226 2247 2259 2287 2312",
+              "2533 2623 2643 3108 3125",
+              "3261 3448 3490 3533 3570",
+              "3677 3777 3812 4045 4132",
+              "4240 4288 4366 4380 4500",
+              "4816 4833 5057 5080 5122",
+              "5214 5220 5258 5455 5491",
+              "5521 5548 5676 5688 5818",
+              "5938 6047 6165 6263 6280",
+              "6282 6295 6332 6404 6633",
+              "6682 6932 7123 7401 7469",
+              "7541 7830 7863 7871 8000",
+              "8018 8042 8103 8370 8423",
+              "8506 8544 8660 8690 8701",
+              "8947 9010 9022 9088 9179",
+              "9398 9457 9462 9526 9589",
+              "9632 9655 9665 9678 9813",
+              "9820 9826 9847 9925 9949",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "MANOJ P",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "16/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72098",
+      "draw_date": "18/12/2020",
+      "lottery_name": "NIRMAL LOTTERY NO.NR-203rd DRAW",
+      "parsed": {
+        "lottery_name": "NIRMAL LOTTERY NO.NR-203rd DRAW",
+        "draw_date": "18/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7000000",
+            "entries": [
+              "NY 444808 (NEYYATTINKARA)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "NN 444808 NO 444808 NP 444808 NR",
+              "444808 NS 444808 NT 444808 NU 444808",
+              "NV 444808 NW 444808 NX 444808 NZ",
+              "444808"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "1000000",
+            "entries": [
+              "NP 325679 (KATTAPPANA)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "NN 623070 (PATHANAMTHITTA)",
+              "NO 144146 (THIRUVANANTHAPURAM)",
+              "NP 273002 (PATTAMBI)",
+              "NR 174906 (IDUKKI)",
+              "NS 646799 (CHITTUR)",
+              "NT 175573 (KOTTAYAM)",
+              "NU 869469 (VAIKKOM)",
+              "NV 649862 (IRINJALAKUDA)",
+              "NW 710523 (KATTAPPANA)",
+              "NX 845527 (PATHANAMTHITTA)",
+              "NY 515845 (PATTAMBI)",
+              "NZ 409385 (KOTTAYAM)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0744 1033 1768 2835 3547",
+              "3970 4080 4941 5526 5593",
+              "6197 6291 6900 7666 8699",
+              "8749 9922 9991"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "1000",
+            "entries": [
+              "0882 1244 2046 2527 2585",
+              "3067 3387 3848 3858 3879",
+              "4005 4524 4769 5045 5260",
+              "5343 5525 5678 5769 5829",
+              "5843 5989 6150 6452 6903",
+              "7290 7636 7917 8329 8967",
+              "9305 9320 9356 9511 9843",
+              "9927",
+              "IT Support : NIC Kerala",
+              "18/12/2020"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "500",
+            "entries": [
+              "0214 0220 0300 0365 0391",
+              "0928 1100 1105 1373 1624",
+              "2049 2079 2081 2239 2250",
+              "2391 2524 2598 2621 2929",
+              "2976 3030 3413 3678 3779",
+              "3844 3961 4200 4272 4743",
+              "4766 4974 5080 5093 5134",
+              "5147 5432 5440 5652 5742",
+              "5761 5810 5959 6149 6351",
+              "6440 6677 6696 6766 6922",
+              "7110 7295 7407 7458 7592",
+              "8263 8359 8411 8622 8681",
+              "8801 8874 8902 9046 9069",
+              "9208 9274 9347 9556 9897"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "100",
+            "entries": [
+              "0020 0407 0459 0502 0504",
+              "0528 0694 1013 1099 1300",
+              "1395 1450 1516 1534 1797",
+              "1821 2095 2226 2431 2563",
+              "2602 2672 2702 2730 2794",
+              "2809 2810 2910 2993 3011",
+              "3193 3344 3491 3540 3571",
+              "3593 3597 3749 3776 3855",
+              "3875 3919 3924 3949 4045",
+              "4127 4145 4165 4282 4409",
+              "4477 4598 4663 4690 4868",
+              "4903 4919 5034 5278 5344",
+              "5605 5632 5779 5787 5791",
+              "5924 5995 6076 6259 6435",
+              "6469 6495 6641 6665 6818",
+              "6843 6868 7008 7143 7158",
+              "7612 7811 7976 7989 8089",
+              "8200 8373 8416 8421 8477",
+              "8590 8627 8634 8761 8813",
+              "8826 8846 8850 8880 8925",
+              "9017 9019 9026 9052 9106",
+              "9209 9218 9236 9343 9390",
+              "9392 9551 9615 9766 9777",
+              "9791 9823 9947 9950 9986",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "INDIRADEVI S",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "18/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72099",
+      "draw_date": "19/12/2020",
+      "lottery_name": "KARUNYA LOTTERY NO.KR-478th DRAW",
+      "parsed": {
+        "lottery_name": "KARUNYA LOTTERY NO.KR-478th DRAW",
+        "draw_date": "19/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "8000000",
+            "entries": [
+              "KM 723241 (KARUNAGAPALLY)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "KA 723241 KB 723241 KC 723241 KD",
+              "723241 KE 723241 KF 723241 KG 723241",
+              "KH 723241 KJ 723241 KK 723241 KL",
+              "723241"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "KL 790758 (THIRUR)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "KA 745717 (ADOOR)",
+              "KB 850057 (VAIKKOM)",
+              "KC 124084 (KATTAPPANA)",
+              "KD 539400 (PAYYANUR)",
+              "KE 708259 (CHERTHALA)",
+              "KF 544037 (CHERTHALA)",
+              "KG 645916 (PUNALUR)",
+              "KH 611197 (THIRUVANANTHAPURAM)",
+              "KJ 656490 (PATTAMBI)",
+              "KK 708276 (CHERTHALA)",
+              "KL 575026 (THRISSUR)",
+              "KM 835230 (MOOVATTUPUZHA)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0996 1066 1297 3625 3758",
+              "4523 4621 4676 5133 5274",
+              "5497 6280 6512 7277 7521",
+              "8189 8753 8966"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "0830 0865 0997 2496 2618",
+              "5481 5734 6315 6953 7813"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "0668 0907 1796 2193 2909",
+              "3011 3448 4225 4394 5412",
+              "6827 7171 8568 9215",
+              "IT Support : NIC Kerala",
+              "19/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0205 0208 0237 0297 0331",
+              "0840 0925 0992 1016 1204",
+              "1272 1433 1762 1889 2045",
+              "2070 2217 2394 2525 2614",
+              "2792 2961 3168 3266 3302",
+              "3310 3326 3381 3590 3657",
+              "3776 4278 4628 4664 4709",
+              "4764 5251 5575 5601 5722",
+              "6037 6169 6282 6508 6562",
+              "6564 7018 7125 7505 7552",
+              "7572 7941 8108 8227 8256",
+              "8397 8480 8523 8652 8773",
+              "8777 8810 8937 9040 9057",
+              "9062 9156 9212 9255 9445",
+              "9692 9930"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0034 0035 0067 0209 0445",
+              "0486 0652 0678 0691 0900",
+              "0968 1012 1058 1327 1506",
+              "1511 1656 1842 1908 1931",
+              "2017 2039 2078 2190 2428",
+              "2643 2800 2814 2907 2920",
+              "3078 3202 3249 3269 3359",
+              "3390 3674 3682 3733 3763",
+              "3774 3830 4029 4069 4100",
+              "4124 4158 4230 4260 4362",
+              "4483 4826 4882 4899 4904",
+              "4962 4980 4991 5001 5213",
+              "5263 5269 5291 5298 5492",
+              "5509 5549 5552 5561 5574",
+              "5674 5838 5924 6103 6146",
+              "6268 6333 6623 6751 6842",
+              "6904 6918 6966 7048 7116",
+              "7285 7433 7494 7563 7620",
+              "7661 7768 7782 7948 7962",
+              "7972 7999 8043 8114 8202",
+              "8234 8235 8237 8332 8370",
+              "8499 8738 8833 8881 8991",
+              "9049 9077 9260 9284 9343",
+              "9469 9808 9831 9905 9924",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "MANOJ P",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "19/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72100",
+      "draw_date": "21/12/2020",
+      "lottery_name": "WIN-WIN LOTTERY NO.W-595th DRAW",
+      "parsed": {
+        "lottery_name": "WIN-WIN LOTTERY NO.W-595th DRAW",
+        "draw_date": "21/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7500000",
+            "entries": [
+              "WO 197852 (KANNUR)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "WN 197852 WP 197852 WR 197852 WS",
+              "197852 WT 197852 WU 197852 WV 197852",
+              "WW 197852 WX 197852 WY 197852 WZ",
+              "197852"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "WW 643402 (IRINJALAKUDA)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "WN 814285 (KOLLAM)",
+              "WO 402903 (KOZHIKKODE)",
+              "WP 849260 (ALAPPUZHA)",
+              "WR 441051 (ALAPPUZHA)",
+              "WS 122549 (GURUVAYOOR)",
+              "WT 813404 (KOLLAM)",
+              "WU 146143 (KOLLAM)",
+              "WV 641917 (IRINJALAKUDA)",
+              "WW 420446 (ERNAKULAM)",
+              "WX 565375 (THIRUVANANTHAPURAM)",
+              "WY 788764 (THIRUVANANTHAPURAM)",
+              "WZ 809200 (VAIKKOM)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0194 0343 0888 1767 1950",
+              "2748 3537 3996 4281 4463",
+              "4739 5359 6020 6475 7785",
+              "8537 8703 8721"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "0236 0856 0964 3608 4176",
+              "4770 6004 6216 6342 7621"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "0487 1064 1611 1692 2218",
+              "3116 4851 5329 5634 6386",
+              "8070 8095",
+              "IT Support : NIC Kerala",
+              "21/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0245 0300 0382 0615 0647",
+              "0919 0991 1158 1817 1898",
+              "1999 2045 2256 2269 2333",
+              "2432 2493 2576 2730 2808",
+              "2971 2996 3029 3136 3143",
+              "3159 3284 3622 3893 4054",
+              "4059 4124 4130 4223 5185",
+              "5275 5277 5375 5691 5697",
+              "5728 5777 5801 5829 6113",
+              "6121 6170 6511 6571 6682",
+              "6814 6868 7220 7516 7721",
+              "7887 7987 8086 8159 8193",
+              "8235 8289 8396 8683 8684",
+              "8852 8896 8949 8978 9173",
+              "9232 9363 9410 9449 9559",
+              "9603 9789 9964"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0205 0209 0727 0889 0894",
+              "0941 1186 1323 1352 1477",
+              "1482 1515 1519 1586 1594",
+              "2026 2069 2101 2162 2190",
+              "2439 2455 2593 2659 2833",
+              "2864 2958 3036 3079 3211",
+              "3252 3289 3331 3490 3533",
+              "3642 3644 3665 3758 3832",
+              "3890 4103 4310 4442 4451",
+              "4590 4607 4640 4656 4806",
+              "4868 5038 5120 5144 5157",
+              "5238 5313 5469 5618 5638",
+              "5721 5879 5896 5928 5961",
+              "6208 6214 6220 6304 6385",
+              "6541 6542 6666 6707 6758",
+              "6916 6925 6999 7021 7066",
+              "7088 7142 7191 7583 7604",
+              "7734 7736 7761 7801 7853",
+              "7905 7968 7980 8186 8263",
+              "8413 8494 8542 8543 8595",
+              "8818 8822 8976 8977 9017",
+              "9021 9110 9214 9222 9317",
+              "9388 9391 9404 9445 9521",
+              "9525 9585 9719 9916 9944",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "INDIRADEVI S",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "21/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72101",
+      "draw_date": "22/12/2020",
+      "lottery_name": "STHREE-SAKTHI LOTTERY NO.SS-241st DRAW",
+      "parsed": {
+        "lottery_name": "STHREE-SAKTHI LOTTERY NO.SS-241st DRAW",
+        "draw_date": "22/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7500000",
+            "entries": [
+              "SA 312075 (CHITTUR)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "SB 312075 SC 312075 SD 312075 SE",
+              "312075 SF 312075 SG 312075 SH 312075",
+              "SJ 312075 SK 312075 SL 312075 SM",
+              "312075"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "1000000",
+            "entries": [
+              "SD 825910 (ADIMALY)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "5000",
+            "entries": [
+              "0308 0630 2124 2602 2661",
+              "4914 5090 5431 6040 6904",
+              "7010 7323 7559 8415 8679",
+              "8829 9571 9694"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "2000",
+            "entries": [
+              "0547 1239 2533 5717 6022",
+              "6484 7049 7962 8023 9471"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "1000",
+            "entries": [
+              "0570 2069 3001 3324 3474",
+              "4042 4091 4268 4300 5171",
+              "5430 6767 7726 7837 8063",
+              "8465 9035 9726"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "500",
+            "entries": [
+              "0242 0528 0586 0862 1022",
+              "1244 1359 1452 2102 2309",
+              "2349 2617 2826 2868 3011",
+              "3096 3402 3494 3514 3797",
+              "4044 4089 4196 4396 4428",
+              "4719 4743 4820 5021 5239",
+              "5411 5512 5534 5909 5952",
+              "6369 6398 6911 7236 7265",
+              "7353 7772 8159 8612 9130",
+              "9169 9474 9966",
+              "IT Support : NIC Kerala",
+              "22/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "200",
+            "entries": [
+              "0150 0224 0310 0362 0411",
+              "0483 0761 1352 1390 1405",
+              "1643 1683 2107 2154 2506",
+              "3109 3139 3362 3461 3512",
+              "3543 3923 3938 4473 4706",
+              "4765 4955 5262 5642 5935",
+              "6123 6310 6436 6754 6916",
+              "7101 7119 7124 7464 7810",
+              "7845 8433 8528 9537 9558"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0022 0074 0147 0246 0313",
+              "0315 0334 0419 0474 0491",
+              "0515 0565 0712 0818 0850",
+              "0869 0916 1035 1288 1380",
+              "1406 1420 1507 1524 1538",
+              "1857 1950 1979 2355 2546",
+              "2590 2594 2615 2625 2699",
+              "2714 2833 2876 2970 3104",
+              "3306 3405 3534 3645 3771",
+              "4108 4209 4258 4311 4416",
+              "4465 4614 4667 4683 4843",
+              "5111 5142 5203 5205 5336",
+              "5380 5454 5461 5474 5741",
+              "5847 5910 5918 6060 6076",
+              "6256 6275 6300 6301 6340",
+              "6344 6399 6675 6706 6940",
+              "6957 7005 7036 7108 7131",
+              "7159 7172 7404 7473 7489",
+              "7582 7712 7766 7948 7980",
+              "8005 8077 8078 8148 8237",
+              "8250 8318 8432 8530 8591",
+              "8599 8607 8640 8820 8905",
+              "8936 9096 9238 9357 9507",
+              "9552 9740 9792 9963 9976",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "MANOJ P",
+              "Deputy Director",
+              "at GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "22/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72102",
+      "draw_date": "23/12/2020",
+      "lottery_name": "AKSHAYA LOTTERY NO.AK-477th DRAW",
+      "parsed": {
+        "lottery_name": "AKSHAYA LOTTERY NO.AK-477th DRAW",
+        "draw_date": "23/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7000000",
+            "entries": [
+              "AE 620096 (KOZHIKKODE)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "AA 620096 AB 620096 AC 620096 AD",
+              "620096 AF 620096 AG 620096 AH 620096",
+              "AJ 620096 AK 620096 AL 620096 AM",
+              "620096"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "AK 140627 (THRISSUR)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "AA 364115 (MALAPPURAM)",
+              "AB 575060 (THRISSUR)",
+              "AC 778985 (CHERTHALA)",
+              "AD 110765 (NEYYATTINKARA)",
+              "AE 643498 (VAIKKOM)",
+              "AF 508010 (MOOVATTUPUZHA)",
+              "AG 124475 (ADOOR)",
+              "AH 627388 (THIRUVANANTHAPURAM)",
+              "AJ 120728 (MOOVATTUPUZHA)",
+              "AK 408564 (ALAPPUZHA)",
+              "AL 572057 (KOTTAYAM)",
+              "AM 785180 (KANNUR)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0567 1136 1861 1990 2565",
+              "2698 3295 3770 5084 5813",
+              "8021 8310 8446 8665 8731",
+              "8750 8932 9966"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "1389 1778 1895 3841 6265",
+              "7010 9648"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "0617 0668 0705 0850 1167",
+              "1223 1520 1679 2229 2667",
+              "3787 3919 4137 4779 5527",
+              "5820 6644 6899 6969 7066",
+              "7116 7475 7552 7724 9551",
+              "9598",
+              "IT Support : NIC Kerala",
+              "23/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0296 0378 0513 0526 0846",
+              "1039 1133 1241 1359 1649",
+              "1827 2037 2518 2526 2758",
+              "2883 2891 2906 3021 3068",
+              "3134 3195 3201 3322 3450",
+              "3706 3763 4138 4206 4287",
+              "4405 4653 4793 4843 4951",
+              "5010 5014 5182 5485 5551",
+              "5707 5853 6057 6074 6424",
+              "6425 6450 6503 6652 6708",
+              "7064 7246 7360 7910 8214",
+              "8270 8612 8673 8801 8969",
+              "9150 9174 9305 9703"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0004 0321 0392 0421 0521",
+              "0577 0578 0600 0645 0691",
+              "0875 0982 0985 1005 1020",
+              "1077 1157 1166 1318 1372",
+              "1451 1508 1559 1705 1821",
+              "2016 2034 2059 2189 2223",
+              "2314 2375 2377 2475 2689",
+              "2731 2828 2835 3032 3117",
+              "3161 3173 3300 3312 3327",
+              "3419 3529 3749 4292 4315",
+              "4447 4492 4545 4802 4878",
+              "4900 4975 5292 5352 5358",
+              "5366 5412 5517 5602 5630",
+              "5688 5793 5898 6017 6032",
+              "6052 6125 6223 6236 6237",
+              "6397 6597 6603 6766 6782",
+              "7150 7286 7310 7327 7373",
+              "7460 7506 7514 7725 7778",
+              "7853 7879 7924 7985 8240",
+              "8381 8467 8496 8547 8561",
+              "8625 8632 8636 8762 8770",
+              "9000 9106 9122 9180 9242",
+              "9261 9266 9317 9403 9474",
+              "9606 9717 9753 9782 9818",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "INDIRADEVI S",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "23/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72103",
+      "draw_date": "25/12/2020",
+      "lottery_name": "NIRMAL LOTTERY NO.NR-204th DRAW",
+      "parsed": {
+        "lottery_name": "NIRMAL LOTTERY NO.NR-204th DRAW",
+        "draw_date": "25/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7000000",
+            "entries": [
+              "NM 426487 (IDUKKI)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "NA 426487 NB 426487 NC 426487 ND",
+              "426487 NE 426487 NF 426487 NG 426487",
+              "NH 426487 NJ 426487 NK 426487 NL",
+              "426487"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "1000000",
+            "entries": [
+              "NJ 653124 (MALAPPURAM)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "NA 673669 (ADIMALY)",
+              "NB 712263 (ERNAKULAM)",
+              "NC 325054 (NEYYATTINKARA)",
+              "ND 192009 (KOTTAYAM)",
+              "NE 229236 (PALAKKAD)",
+              "NF 458263 (THAMARASSERY)",
+              "NG 460947 (KANNUR)",
+              "NH 740525 (VADAKARA)",
+              "NJ 804768 (KOLLAM)",
+              "NK 418471 (KOTTAYAM)",
+              "NL 656648 (MALAPPURAM)",
+              "NM 355645 (PALAKKAD)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0286 0507 2165 2190 3011",
+              "3245 3371 4118 4827 6757",
+              "7020 7270 7626 7800 8369",
+              "8419 8609 8864"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "1000",
+            "entries": [
+              "0419 1363 1554 1571 2152",
+              "2410 2645 2716 3118 3225",
+              "3230 3366 3781 3965 4296",
+              "4645 4703 4997 5974 6041",
+              "6230 6555 6596 6715 7263",
+              "7676 7691 7783 7967 8177",
+              "8233 8264 9326 9378 9425",
+              "9496",
+              "IT Support : NIC Kerala",
+              "25/12/2020"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "500",
+            "entries": [
+              "0188 0214 0246 0282 0329",
+              "0439 0496 0758 1025 1100",
+              "1134 1413 1755 2181 2450",
+              "2563 2588 3013 3239 3437",
+              "3629 3676 3692 4084 4129",
+              "4201 4383 4443 4860 5265",
+              "5452 5505 5590 5694 5786",
+              "6139 6149 6162 6480 6577",
+              "6728 6853 7149 7258 7482",
+              "7556 7611 7802 7881 7918",
+              "8332 8356 8510 8656 8788",
+              "8814 8848 8976 9067 9172",
+              "9275 9477 9498 9506 9651",
+              "9652 9720 9730 9739 9759"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "100",
+            "entries": [
+              "0071 0314 0611 0801 0917",
+              "0978 1006 1070 1388 1643",
+              "1657 1851 1969 2008 2097",
+              "2368 2483 2493 2540 2601",
+              "2611 2620 2656 2660 2699",
+              "2723 2758 2847 2859 3059",
+              "3105 3198 3325 3404 3490",
+              "3503 3565 3574 3592 3621",
+              "3751 3862 3936 4011 4015",
+              "4037 4072 4234 4375 4445",
+              "4502 4858 4883 5036 5116",
+              "5184 5216 5256 5286 5393",
+              "5427 5495 5585 5636 5726",
+              "5813 5840 5877 5924 5978",
+              "6168 6219 6237 6299 6369",
+              "6450 6451 6537 6557 6610",
+              "6692 6704 7022 7150 7152",
+              "7193 7414 7420 7570 7623",
+              "7641 7767 7770 7900 7910",
+              "8038 8204 8205 8320 8327",
+              "8339 8384 8516 8594 8672",
+              "8699 8731 8830 9110 9155",
+              "9180 9222 9335 9375 9527",
+              "9536 9714 9887 9906 9946",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "MANOJ P",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "25/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72104",
+      "draw_date": "26/12/2020",
+      "lottery_name": "KARUNYA LOTTERY NO.KR-479th DRAW",
+      "parsed": {
+        "lottery_name": "KARUNYA LOTTERY NO.KR-479th DRAW",
+        "draw_date": "26/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "8000000",
+            "entries": [
+              "KN 157751 (THRISSUR)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "KO 157751 KP 157751 KR 157751 KS",
+              "157751 KT 157751 KU 157751 KV 157751",
+              "KW 157751 KX 157751 KY 157751 KZ",
+              "157751"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "KZ 444085 (KOZHIKKODE)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "KN 783041 (KARUNAGAPALLY)",
+              "KO 672063 (THRISSUR)",
+              "KP 461486 (MALAPPURAM)",
+              "KR 838861 (KOLLAM)",
+              "KS 272975 (GURUVAYOOR)",
+              "KT 509736 (PATTAMBI)",
+              "KU 609909 (KOTTAYAM)",
+              "KV 115450 (IRINJALAKUDA)",
+              "KW 337012 (WAYANADU)",
+              "KX 519360 (KAYAMKULAM)",
+              "KY 610085 (KOZHIKKODE)",
+              "KZ 273192 (THIRUR)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0369 1353 1533 1624 2109",
+              "3749 3937 5203 5661 6901",
+              "8177 8484 8760 8785 8874",
+              "8927 8960 9118"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "0027 0689 0903 1281 1669",
+              "2049 3621 5181 7134 8699"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "0441 1334 1995 2296 2448",
+              "2643 2772 3171 3239 4934",
+              "5947 6561 8781 8988",
+              "IT Support : NIC Kerala",
+              "26/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0291 0310 0359 0408 0422",
+              "0436 0446 0596 0773 0894",
+              "0978 1104 1149 1184 1223",
+              "1292 1377 1475 1724 1833",
+              "2157 2263 2433 2697 3097",
+              "3700 4192 4227 4325 4467",
+              "4481 4499 4643 4818 4973",
+              "5005 5053 5182 5386 5634",
+              "5635 6229 6294 6411 6434",
+              "6556 6625 6772 6927 7052",
+              "7217 7261 7571 7729 7744",
+              "7899 8063 8155 8231 8313",
+              "8517 8594 8716 8846 8941",
+              "8962 8983 9352 9456 9460",
+              "9909 9989"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0044 0086 0118 0144 0230",
+              "0347 0621 0848 0900 0919",
+              "1071 1399 1403 1520 1594",
+              "1656 1712 1843 1928 1959",
+              "2009 2055 2118 2332 2410",
+              "2563 2577 2627 2715 2942",
+              "2945 2963 2988 3029 3040",
+              "3289 3327 3371 3471 3521",
+              "3624 3785 3907 3915 4121",
+              "4159 4229 4269 4285 4288",
+              "4302 4502 4514 4551 4594",
+              "4726 4825 4893 4949 5417",
+              "5486 5556 5610 5701 5733",
+              "5809 5890 6068 6176 6221",
+              "6239 6258 6270 6312 6477",
+              "6526 6567 6576 6594 6617",
+              "6809 6889 6940 6943 7123",
+              "7131 7273 7299 7466 7469",
+              "7508 7519 7529 7714 7742",
+              "7765 7800 7806 7870 7876",
+              "8021 8052 8210 8262 8304",
+              "8791 8799 8863 8912 9026",
+              "9208 9435 9443 9475 9542",
+              "9620 9771 9883 9956 9995",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "MANOJ P",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "26/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72105",
+      "draw_date": "28/12/2020",
+      "lottery_name": "WIN-WIN LOTTERY NO.W-596th DRAW",
+      "parsed": {
+        "lottery_name": "WIN-WIN LOTTERY NO.W-596th DRAW",
+        "draw_date": "28/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7500000",
+            "entries": [
+              "WJ 693433 (CHERTHALA)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "WA 693433 WB 693433 WC 693433 WD",
+              "693433 WE 693433 WF 693433 WG 693433",
+              "WH 693433 WK 693433 WL 693433 WM",
+              "693433"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "WG 871403 (MANANTHAVADY)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "WA 398446 (MALAPPURAM)",
+              "WB 589708 (MALAPPURAM)",
+              "WC 316740 (IRINJALAKUDA)",
+              "WD 263248 (IDUKKI)",
+              "WE 733940 (PATTAMBI)",
+              "WF 682947 (IDUKKI)",
+              "WG 155886 (ERNAKULAM)",
+              "WH 557714 (WAYANADU)",
+              "WJ 870942 (VAIKKOM)",
+              "WK 823408 (THRISSUR)",
+              "WL 225646 (KOLLAM)",
+              "WM 105089 (IRINJALAKUDA)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0188 0229 1245 1543 3120",
+              "3131 3513 5029 5734 5756",
+              "5968 6174 6184 7870 8090",
+              "8390 8786 9887"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "0676 0874 1974 3706 3891",
+              "4259 6269 6590 7371 7486"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "0479 0490 1062 1105 2190",
+              "2878 3007 3801 4394 7236",
+              "8212 9569",
+              "IT Support : NIC Kerala",
+              "28/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0255 0263 0296 0420 0697",
+              "1251 1295 1435 1505 1639",
+              "1883 1976 2168 2186 2198",
+              "2339 2423 2444 2559 2659",
+              "3023 3265 3393 3488 3575",
+              "3736 3847 3865 3930 3941",
+              "4021 4039 4120 4500 4661",
+              "4725 4976 5052 5282 5514",
+              "5580 5609 5677 5683 5787",
+              "5814 6192 6301 6527 6565",
+              "6884 7001 7073 7122 7491",
+              "7541 7649 7698 7836 8232",
+              "8311 8510 8540 8594 8638",
+              "8715 8806 9096 9178 9271",
+              "9403 9462 9676 9680 9776",
+              "9847 9879 9929"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0013 0136 0161 0219 0242",
+              "0480 0558 0619 0641 0692",
+              "0703 0821 1005 1054 1247",
+              "1339 1402 1473 1500 1574",
+              "1624 1667 1713 1733 1759",
+              "1801 1894 1977 2050 2176",
+              "2288 2328 2340 2394 2649",
+              "2749 2837 2925 3107 3189",
+              "3221 3257 3287 3294 3337",
+              "3389 3428 3469 3500 3542",
+              "3733 4089 4205 4381 4408",
+              "4504 4554 4571 4717 4803",
+              "4977 5039 5113 5329 5483",
+              "5723 5749 5780 5813 5819",
+              "5835 6011 6158 6440 6579",
+              "6623 6629 6644 6681 6702",
+              "6795 6796 6901 7087 7265",
+              "7420 7474 7524 7577 7596",
+              "7635 7690 7696 7899 7905",
+              "7948 8209 8223 8345 8586",
+              "8592 8686 8704 8828 9017",
+              "9138 9173 9194 9221 9320",
+              "9347 9410 9431 9439 9512",
+              "9587 9849 9894 9896 9909",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "INDIRADEVI S",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "28/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72106",
+      "draw_date": "29/12/2020",
+      "lottery_name": "STHREE-SAKTHI LOTTERY NO.SS-242nd DRAW",
+      "parsed": {
+        "lottery_name": "STHREE-SAKTHI LOTTERY NO.SS-242nd DRAW",
+        "draw_date": "29/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7500000",
+            "entries": [
+              "SZ 140911 (THIRUVANANTHAPURAM)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "SN 140911 SO 140911 SP 140911 SR",
+              "140911 SS 140911 ST 140911 SU 140911",
+              "SV 140911 SW 140911 SX 140911 SY",
+              "140911"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "1000000",
+            "entries": [
+              "SX 798552 (KASARAGOD)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "5000",
+            "entries": [
+              "0978 1086 1107 3016 3479",
+              "3525 4663 5683 5877 6153",
+              "6168 6234 6966 7470 8524",
+              "8811 9037 9170"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "2000",
+            "entries": [
+              "0237 0942 2022 2854 3237",
+              "4878 6037 6908 8904 9173"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "1000",
+            "entries": [
+              "0159 0365 0824 1281 2270",
+              "3075 4258 4480 5126 5351",
+              "5568 6075 6514 7358 7390",
+              "7598 8772 9956"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "500",
+            "entries": [
+              "0043 0206 0260 1278 1429",
+              "2100 2302 2372 2405 2526",
+              "2567 3028 3179 3273 3386",
+              "3550 3649 3723 4120 4178",
+              "4390 5385 6247 6286 6625",
+              "6680 6952 6987 7191 7323",
+              "7523 7558 7672 7679 7753",
+              "7841 7904 7925 8386 8624",
+              "8869 9245 9552 9682 9702",
+              "9867 9894 9904",
+              "IT Support : NIC Kerala",
+              "29/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "200",
+            "entries": [
+              "0024 0266 0722 1275 1434",
+              "1556 2009 2031 2389 2466",
+              "2577 2794 2901 2938 2963",
+              "3116 3748 4070 4133 4219",
+              "4360 4443 4651 4967 5282",
+              "5714 5745 6035 6125 6211",
+              "6768 7445 7879 7937 8091",
+              "8146 8478 8789 8832 8925",
+              "8984 9060 9076 9446 9637"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0099 0150 0258 0274 0320",
+              "0437 0450 0486 0833 0861",
+              "0878 0979 1080 1188 1220",
+              "1270 1308 1316 1336 1395",
+              "1678 1942 2197 2300 2398",
+              "2458 2535 2551 2779 2922",
+              "2925 2927 3110 3259 3261",
+              "3262 3336 3350 3402 3447",
+              "3451 3475 3527 3578 3796",
+              "3817 3968 3994 4085 4162",
+              "4199 4371 4373 4428 4733",
+              "4839 4852 4936 4960 4963",
+              "5056 5061 5063 5104 5109",
+              "5247 5344 5584 5786 5980",
+              "5984 6131 6136 6205 6255",
+              "6411 6473 6501 6506 6577",
+              "6619 6730 6764 6926 6971",
+              "7046 7110 7255 7291 7300",
+              "7376 7539 7564 7626 7718",
+              "7858 7913 8060 8140 8205",
+              "8257 8260 8300 8334 8364",
+              "8479 8508 8557 8841 8892",
+              "8928 8935 9000 9110 9111",
+              "9125 9250 9414 9429 9963",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "MANOJ P",
+              "Deputy Director",
+              "at GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "29/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    },
+    {
+      "source": "72107",
+      "draw_date": "30/12/2020",
+      "lottery_name": "AKSHAYA LOTTERY NO.AK-478th DRAW",
+      "parsed": {
+        "lottery_name": "AKSHAYA LOTTERY NO.AK-478th DRAW",
+        "draw_date": "30/12/2020",
+        "first_prize": "Unknown",
+        "first_prize_location": "Unknown",
+        "second_prize": "",
+        "second_prize_location": "",
+        "third_prize": "",
+        "third_prize_location": "",
+        "consolation_prizes": [],
+        "prize_tiers": [
+          {
+            "label": "1st Prize",
+            "amount": "7000000",
+            "entries": [
+              "AW 228972 (ERNAKULAM)",
+              "Consolation Prize-Rs",
+              ":8000/-",
+              "AN 228972 AO 228972 AP 228972 AR",
+              "228972 AS 228972 AT 228972 AU 228972",
+              "AV 228972 AX 228972 AY 228972 AZ",
+              "228972"
+            ]
+          },
+          {
+            "label": "2nd Prize",
+            "amount": "500000",
+            "entries": [
+              "AZ 317648 (ATTINGAL)"
+            ]
+          },
+          {
+            "label": "3rd Prize",
+            "amount": "100000",
+            "entries": [
+              "AN 829275 (THRISSUR)",
+              "AO 348205 (PALAKKAD)",
+              "AP 841317 (MOOVATTUPUZHA)",
+              "AR 712223 (PATTAMBI)",
+              "AS 574065 (PALAKKAD)",
+              "AT 713525 (PATTAMBI)",
+              "AU 393469 (ALAPPUZHA)",
+              "AV 617837 (THRISSUR)",
+              "AW 518495 (CHITTUR)",
+              "AX 371832 (THRISSUR)",
+              "AY 221550 (KANNUR)",
+              "AZ 687072 (PALAKKAD)"
+            ]
+          },
+          {
+            "label": "4th Prize",
+            "amount": "5000",
+            "entries": [
+              "0431 0533 0946 3232 3818",
+              "4252 4804 5212 5314 6966",
+              "7399 7426 7620 7821 8059",
+              "8366 8448 9339"
+            ]
+          },
+          {
+            "label": "5th Prize",
+            "amount": "2000",
+            "entries": [
+              "1120 2197 3041 3824 5020",
+              "5634 7680"
+            ]
+          },
+          {
+            "label": "6th Prize",
+            "amount": "1000",
+            "entries": [
+              "0893 1119 1231 1392 2391",
+              "2614 3498 3890 3926 4349",
+              "5245 5275 5405 5740 6541",
+              "7053 7364 7944 8183 8399",
+              "8597 9037 9164 9710 9800",
+              "9839",
+              "IT Support : NIC Kerala",
+              "30/12/2020"
+            ]
+          },
+          {
+            "label": "7th Prize",
+            "amount": "500",
+            "entries": [
+              "0026 0175 0409 0438 0560",
+              "1209 1278 1324 1336 1427",
+              "1983 2555 2617 2768 2833",
+              "2959 3188 3262 3361 3636",
+              "4021 4072 4081 4408 4503",
+              "4509 4530 4533 4647 4820",
+              "5784 5866 5970 6070 6086",
+              "6110 6120 6162 6190 6436",
+              "6469 6480 6761 6766 6802",
+              "6883 6916 6924 6940 7359",
+              "7540 8373 8498 8584 8723",
+              "8820 8855 8908 8973 9103",
+              "9427 9595 9613 9821"
+            ]
+          },
+          {
+            "label": "8th Prize",
+            "amount": "100",
+            "entries": [
+              "0132 0184 0213 0219 0489",
+              "0506 0532 0700 0812 0865",
+              "0890 1080 1115 1205 1294",
+              "1308 1317 1360 1497 1709",
+              "1743 1847 1907 1968 1969",
+              "1979 2044 2091 2096 2109",
+              "2127 2212 2307 2326 2365",
+              "2423 2612 2663 3189 3286",
+              "3308 3326 3480 3791 3877",
+              "3914 3942 3964 4035 4064",
+              "4596 4716 4746 4764 4845",
+              "4863 5027 5082 5151 5280",
+              "5290 5297 5335 5339 5532",
+              "5552 5578 5768 5988 5997",
+              "6012 6026 6036 6081 6126",
+              "6319 6357 6418 6462 6653",
+              "6658 6707 6722 6765 6848",
+              "7076 7123 7155 7187 7281",
+              "7327 7337 7355 7393 7657",
+              "7735 8188 8331 8344 8590",
+              "8786 8827 8836 8851 8942",
+              "9137 9141 9161 9171 9237",
+              "9295 9494 9580 9625 9665",
+              "9810 9829 9845 9904 9951",
+              "Government Gazatte and surrender the winning tickets within 30 days.",
+              "Sd/-",
+              "INDIRADEVI S",
+              "Deputy Director",
+              "GORKY BHAVAN, NEAR BAKERY JUNCTION,",
+              "THIRUVANANTHAPURAM",
+              "Directorate Of State Lotteries ,Thiruvananthapuram",
+              "IT Support : NIC Kerala",
+              "30/12/2020"
+            ]
+          }
+        ],
+        "fourth_prize_numbers": [],
+        "fifth_prize_numbers": [],
+        "sixth_prize_numbers": [],
+        "seventh_prize_numbers": [],
+        "eighth_prize_numbers": [],
+        "ninth_prize_numbers": []
+      }
+    }
+  ]
+}

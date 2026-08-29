@@ -2,14 +2,16 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
+import nokku.lottery.kerala.astrology as astrology
 from nokku.lottery.kerala.astrology import (
     LAKSHMI_ASTROLOGY_CONVENTION,
-    LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
     VIMSHOTTARI_SEQUENCE,
     VIMSHOTTARI_YEARS,
-    lakshmi_astrology_snapshot,
     vimshottari_snapshot,
 )
+
+
+TEST_NATAL_MOON_LONGITUDE = 102.1541
 
 
 def test_lakshmi_astrology_convention_is_explicit_and_experimental():
@@ -22,11 +24,16 @@ def test_lakshmi_astrology_convention_is_explicit_and_experimental():
     assert convention.status == "experimental"
 
 
-def test_experimental_natal_moon_resolves_moon_moon_for_28_august_2026():
+def test_production_astrology_module_has_no_person_specific_natal_moon_fixture():
+    assert not hasattr(astrology, "LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE")
+    assert not hasattr(astrology, "LAKSHMI_EXPERIMENTAL_NATAL_MOON_REFERENCE_AT")
+
+
+def test_explicit_natal_moon_resolves_moon_moon_for_28_august_2026():
     ist = timezone(timedelta(hours=5, minutes=30))
 
     snapshot = vimshottari_snapshot(
-        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        TEST_NATAL_MOON_LONGITUDE,
         datetime(1969, 8, 12, 5, 23, tzinfo=ist),
         datetime(2026, 8, 28, 12, 0, tzinfo=ist),
     )
@@ -38,31 +45,6 @@ def test_experimental_natal_moon_resolves_moon_moon_for_28_august_2026():
     assert snapshot.status == "experimental"
     assert snapshot.mahadasha_start < datetime(2026, 8, 28, 12, 0, tzinfo=ist)
     assert snapshot.antardasha_end > datetime(2026, 8, 28, 12, 0, tzinfo=ist)
-
-
-def test_lakshmi_astrology_snapshot_binds_declared_experimental_input():
-    ist = timezone(timedelta(hours=5, minutes=30))
-    birth_at = datetime(1969, 8, 12, 5, 23, tzinfo=ist)
-    target_at = datetime(2026, 8, 28, 12, 0, tzinfo=ist)
-
-    wrapped = lakshmi_astrology_snapshot(birth_at, target_at)
-    explicit = vimshottari_snapshot(
-        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
-        birth_at,
-        target_at,
-    )
-
-    assert wrapped == explicit
-
-
-def test_lakshmi_astrology_snapshot_rejects_unrelated_birth_instant():
-    ist = timezone(timedelta(hours=5, minutes=30))
-
-    with pytest.raises(ValueError, match="only valid for its reference birth instant"):
-        lakshmi_astrology_snapshot(
-            datetime(1990, 1, 1, 10, 0, tzinfo=ist),
-            datetime(2026, 8, 28, 12, 0, tzinfo=ist),
-        )
 
 
 def test_vimshottari_sequence_and_years_form_120_year_cycle():
@@ -81,13 +63,33 @@ def test_vimshottari_sequence_and_years_form_120_year_cycle():
     assert sum(VIMSHOTTARI_YEARS[lord] for lord in VIMSHOTTARI_SEQUENCE) == 120
 
 
+def test_vimshottari_snapshot_requires_aware_birth_and_target_instants():
+    ist = timezone(timedelta(hours=5, minutes=30))
+    aware_birth = datetime(1969, 8, 12, 5, 23, tzinfo=ist)
+    aware_target = datetime(2026, 8, 28, 12, 0, tzinfo=ist)
+
+    with pytest.raises(ValueError, match="Birth instant must be timezone-aware"):
+        vimshottari_snapshot(
+            TEST_NATAL_MOON_LONGITUDE,
+            aware_birth.replace(tzinfo=None),
+            aware_target,
+        )
+
+    with pytest.raises(ValueError, match="Target instant must be timezone-aware"):
+        vimshottari_snapshot(
+            TEST_NATAL_MOON_LONGITUDE,
+            aware_birth,
+            aware_target.replace(tzinfo=None),
+        )
+
+
 def test_vimshottari_snapshot_rejects_target_before_birth():
     ist = timezone(timedelta(hours=5, minutes=30))
     birth_at = datetime(1969, 8, 12, 5, 23, tzinfo=ist)
 
     with pytest.raises(ValueError, match="Target instant cannot precede birth instant"):
         vimshottari_snapshot(
-            LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+            TEST_NATAL_MOON_LONGITUDE,
             birth_at,
             birth_at - timedelta(seconds=1),
         )
@@ -99,12 +101,12 @@ def test_vimshottari_snapshot_normalizes_longitude_to_one_zodiac_cycle():
     target_at = datetime(2026, 8, 28, 12, 0, tzinfo=ist)
 
     canonical = vimshottari_snapshot(
-        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        TEST_NATAL_MOON_LONGITUDE,
         birth_at,
         target_at,
     )
     wrapped = vimshottari_snapshot(
-        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE + 360.0,
+        TEST_NATAL_MOON_LONGITUDE + 360.0,
         birth_at,
         target_at,
     )
@@ -130,13 +132,13 @@ def test_vimshottari_snapshot_moves_to_next_antardasha_at_boundary():
     target_at = datetime(2026, 8, 28, 12, 0, tzinfo=ist)
 
     moon_moon = vimshottari_snapshot(
-        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        TEST_NATAL_MOON_LONGITUDE,
         birth_at,
         target_at,
     )
     boundary = moon_moon.antardasha_end
     moon_mars = vimshottari_snapshot(
-        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        TEST_NATAL_MOON_LONGITUDE,
         birth_at,
         boundary,
     )
@@ -154,13 +156,13 @@ def test_vimshottari_snapshot_moves_to_next_mahadasha_at_boundary():
     target_at = datetime(2026, 8, 28, 12, 0, tzinfo=ist)
 
     moon_moon = vimshottari_snapshot(
-        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        TEST_NATAL_MOON_LONGITUDE,
         birth_at,
         target_at,
     )
     boundary = moon_moon.mahadasha_end
     mars_mars = vimshottari_snapshot(
-        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
+        TEST_NATAL_MOON_LONGITUDE,
         birth_at,
         boundary,
     )

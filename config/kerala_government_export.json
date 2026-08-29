@@ -3,5 +3,6 @@
   "repository_export_directory": "exports/kerala_lottery_government",
   "manifest_filename": "manifest.json",
   "shard_period_format": "%Y-%m",
-  "shard_filename_template": "{period}.json"
+  "shard_filename_template": "{period}.json",
+  "frontier_max_new_sources": 31
 }

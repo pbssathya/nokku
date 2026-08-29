@@ -409,7 +409,17 @@ def _incremental_export(*, config: ExportConfig, manifest: dict[str, object], an
             "latest_source": payload["latest_source"],
             "latest_draw_date": payload["latest_draw_date"],
         }
-    new_manifest = _manifest_payload(anchor=anchor, shards=list(by_period.values()), config=config)
+    evidence_dates = [
+        parsed
+        for item in by_period.values()
+        if (parsed := _parse_iso_date(item.get("latest_draw_date"))) is not None
+    ]
+    evidence_cutoff = max(evidence_dates) if evidence_dates else anchor
+    new_manifest = _manifest_payload(
+        anchor=evidence_cutoff,
+        shards=list(by_period.values()),
+        config=config,
+    )
     repo_manifest_target = _manifest_path(config)
     new_manifest = _preserve_generated_at(repo_manifest_target, new_manifest)
     manifest_changed = _write_json_if_changed(repo_manifest_target, new_manifest)

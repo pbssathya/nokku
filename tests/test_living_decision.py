@@ -20,6 +20,9 @@ from nokku.preferences import (
 )
 
 
+TEST_NATAL_MOON_LONGITUDE = 102.1541
+
+
 def test_kerala_today_uses_ist_not_codespace_utc():
     utc_late_evening = datetime(2026, 8, 23, 20, 0, tzinfo=timezone.utc)
 
@@ -93,6 +96,7 @@ def test_living_loop_preserves_decision_experience(tmp_path):
     assert result.refreshed_sources == ()
     assert result.numerology_signals == ()
     assert result.astrology_observation is None
+    assert result.astrology_observation_result is None
 
     with Memory(memory_path) as memory:
         recalled = memory.recall(result.memory_id)
@@ -103,6 +107,9 @@ def test_living_loop_preserves_decision_experience(tmp_path):
     assert recalled["body"]["decision"]["recommendation"] == "SKIP"
     assert recalled["body"]["signals"]["numerology"] == []
     assert recalled["body"]["signals"]["astrology"] is None
+    assert recalled["body"]["operational_context"]["astrology_observation_attempt"] == {
+        "status": "not_requested"
+    }
 
 
 def test_living_loop_observes_saved_profile_numerology_without_changing_policy(tmp_path):
@@ -174,9 +181,12 @@ def test_living_loop_preserves_explicit_astrology_observation_without_changing_p
         memory_path=memory_path,
         preferences_path=preferences_path,
         astrology_target_at=datetime(2026, 8, 28, 6, 30, tzinfo=timezone.utc),
+        astrology_natal_moon_longitude=TEST_NATAL_MOON_LONGITUDE,
     )
 
     assert result.decision.recommendation == "SKIP"
+    assert result.astrology_observation_result is not None
+    assert result.astrology_observation_result.status == "success"
     assert result.astrology_observation is not None
     assert result.astrology_observation.mahadasha == "Moon"
     assert result.astrology_observation.antardasha == "Moon"
@@ -189,6 +199,50 @@ def test_living_loop_preserves_explicit_astrology_observation_without_changing_p
     assert preserved["mahadasha"] == "Moon"
     assert preserved["antardasha"] == "Moon"
     assert preserved["status"] == "experimental"
+    receipt = recalled["body"]["operational_context"]["astrology_observation_attempt"]
+    assert receipt["status"] == "success"
+    assert receipt["natal_moon_longitude"] == TEST_NATAL_MOON_LONGITUDE
+
+
+def test_living_loop_abstains_when_derived_moon_input_is_not_supplied(tmp_path):
+    memory_path = tmp_path / "living.sqlite"
+    preferences_path = tmp_path / "preferences.json"
+    save_user_preferences(
+        UserPreferences(
+            timezone="Asia/Kolkata",
+            birth=UserBirthProfile(
+                date="1969-08-12",
+                time="05:23",
+                location="Kannankulangara, North Paravur, Kerala",
+                timezone="Asia/Kolkata",
+            ),
+        ),
+        preferences_path,
+    )
+
+    result = run_weekly_decision(
+        "Should I buy a Kerala lottery this week?",
+        anchor=date(2026, 8, 24),
+        refresh=False,
+        memory_path=memory_path,
+        preferences_path=preferences_path,
+        astrology_target_at=datetime(2026, 8, 28, 6, 30, tzinfo=timezone.utc),
+    )
+
+    assert result.astrology_observation is None
+    assert result.astrology_observation_result is not None
+    assert result.astrology_observation_result.status == "abstained"
+    assert result.astrology_observation_result.uncertainty == (
+        "natal_moon_longitude_not_supplied",
+    )
+
+    with Memory(memory_path) as memory:
+        recalled = memory.recall(result.memory_id)
+
+    receipt = recalled["body"]["operational_context"]["astrology_observation_attempt"]
+    assert receipt["status"] == "abstained"
+    assert receipt["uncertainty"] == ["natal_moon_longitude_not_supplied"]
+    assert recalled["body"]["signals"]["astrology"] is None
 
 
 def test_living_loop_does_not_substitute_current_timezone_for_birth_timezone(tmp_path):
@@ -213,15 +267,20 @@ def test_living_loop_does_not_substitute_current_timezone_for_birth_timezone(tmp
         memory_path=memory_path,
         preferences_path=preferences_path,
         astrology_target_at=datetime(2026, 8, 28, 6, 30, tzinfo=timezone.utc),
+        astrology_natal_moon_longitude=TEST_NATAL_MOON_LONGITUDE,
     )
 
     assert result.decision.recommendation == "SKIP"
     assert result.astrology_observation is None
+    assert result.astrology_observation_result is not None
+    assert result.astrology_observation_result.failures == ("birth_timezone_missing",)
 
     with Memory(memory_path) as memory:
         recalled = memory.recall(result.memory_id)
 
     assert recalled["body"]["signals"]["astrology"] is None
+    receipt = recalled["body"]["operational_context"]["astrology_observation_attempt"]
+    assert receipt["failures"] == ["birth_timezone_missing"]
 
 
 def test_living_loop_rejects_timezone_naive_astrology_target(tmp_path):
@@ -246,6 +305,7 @@ def test_living_loop_rejects_timezone_naive_astrology_target(tmp_path):
             memory_path=tmp_path / "living.sqlite",
             preferences_path=preferences_path,
             astrology_target_at=datetime(2026, 8, 28, 12, 0),
+            astrology_natal_moon_longitude=TEST_NATAL_MOON_LONGITUDE,
         )
 
 

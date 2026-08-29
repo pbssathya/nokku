@@ -1,14 +1,14 @@
 """Explicit experimental astrology convention for Lakshmi.
 
-This module records the analytical convention chosen for the current living
-experiment. It is application methodology, not user-owned preference data and
-must not be presented as recovered historical Project Lakshmi behaviour.
+This module contains application methodology and generic Vimshottari arithmetic.
+User-owned birth facts and derived natal Moon inputs must be supplied by callers;
+no person's derived astrology data belongs in this module.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,20 +27,6 @@ LAKSHMI_ASTROLOGY_CONVENTION = LakshmiAstrologyConvention(
     dasha_system="vimshottari",
     dasha_year_basis="julian_365_25",
     dasha_days_per_year=365.25,
-)
-
-# Derived Lahiri sidereal Moon longitude currently used by the living Lakshmi
-# experiment. It is not a user preference or reconstructed historical rule.
-# Until Nokku has a general ephemeris capability, this derived value is valid
-# only for the exact reference birth instant from which it was obtained.
-LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE = 102.1541
-LAKSHMI_EXPERIMENTAL_NATAL_MOON_REFERENCE_AT = datetime(
-    1969,
-    8,
-    12,
-    5,
-    23,
-    tzinfo=timezone(timedelta(hours=5, minutes=30)),
 )
 
 VIMSHOTTARI_SEQUENCE = (
@@ -113,13 +99,6 @@ class VimshottariSnapshot:
     status: str = "experimental"
 
 
-def experimental_natal_moon_supports_birth_at(birth_at: datetime) -> bool:
-    """Return whether the fixed experimental Moon input belongs to ``birth_at``."""
-    if birth_at.tzinfo is None or birth_at.utcoffset() is None:
-        return False
-    return birth_at == LAKSHMI_EXPERIMENTAL_NATAL_MOON_REFERENCE_AT
-
-
 def vimshottari_snapshot(
     natal_moon_longitude: float,
     birth_at: datetime,
@@ -129,10 +108,14 @@ def vimshottari_snapshot(
 ) -> VimshottariSnapshot:
     """Return the Vimshottari Mahadasha/Antardasha active at ``target_at``.
 
-    ``natal_moon_longitude`` is the sidereal lunar longitude in degrees. The
-    period arithmetic uses the explicitly declared Lakshmi dasha-year
-    convention; this function does not choose an ayanamsa or ephemeris.
+    ``natal_moon_longitude`` is a caller-supplied sidereal lunar longitude in
+    degrees. This function applies the declared dasha convention; it does not
+    choose or derive an ephemeris value for any user.
     """
+    if birth_at.tzinfo is None or birth_at.utcoffset() is None:
+        raise ValueError("Birth instant must be timezone-aware.")
+    if target_at.tzinfo is None or target_at.utcoffset() is None:
+        raise ValueError("Target instant must be timezone-aware.")
     if target_at < birth_at:
         raise ValueError("Target instant cannot precede birth instant.")
 
@@ -194,29 +177,4 @@ def vimshottari_snapshot(
         mahadasha_end=mahadasha_end,
         antardasha_start=antardasha_start,
         antardasha_end=antardasha_end,
-    )
-
-
-def lakshmi_astrology_snapshot(
-    birth_at: datetime,
-    target_at: datetime,
-    *,
-    convention: LakshmiAstrologyConvention = LAKSHMI_ASTROLOGY_CONVENTION,
-) -> VimshottariSnapshot:
-    """Return the current experimental Lakshmi Vimshottari observation.
-
-    This temporary application-facing wrapper is safe only for the exact birth
-    instant whose natal Moon longitude has already been derived. Other people
-    must abstain until Nokku can derive their own natal Moon input.
-    """
-    if not experimental_natal_moon_supports_birth_at(birth_at):
-        raise ValueError(
-            "Experimental natal Moon input is only valid for its reference birth instant."
-        )
-
-    return vimshottari_snapshot(
-        LAKSHMI_EXPERIMENTAL_NATAL_MOON_LONGITUDE,
-        birth_at,
-        target_at,
-        convention=convention,
     )

@@ -36,6 +36,22 @@ def _schedule_collector(domain_path, source, store=True, requester=None):
     }
 
 
+def _failed_schedule_collector(domain_path, source, store=True, requester=None):
+    assert domain_path == SCHEDULE_DOMAIN
+    assert source == "upcoming"
+    assert store is False
+    assert requester == "nokku"
+    return {
+        "request": {
+            "domain_path": domain_path,
+            "source": source,
+            "requester": requester,
+        },
+        "execution": {"status": "failed"},
+        "error": {"message": "fixture schedule failure"},
+    }
+
+
 def _save_lakshmi_profile(preferences_path):
     save_user_preferences(
         UserPreferences(
@@ -64,6 +80,9 @@ def test_living_loop_never_selects_unlisted_26_august(tmp_path):
     )
 
     assert result.decision.recommendation == "SKIP"
+    assert result.schedule_collection is not None
+    assert result.schedule_collection.status == "success"
+    assert result.schedule_collection.failures == ()
     assert result.scheduled_draw_dates == (
         date(2026, 8, 27),
         date(2026, 8, 28),
@@ -85,14 +104,61 @@ def test_living_loop_never_selects_unlisted_26_august(tmp_path):
     with Memory(tmp_path / "living.sqlite") as memory:
         recalled = memory.recall(result.memory_id)
 
-    assert recalled["body"]["operational_context"]["official_upcoming_draw_dates"] == [
+    operational_context = recalled["body"]["operational_context"]
+    assert operational_context["official_upcoming_draw_dates"] == [
         "2026-08-27",
         "2026-08-28",
         "2026-08-29",
     ]
+    assert operational_context["official_upcoming_draw_schedule_collection"]["status"] == "success"
     preserved = recalled["body"]["signals"]["numerology"][0]
     assert preserved["draw_number"] == "638"
     assert preserved["draw_reduction"] == 8
+
+
+def test_failed_schedule_collection_is_not_reported_as_zero_official_draws(tmp_path):
+    preferences_path = tmp_path / "preferences.json"
+    _save_lakshmi_profile(preferences_path)
+
+    result = run_weekly_decision(
+        "Should I buy a Kerala lottery this week?",
+        anchor=date(2026, 8, 26),
+        refresh=True,
+        memory_path=tmp_path / "living.sqlite",
+        preferences_path=preferences_path,
+        collector=_failed_schedule_collector,
+    )
+
+    assert result.decision.recommendation == "SKIP"
+    assert result.decision.preferred_date is None
+    assert result.decision.backup_date is None
+    assert result.scheduled_draw_dates == ()
+    assert result.schedule_collection is not None
+    assert result.schedule_collection.status == "failed"
+    assert result.schedule_collection.execution_status == "failed"
+    assert result.schedule_collection.failures == (
+        "schedule collector execution status: failed",
+    )
+    assert any(
+        "official upcoming schedule collection status: failed" in item
+        for item in result.decision.evidence_summary
+    )
+    assert not any(
+        "official upcoming schedule supplies 0 eligible draw date" in item
+        for item in result.decision.evidence_summary
+    )
+
+    with Memory(tmp_path / "living.sqlite") as memory:
+        recalled = memory.recall(result.memory_id)
+
+    schedule_receipt = recalled["body"]["operational_context"][
+        "official_upcoming_draw_schedule_collection"
+    ]
+    assert schedule_receipt["status"] == "failed"
+    assert schedule_receipt["execution_status"] == "failed"
+    assert schedule_receipt["failures"] == [
+        "schedule collector execution status: failed"
+    ]
 
 
 def test_sunday_week_uses_recovered_numerology_to_prefer_28_august(tmp_path):

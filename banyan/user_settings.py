@@ -189,21 +189,26 @@ def _normalized_multi_user_payload(payload: dict[str, object]) -> dict[str, obje
     legacy_user = normalized.get("user")
     if legacy_user is not None and not isinstance(legacy_user, dict):
         raise ValueError("Stored legacy user setting must be a JSON object.")
+
+    migrated_legacy_user = False
     if not users and isinstance(legacy_user, dict):
         users[DEFAULT_USER_ID] = dict(legacy_user)
+        migrated_legacy_user = True
 
     normalized.pop("user", None)
     normalized["users"] = users
 
     raw_active = normalized.get("active_user")
-    if isinstance(raw_active, str) and raw_active in users:
-        active_user = raw_active
-    elif DEFAULT_USER_ID in users:
-        active_user = DEFAULT_USER_ID
-    elif users:
-        active_user = sorted(users)[0]
+    if raw_active is None:
+        active_user = DEFAULT_USER_ID if migrated_legacy_user else None
+    elif not isinstance(raw_active, str):
+        raise ValueError("Stored active_user must be a Banyan user id string.")
     else:
-        active_user = None
+        active_user = validate_user_id(raw_active)
+        if active_user not in users:
+            raise ValueError(
+                f"Stored active Banyan user {active_user!r} does not exist."
+            )
 
     if active_user is None:
         normalized.pop("active_user", None)
@@ -234,7 +239,7 @@ def list_user_ids(path: str | Path | None = None) -> tuple[str, ...]:
 
 
 def get_active_user_id(path: str | Path | None = None) -> str | None:
-    """Return the active Banyan user id, or None when no profile exists."""
+    """Return the active Banyan user id, or None when no profile is selected."""
     target = Path(path) if path is not None else user_settings_path()
     payload = _normalized_multi_user_payload(_read_payload(target))
     active_user = payload.get("active_user")
@@ -286,12 +291,17 @@ def save_user_preferences(
     payload = _normalized_multi_user_payload(_read_payload(target))
     raw_users = payload.get("users")
     users = dict(raw_users) if isinstance(raw_users, dict) else {}
+    had_users = bool(users)
 
     active_user = payload.get("active_user")
     if user_id is not None:
         selected = validate_user_id(user_id)
     elif active_user is not None:
         selected = str(active_user)
+    elif users:
+        raise ValueError(
+            "No active Banyan user is selected; specify user_id or call set_active_user()."
+        )
     else:
         selected = DEFAULT_USER_ID
 
@@ -314,7 +324,7 @@ def save_user_preferences(
 
     users[selected] = user
     payload["users"] = users
-    if make_active or active_user is None:
+    if make_active or (active_user is None and not had_users):
         payload["active_user"] = selected
 
     return _write_payload(target, payload)

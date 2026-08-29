@@ -15,8 +15,6 @@ from nokku.lottery.kerala.living import (
 from nokku.runtime import living_memory_path
 
 
-# Living handoff boundary for the shared Banyan Government export.
-EXPORT_START_DATE = date(2026, 8, 29)
 EXPORT_FILENAME = "kerala_lottery_government.json"
 
 
@@ -40,7 +38,7 @@ def repository_export_path() -> Path:
 
 
 def export_records(*, anchor: date, memory_path: Path) -> list[dict[str, object]]:
-    """Return latest preserved official draw reports for the shared-export epoch."""
+    """Return every usable preserved official draw report available through anchor."""
     known: dict[str, dict[str, object]] = {}
 
     with Memory(memory_path) as memory:
@@ -71,7 +69,7 @@ def export_records(*, anchor: date, memory_path: Path) -> list[dict[str, object]
             except ValueError:
                 continue
 
-            if draw_date < EXPORT_START_DATE or draw_date > anchor:
+            if draw_date > anchor:
                 continue
 
             # Receipt order is storage order; a later correction for one source wins.
@@ -82,13 +80,16 @@ def export_records(*, anchor: date, memory_path: Path) -> list[dict[str, object]
                 "parsed": parsed,
             }
 
-    return sorted(
-        known.values(),
-        key=lambda item: (
+    def sort_key(item: dict[str, object]) -> tuple[date, int, str]:
+        source = str(item["source"])
+        source_number = int(source) if source.isdigit() else 10**18
+        return (
             datetime.strptime(str(item["draw_date"]), "%d/%m/%Y").date(),
-            str(item["source"]),
-        ),
-    )
+            source_number,
+            source,
+        )
+
+    return sorted(known.values(), key=sort_key)
 
 
 def _same_export_content(existing: dict[str, object], candidate: dict[str, object]) -> bool:
@@ -100,15 +101,26 @@ def _same_export_content(existing: dict[str, object], candidate: dict[str, objec
     return existing_copy == candidate_copy
 
 
-def _payload_for_export(*, anchor: date, latest, records: list[dict[str, object]]) -> dict[str, object]:
+def _iso_draw_date(record: dict[str, object] | None) -> str | None:
+    if record is None:
+        return None
+    return datetime.strptime(str(record["draw_date"]), "%d/%m/%Y").date().isoformat()
+
+
+def _payload_for_export(*, anchor: date, records: list[dict[str, object]]) -> dict[str, object]:
+    oldest = records[0] if records else None
+    latest = records[-1] if records else None
+
     candidate = {
-        "schema_version": 1,
+        "schema_version": 2,
         "domain_path": DOMAIN,
-        "export_start_date": EXPORT_START_DATE.isoformat(),
+        "export_start_date": _iso_draw_date(oldest),
         "cutoff_date": anchor.isoformat(),
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "latest_source": latest.source if latest is not None else None,
-        "latest_draw_date": latest.draw_date.isoformat() if latest is not None else None,
+        "oldest_source": str(oldest["source"]) if oldest is not None else None,
+        "oldest_draw_date": _iso_draw_date(oldest),
+        "latest_source": str(latest["source"]) if latest is not None else None,
+        "latest_draw_date": _iso_draw_date(latest),
         "record_count": len(records),
         "records": records,
     }
@@ -153,7 +165,7 @@ def main() -> None:
     after_latest = max(after, key=lambda item: item.draw_date) if after else None
 
     records = export_records(anchor=anchor, memory_path=memory_path)
-    payload = _payload_for_export(anchor=anchor, latest=after_latest, records=records)
+    payload = _payload_for_export(anchor=anchor, records=records)
 
     runtime_target = runtime_export_path()
     repo_target = repository_export_path()
@@ -168,7 +180,11 @@ def main() -> None:
     print("Total verified facts:", len(after))
     print()
     print("=== BANYAN GOVERNMENT EXPORT ===")
-    print("Export start:", EXPORT_START_DATE)
+    print("Schema version:", payload["schema_version"])
+    print("Oldest source:", payload["oldest_source"])
+    print("Oldest draw date:", payload["oldest_draw_date"])
+    print("Latest source:", payload["latest_source"])
+    print("Latest draw date:", payload["latest_draw_date"])
     print("Records exported:", len(records))
     print("Runtime export:", runtime_target)
     print("Repository export:", repo_target)

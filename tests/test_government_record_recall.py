@@ -108,3 +108,23 @@ def test_government_record_recall_reports_normal_filters_separately():
     assert result.filtered_after_anchor == 1
     assert result.failures == ()
     assert result.uncertainty == ()
+
+
+def test_checkpoint_scope_excludes_old_failed_attempt_before_interpretation():
+    discovery = _memory_result(
+        _collect_value(source="75362", status="failed"),
+        _collect_value(source="75363", draw_date="29/08/2026"),
+    )
+
+    result = interpret_government_record_values(
+        discovery,
+        anchor=date(2026, 8, 29),
+        min_numeric_source_exclusive=75362,
+    )
+
+    assert result.status == "success"
+    assert [record["source"] for record in result.records] == ["75363"]
+    assert result.filtered_by_checkpoint == 1
+    assert result.usable_matching_values == 1
+    assert result.failures == ()
+    assert result.uncertainty == ()

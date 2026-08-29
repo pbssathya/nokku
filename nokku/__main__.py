@@ -145,6 +145,18 @@ def main() -> int:
     print("timing:", decision.preferred_time)
     print("user override detected:", decision.override or "NONE")
     print("current sources refreshed:", ", ".join(result.refreshed_sources) or "NONE")
+
+    if result.frontier_refresh is not None:
+        frontier = result.frontier_refresh
+        print("\nfrontier refresh:", frontier.status.upper())
+        print("  attempted sources:", ", ".join(frontier.attempted_sources) or "NONE")
+        print("  refreshed sources:", ", ".join(frontier.refreshed_sources) or "NONE")
+        print("  stop reason:", frontier.stop_reason)
+        if frontier.failures:
+            print("  failures:", "; ".join(frontier.failures))
+        if frontier.uncertainty:
+            print("  uncertainty:", "; ".join(frontier.uncertainty))
+
     if result.scheduled_draw_dates:
         print(
             "official upcoming draw dates:",

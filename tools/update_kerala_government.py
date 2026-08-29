@@ -10,9 +10,10 @@ from cossse.memory import Memory
 from nokku.lottery.kerala.decision import KeralaLotteryFact
 from nokku.lottery.kerala.living import (
     DOMAIN,
+    FrontierRefreshResult,
     _discover_values,
     kerala_today,
-    refresh_current_frontier,
+    refresh_current_frontier_result,
 )
 from nokku.runtime import living_memory_path
 
@@ -438,6 +439,59 @@ def _incremental_export(*, config: ExportConfig, manifest: dict[str, object], an
     return new_manifest, changed_files, records_added, records_updated, manifest_changed
 
 
+def _frontier_refresh_payload(
+    result: FrontierRefreshResult | None,
+) -> dict[str, object]:
+    if result is None:
+        return {"status": "not_requested"}
+    return {
+        "status": result.status,
+        "refreshed_sources": list(result.refreshed_sources),
+        "attempted_sources": list(result.attempted_sources),
+        "checkpoint_source": result.checkpoint_source,
+        "checkpoint_draw_date": (
+            result.checkpoint_draw_date.isoformat()
+            if result.checkpoint_draw_date is not None
+            else None
+        ),
+        "stop_reason": result.stop_reason,
+        "failures": list(result.failures),
+        "uncertainty": list(result.uncertainty),
+    }
+
+
+def _apply_frontier_result(
+    receipt: dict[str, object],
+    result: FrontierRefreshResult,
+) -> bool:
+    """Transfer the frontier receipt and say whether export may continue."""
+    receipt["frontier_refresh"] = _frontier_refresh_payload(result)
+    receipt["collector_sources_added"] = list(result.refreshed_sources)
+
+    failures = receipt.get("failures")
+    receipt_failures = list(failures) if isinstance(failures, list) else []
+    uncertainty = receipt.get("uncertainty")
+    receipt_uncertainty = (
+        list(uncertainty) if isinstance(uncertainty, list) else []
+    )
+
+    receipt_failures.extend(result.failures)
+    receipt_uncertainty.extend(result.uncertainty)
+    receipt["failures"] = receipt_failures
+    receipt["uncertainty"] = receipt_uncertainty
+
+    if result.status in ("success", "current"):
+        return True
+
+    receipt["status"] = "needs_decision"
+    if not result.failures and not result.uncertainty:
+        receipt_uncertainty.append(
+            f"frontier_refresh_requires_decision:"
+            f"{result.status}:{result.stop_reason}"
+        )
+    return False
+
+
 def _receipt_base(*, anchor: date, manifest_state: str) -> dict[str, object]:
     return {
         "receipt_version": RECEIPT_VERSION,
@@ -448,6 +502,7 @@ def _receipt_base(*, anchor: date, manifest_state: str) -> dict[str, object]:
         "manifest_state_before": manifest_state,
         "checkpoint_before": None,
         "memory_sources_found_after_checkpoint": [],
+        "frontier_refresh": {"status": "not_requested"},
         "collector_sources_added": [],
         "records_added": 0,
         "records_updated": 0,
@@ -468,6 +523,7 @@ def _print_receipt_summary(receipt: dict[str, object]) -> None:
     print("Manifest state before:", receipt["manifest_state_before"])
     print("Checkpoint before:", receipt["checkpoint_before"])
     print("Memory sources after checkpoint:", receipt["memory_sources_found_after_checkpoint"])
+    print("Frontier refresh:", receipt["frontier_refresh"])
     print("Collector sources added:", receipt["collector_sources_added"])
     print("Records added:", receipt["records_added"])
     print("Records updated:", receipt["records_updated"])
@@ -498,16 +554,18 @@ def main(config_path: str | Path, receipt_path: str | Path) -> None:
         receipt["mode"] = "bootstrap"
         records = export_records(anchor=anchor, memory_path=memory_path)
         frontier = _latest_numeric_fact(records)
-        refreshed: tuple[str, ...] = ()
-        if frontier is not None and frontier.draw_date < anchor:
-            refreshed = refresh_current_frontier(
-                anchor=anchor,
-                facts=(frontier,),
-                memory_path=memory_path,
-                max_new_sources=config.frontier_max_new_sources,
-            )
-            if refreshed:
-                records = export_records(anchor=anchor, memory_path=memory_path)
+        frontier_result = refresh_current_frontier_result(
+            anchor=anchor,
+            facts=((frontier,) if frontier is not None else ()),
+            memory_path=memory_path,
+            max_new_sources=config.frontier_max_new_sources,
+        )
+        if not _apply_frontier_result(receipt, frontier_result):
+            _write_receipt(Path(receipt_path), receipt)
+            _print_receipt_summary(receipt)
+            return
+        if frontier_result.refreshed_sources:
+            records = export_records(anchor=anchor, memory_path=memory_path)
         repo_manifest, repo_shards, changed, removed, manifest_changed = _write_bootstrap_export(
             target_directory=config.repository_export_directory,
             config=config,
@@ -521,7 +579,6 @@ def main(config_path: str | Path, receipt_path: str | Path) -> None:
             records=records,
         )
         final_manifest = json.loads(repo_manifest.read_text(encoding="utf-8"))
-        receipt["collector_sources_added"] = list(refreshed)
         receipt["records_added"] = int(final_manifest["record_count"])
         receipt["changed_repository_shards"] = [path.name for path in changed]
         receipt["removed_repository_shards"] = [path.name for path in removed]
@@ -563,16 +620,18 @@ def main(config_path: str | Path, receipt_path: str | Path) -> None:
     if frontier is None:
         frontier = _frontier_fact_from_manifest(manifest, repository_export_directory=config.repository_export_directory)
 
-    refreshed: tuple[str, ...] = ()
-    if frontier.draw_date < anchor:
-        refreshed = refresh_current_frontier(
-            anchor=anchor,
-            facts=(frontier,),
-            memory_path=memory_path,
-            max_new_sources=config.frontier_max_new_sources,
-        )
-    receipt["collector_sources_added"] = list(refreshed)
-    if refreshed:
+    frontier_result = refresh_current_frontier_result(
+        anchor=anchor,
+        facts=(frontier,),
+        memory_path=memory_path,
+        max_new_sources=config.frontier_max_new_sources,
+    )
+    if not _apply_frontier_result(receipt, frontier_result):
+        _write_receipt(Path(receipt_path), receipt)
+        _print_receipt_summary(receipt)
+        return
+
+    if frontier_result.refreshed_sources:
         preserved_new = export_records(
             anchor=anchor,
             memory_path=memory_path,
@@ -589,13 +648,6 @@ def main(config_path: str | Path, receipt_path: str | Path) -> None:
             _write_receipt(Path(receipt_path), receipt)
             _print_receipt_summary(receipt)
             return
-
-    if len(refreshed) == config.frontier_max_new_sources and preserved_new and (_parse_draw_date(preserved_new[-1]["draw_date"]) or date.min) < anchor:
-        receipt["status"] = "needs_decision"
-        receipt["uncertainty"] = ["frontier_limit_reached_before_anchor"]
-        _write_receipt(Path(receipt_path), receipt)
-        _print_receipt_summary(receipt)
-        return
 
     final_manifest, changed_files, added, updated, manifest_changed = _incremental_export(
         config=config,
@@ -617,7 +669,12 @@ def main(config_path: str | Path, receipt_path: str | Path) -> None:
     print("Checkpoint source:", checkpoint_source)
     print("Checkpoint draw date:", checkpoint_date)
     print("New preserved records:", len(preserved_new))
-    print("Collector sources added:", refreshed or "NONE")
+    print("Frontier status:", frontier_result.status)
+    print("Frontier stop reason:", frontier_result.stop_reason)
+    print(
+        "Collector sources added:",
+        frontier_result.refreshed_sources or "NONE",
+    )
     print("Changed repository shards:", len(changed_files))
     print("Repository manifest changed:", "YES" if manifest_changed else "NO")
     print("Latest source:", final_manifest["latest_source"])

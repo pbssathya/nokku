@@ -42,6 +42,7 @@ from .decision import (
     decide_weekly_participation,
     resolve_week,
 )
+from .fact_recall import KeralaFactRecallResult, recall_kerala_facts_result
 from .numerology import LakshmiNumerologySignal, lakshmi_numerology_signal
 
 
@@ -90,6 +91,7 @@ class LivingDecisionResult:
     memory_id: str
     refreshed_sources: tuple[str, ...]
     frontier_refresh: FrontierRefreshResult | None
+    fact_recall: KeralaFactRecallResult
     week_start_preference: str
     user_timezone: str | None
     scheduled_draw_dates: tuple[date, ...]
@@ -163,40 +165,8 @@ def _discover_values(memory: Memory):
 
 
 def recall_kerala_facts(memory_path: str | Path | None = None) -> tuple[KeralaLotteryFact, ...]:
-    target = Path(memory_path) if memory_path is not None else living_memory_path()
-    known: dict[str, KeralaLotteryFact] = {}
-
-    with Memory(target) as memory:
-        for value in _discover_values(memory):
-            body = value.get("body", {})
-            if body.get("experience") != "capability_attempt":
-                continue
-            if body.get("capability") != "collect":
-                continue
-
-            outcome = body.get("outcome") or {}
-            request = outcome.get("request") or {}
-            if request.get("domain_path") != DOMAIN:
-                continue
-
-            source = str(request.get("source", ""))
-            if not source:
-                continue
-
-            parsed = (outcome.get("data") or {}).get("parsed") or {}
-            draw_date = _parse_draw_date(parsed.get("draw_date"))
-            lottery_name = " ".join(str(parsed.get("lottery_name") or "").split())
-            if draw_date is None or not lottery_name or lottery_name == "Unknown":
-                continue
-
-            # Receipt order is storage order; later corrections win for one source.
-            known[source] = KeralaLotteryFact(
-                source=source,
-                draw_date=draw_date,
-                lottery_name=lottery_name,
-            )
-
-    return tuple(sorted(known.values(), key=lambda item: (item.draw_date, item.source)))
+    """Compatibility helper returning facts from the truthful recall receipt."""
+    return recall_kerala_facts_result(memory_path).facts
 
 
 def _preserve_meaning(meaning: Meaning, memory_path: Path) -> str:
@@ -598,6 +568,29 @@ def _frontier_refresh_payload(
     }
 
 
+def _fact_recall_payload(
+    result: KeralaFactRecallResult,
+) -> dict[str, object]:
+    memory = result.memory_discovery
+    return {
+        "status": result.status,
+        "fact_count": len(result.facts),
+        "examined_values": result.examined_values,
+        "matching_collection_values": result.matching_collection_values,
+        "usable_matching_values": result.usable_matching_values,
+        "failures": list(result.failures),
+        "uncertainty": list(result.uncertainty),
+        "memory_discovery": {
+            "status": memory.status,
+            "discovered_receipt_count": memory.discovered_receipt_count,
+            "attempted_memory_ids": list(memory.attempted_memory_ids),
+            "discovery_disposition_status": memory.discovery_disposition_status,
+            "failures": list(memory.failures),
+            "uncertainty": list(memory.uncertainty),
+        },
+    }
+
+
 def _schedule_collection_payload(
     result: ScheduleCollectionResult | None,
 ) -> dict[str, object]:
@@ -634,6 +627,7 @@ def preserve_decision_experience(
     decision: KeralaLotteryDecision,
     user_timezone: str | None = None,
     frontier_refresh: FrontierRefreshResult | None = None,
+    fact_recall: KeralaFactRecallResult,
     scheduled_draw_dates: tuple[date, ...] = (),
     schedule_collection: ScheduleCollectionResult | None = None,
     numerology_signals: tuple[LakshmiNumerologySignal, ...] = (),
@@ -655,6 +649,7 @@ def preserve_decision_experience(
                 "current_result_frontier_refresh": _frontier_refresh_payload(
                     frontier_refresh
                 ),
+                "kerala_fact_recall": _fact_recall_payload(fact_recall),
                 "official_upcoming_draw_dates": [
                     item.isoformat() for item in scheduled_draw_dates
                 ],
@@ -724,7 +719,8 @@ def run_weekly_decision(
             preferences_path,
         )
 
-    facts = recall_kerala_facts(memory_target)
+    fact_recall = recall_kerala_facts_result(memory_target)
+    facts = fact_recall.facts
     refreshed: tuple[str, ...] = ()
     frontier_refresh: FrontierRefreshResult | None = None
     scheduled_draw_dates: tuple[date, ...] = ()
@@ -740,7 +736,8 @@ def run_weekly_decision(
         )
         refreshed = frontier_refresh.refreshed_sources
         if refreshed:
-            facts = recall_kerala_facts(memory_target)
+            fact_recall = recall_kerala_facts_result(memory_target)
+            facts = fact_recall.facts
         schedule_collection = collect_upcoming_draw_schedule(collector=collector)
         scheduled_draw_dates = schedule_collection.dates
         scheduled_draw_numbers = schedule_collection.draw_numbers
@@ -796,6 +793,7 @@ def run_weekly_decision(
         decision=decision,
         user_timezone=user_timezone,
         frontier_refresh=frontier_refresh,
+        fact_recall=fact_recall,
         scheduled_draw_dates=scheduled_draw_dates,
         schedule_collection=schedule_collection,
         numerology_signals=numerology_signals,
@@ -810,6 +808,7 @@ def run_weekly_decision(
         memory_id=memory_id,
         refreshed_sources=refreshed,
         frontier_refresh=frontier_refresh,
+        fact_recall=fact_recall,
         week_start_preference=week_start,
         user_timezone=user_timezone,
         scheduled_draw_dates=scheduled_draw_dates,

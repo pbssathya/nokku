@@ -1,4 +1,5 @@
 {
-  "runtime_export_path": "/workspaces/.banyan/exports/kerala_lottery_government.json",
-  "repository_export_path": "exports/kerala_lottery_government.json"
+  "runtime_export_directory": "/workspaces/.banyan/exports/kerala_lottery_government",
+  "repository_export_directory": "exports/kerala_lottery_government",
+  "manifest_filename": "manifest.json"
 }

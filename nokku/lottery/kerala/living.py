@@ -89,6 +89,7 @@ class LivingDecisionResult:
     decision_date: date
     memory_id: str
     refreshed_sources: tuple[str, ...]
+    frontier_refresh: FrontierRefreshResult | None
     week_start_preference: str
     user_timezone: str | None
     scheduled_draw_dates: tuple[date, ...]
@@ -576,6 +577,27 @@ def _astrology_signal_payload(signal: VimshottariSnapshot) -> dict[str, object]:
     }
 
 
+def _frontier_refresh_payload(
+    result: FrontierRefreshResult | None,
+) -> dict[str, object]:
+    if result is None:
+        return {"status": "not_requested"}
+    return {
+        "status": result.status,
+        "checkpoint_source": result.checkpoint_source,
+        "checkpoint_draw_date": (
+            result.checkpoint_draw_date.isoformat()
+            if result.checkpoint_draw_date is not None
+            else None
+        ),
+        "attempted_sources": list(result.attempted_sources),
+        "refreshed_sources": list(result.refreshed_sources),
+        "stop_reason": result.stop_reason,
+        "failures": list(result.failures),
+        "uncertainty": list(result.uncertainty),
+    }
+
+
 def _schedule_collection_payload(
     result: ScheduleCollectionResult | None,
 ) -> dict[str, object]:
@@ -611,6 +633,7 @@ def preserve_decision_experience(
     anchor: date,
     decision: KeralaLotteryDecision,
     user_timezone: str | None = None,
+    frontier_refresh: FrontierRefreshResult | None = None,
     scheduled_draw_dates: tuple[date, ...] = (),
     schedule_collection: ScheduleCollectionResult | None = None,
     numerology_signals: tuple[LakshmiNumerologySignal, ...] = (),
@@ -629,6 +652,9 @@ def preserve_decision_experience(
             "anchor_date": anchor.isoformat(),
             "user_timezone": user_timezone,
             "operational_context": {
+                "current_result_frontier_refresh": _frontier_refresh_payload(
+                    frontier_refresh
+                ),
                 "official_upcoming_draw_dates": [
                     item.isoformat() for item in scheduled_draw_dates
                 ],
@@ -700,17 +726,19 @@ def run_weekly_decision(
 
     facts = recall_kerala_facts(memory_target)
     refreshed: tuple[str, ...] = ()
+    frontier_refresh: FrontierRefreshResult | None = None
     scheduled_draw_dates: tuple[date, ...] = ()
     scheduled_draw_numbers: dict[date, str] = {}
     schedule_collection: ScheduleCollectionResult | None = None
     eligible_dates: tuple[date, ...] | None = None
     if refresh:
-        refreshed = refresh_current_frontier(
+        frontier_refresh = refresh_current_frontier_result(
             anchor=anchor_date,
             facts=facts,
             memory_path=memory_target,
             collector=collector,
         )
+        refreshed = frontier_refresh.refreshed_sources
         if refreshed:
             facts = recall_kerala_facts(memory_target)
         schedule_collection = collect_upcoming_draw_schedule(collector=collector)
@@ -767,6 +795,7 @@ def run_weekly_decision(
         anchor=anchor_date,
         decision=decision,
         user_timezone=user_timezone,
+        frontier_refresh=frontier_refresh,
         scheduled_draw_dates=scheduled_draw_dates,
         schedule_collection=schedule_collection,
         numerology_signals=numerology_signals,
@@ -780,6 +809,7 @@ def run_weekly_decision(
         decision_date=anchor_date,
         memory_id=memory_id,
         refreshed_sources=refreshed,
+        frontier_refresh=frontier_refresh,
         week_start_preference=week_start,
         user_timezone=user_timezone,
         scheduled_draw_dates=scheduled_draw_dates,

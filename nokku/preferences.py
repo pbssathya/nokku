@@ -156,9 +156,18 @@ def load_kerala_lottery_preferences(
     if not isinstance(kerala, dict):
         raise ValueError("Stored Kerala lottery preferences must be a JSON object.")
 
-    week_start = str(kerala.get("decision_week_start", "friday")).lower()
+    if "decision_week_start" not in kerala:
+        return KeralaLotteryPreferences()
+
+    raw_week_start = kerala["decision_week_start"]
+    if not isinstance(raw_week_start, str):
+        raise ValueError(
+            "Stored decision week start must be a weekday name string."
+        )
+
+    week_start = raw_week_start.lower()
     if week_start not in VALID_WEEK_STARTS:
-        week_start = "friday"
+        raise ValueError(f"Unsupported stored decision week start: {week_start}")
     return KeralaLotteryPreferences(decision_week_start=week_start)
 
 

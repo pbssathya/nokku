@@ -32,7 +32,10 @@ from nokku.preferences import (
 from nokku.runtime import living_memory_path
 
 from .astrology import VimshottariSnapshot
-from .astrology_signal import lakshmi_astrology_observation
+from .astrology_signal import (
+    AstrologyObservationResult,
+    lakshmi_astrology_observation_result,
+)
 from .decision import (
     KeralaLotteryDecision,
     KeralaLotteryFact,
@@ -78,6 +81,7 @@ class LivingDecisionResult:
     schedule_collection: ScheduleCollectionResult | None
     numerology_signals: tuple[LakshmiNumerologySignal, ...]
     astrology_observation: VimshottariSnapshot | None
+    astrology_observation_result: AstrologyObservationResult | None
 
 
 def local_today(timezone_name: str, now: datetime | None = None) -> date:
@@ -460,6 +464,19 @@ def _schedule_collection_payload(
     }
 
 
+def _astrology_observation_payload(
+    result: AstrologyObservationResult | None,
+) -> dict[str, object]:
+    if result is None:
+        return {"status": "not_requested"}
+    return {
+        "status": result.status,
+        "natal_moon_longitude": result.natal_moon_longitude,
+        "failures": list(result.failures),
+        "uncertainty": list(result.uncertainty),
+    }
+
+
 def preserve_decision_experience(
     *,
     request: str,
@@ -470,6 +487,7 @@ def preserve_decision_experience(
     schedule_collection: ScheduleCollectionResult | None = None,
     numerology_signals: tuple[LakshmiNumerologySignal, ...] = (),
     astrology_observation: VimshottariSnapshot | None = None,
+    astrology_observation_result: AstrologyObservationResult | None = None,
     memory_path: str | Path | None = None,
 ) -> str:
     target = Path(memory_path) if memory_path is not None else living_memory_path()
@@ -488,6 +506,9 @@ def preserve_decision_experience(
                 ],
                 "official_upcoming_draw_schedule_collection": _schedule_collection_payload(
                     schedule_collection
+                ),
+                "astrology_observation_attempt": _astrology_observation_payload(
+                    astrology_observation_result
                 ),
             },
             "signals": {
@@ -519,6 +540,7 @@ def run_weekly_decision(
     preferences_path: str | Path | None = None,
     collector: Callable = collect,
     astrology_target_at: datetime | None = None,
+    astrology_natal_moon_longitude: float | None = None,
     now: datetime | None = None,
 ) -> LivingDecisionResult:
     memory_target = Path(memory_path) if memory_path is not None else living_memory_path()
@@ -596,14 +618,22 @@ def run_weekly_decision(
         decision=decision,
         draw_numbers=scheduled_draw_numbers,
     )
-    astrology_observation = (
-        lakshmi_astrology_observation(
+
+    astrology_observation_result = (
+        lakshmi_astrology_observation_result(
             user_preferences=user_preferences,
             target_at=astrology_target_at,
+            natal_moon_longitude=astrology_natal_moon_longitude,
         )
         if astrology_target_at is not None
         else None
     )
+    astrology_observation = (
+        astrology_observation_result.observation
+        if astrology_observation_result is not None
+        else None
+    )
+
     memory_id = preserve_decision_experience(
         request=request,
         anchor=anchor_date,
@@ -613,6 +643,7 @@ def run_weekly_decision(
         schedule_collection=schedule_collection,
         numerology_signals=numerology_signals,
         astrology_observation=astrology_observation,
+        astrology_observation_result=astrology_observation_result,
         memory_path=memory_target,
     )
 
@@ -627,4 +658,5 @@ def run_weekly_decision(
         schedule_collection=schedule_collection,
         numerology_signals=numerology_signals,
         astrology_observation=astrology_observation,
+        astrology_observation_result=astrology_observation_result,
     )

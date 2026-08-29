@@ -57,7 +57,9 @@ def _read_payload(target: Path) -> dict[str, object]:
     if not target.exists():
         return {}
     raw = json.loads(target.read_text(encoding="utf-8"))
-    return raw if isinstance(raw, dict) else {}
+    if not isinstance(raw, dict):
+        raise ValueError("Stored Nokku preferences must be a JSON object.")
+    return raw
 
 
 def _write_payload(target: Path, payload: dict[str, object]) -> Path:
@@ -143,11 +145,16 @@ def load_kerala_lottery_preferences(
     payload = _read_payload(target)
 
     lottery = payload.get("lottery")
+    if lottery is None:
+        return KeralaLotteryPreferences()
     if not isinstance(lottery, dict):
-        return KeralaLotteryPreferences()
+        raise ValueError("Stored lottery preferences must be a JSON object.")
+
     kerala = lottery.get("kerala")
-    if not isinstance(kerala, dict):
+    if kerala is None:
         return KeralaLotteryPreferences()
+    if not isinstance(kerala, dict):
+        raise ValueError("Stored Kerala lottery preferences must be a JSON object.")
 
     week_start = str(kerala.get("decision_week_start", "friday")).lower()
     if week_start not in VALID_WEEK_STARTS:
@@ -167,14 +174,18 @@ def save_kerala_lottery_preferences(
     payload = _read_payload(target)
 
     lottery = payload.get("lottery")
-    if not isinstance(lottery, dict):
+    if lottery is None:
         lottery = {}
+    elif not isinstance(lottery, dict):
+        raise ValueError("Stored lottery preferences must be a JSON object.")
     else:
         lottery = dict(lottery)
 
     kerala = lottery.get("kerala")
-    if not isinstance(kerala, dict):
+    if kerala is None:
         kerala = {}
+    elif not isinstance(kerala, dict):
+        raise ValueError("Stored Kerala lottery preferences must be a JSON object.")
     else:
         kerala = dict(kerala)
 

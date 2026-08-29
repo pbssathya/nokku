@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
 import nokku.memory_flow as memory_flow
-from cossse.flow import DispositionStatus
+from cossse.flow import DispositionStatus, Meaning
 from cossse.memory import Memory
 
 
@@ -10,7 +10,8 @@ class _FakeFlow:
 
     def encounter(self, meaning, adapters):
         assert adapters
-        assert meaning.body["requester"] == "nokku"
+        if "requester" in meaning.body:
+            assert meaning.body["requester"] == "nokku"
         if not self.responses:
             raise AssertionError("No fake response left for encounter()")
         return self.responses.pop(0)
@@ -36,6 +37,84 @@ def _install(monkeypatch, responses):
     _FakeFlow.responses = list(responses)
     monkeypatch.setattr(memory_flow, "Flow", _FakeFlow)
     monkeypatch.setattr(memory_flow, "MemoryAdapter", _FakeMemoryAdapter)
+
+
+def test_memory_preservation_reports_real_success(tmp_path):
+    with Memory(tmp_path / "living.sqlite") as memory:
+        result = memory_flow.preserve_meaning(
+            memory,
+            Meaning(body={"experience": "test", "application": "nokku"}),
+        )
+        recalled = memory.recall(result.memory_id) if result.memory_id else None
+
+    assert result.status == "success"
+    assert result.memory_id
+    assert result.memory_event == "preserved"
+    assert result.feedback_count == 1
+    assert result.failures == ()
+    assert result.uncertainty == ()
+    assert recalled is not None
+    assert recalled["body"]["experience"] == "test"
+
+
+def test_memory_preservation_reports_unclaimed_attempt(monkeypatch):
+    _install(monkeypatch, [_disposition(object())])
+
+    result = memory_flow.preserve_meaning(
+        object(),
+        Meaning(body={"experience": "test"}),
+    )
+
+    assert result.status == "failed"
+    assert result.memory_id is None
+    assert result.feedback_count == 0
+    assert result.failures
+    assert "memory preservation was not singly claimed" in result.failures[0]
+
+
+def test_memory_preservation_reports_missing_memory_id(monkeypatch):
+    _install(
+        monkeypatch,
+        [
+            _disposition(
+                DispositionStatus.CLAIMED,
+                {"memory_event": "preserved", "stored_at": "now"},
+            )
+        ],
+    )
+
+    result = memory_flow.preserve_meaning(
+        object(),
+        Meaning(body={"experience": "test"}),
+    )
+
+    assert result.status == "failed"
+    assert result.memory_id is None
+    assert result.memory_event == "preserved"
+    assert result.failures == ("memory preservation feedback has no memory_id",)
+
+
+def test_memory_preservation_reports_unexpected_event_as_partial(monkeypatch):
+    _install(
+        monkeypatch,
+        [
+            _disposition(
+                DispositionStatus.CLAIMED,
+                {"memory_event": "unexpected", "memory_id": "m1"},
+            )
+        ],
+    )
+
+    result = memory_flow.preserve_meaning(
+        object(),
+        Meaning(body={"experience": "test"}),
+    )
+
+    assert result.status == "partial"
+    assert result.memory_id == "m1"
+    assert result.uncertainty == (
+        "memory preservation feedback event is unexpected, not preserved",
+    )
 
 
 def test_memory_discovery_reports_successful_discover_and_recall(monkeypatch):

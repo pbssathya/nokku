@@ -239,11 +239,36 @@ def refresh_current_frontier_result(
 
         collected_meaning = disposition.feedback[0]
         report = collected_meaning.body.get("outcome") or {}
-        execution_status = str(
-            (report.get("execution") or {}).get("status") or "unknown"
+        execution = report.get("execution") or {}
+        execution_status = str(execution.get("status") or "unknown")
+        raw_events = execution.get("events")
+        event_types = (
+            {
+                str(event.get("type") or "")
+                for event in raw_events
+                if isinstance(event, dict)
+            }
+            if isinstance(raw_events, (list, tuple))
+            else set()
         )
 
         if execution_status not in ("success", "partial"):
+            if "source_not_published" in event_types:
+                return FrontierRefreshResult(
+                    status=(
+                        "partial"
+                        if uncertainty
+                        else ("success" if refreshed else "current")
+                    ),
+                    refreshed_sources=tuple(refreshed),
+                    attempted_sources=tuple(attempted),
+                    checkpoint_source=checkpoint_source,
+                    checkpoint_draw_date=checkpoint_draw_date,
+                    stop_reason="source_not_published",
+                    preservation_attempts=tuple(preservation_attempts),
+                    uncertainty=tuple(uncertainty),
+                )
+
             return FrontierRefreshResult(
                 status="partial" if refreshed else "failed",
                 refreshed_sources=tuple(refreshed),

@@ -90,7 +90,8 @@ class ScheduleCollectionResult:
 class LivingDecisionResult:
     decision: KeralaLotteryDecision
     decision_date: date
-    memory_id: str
+    memory_id: str | None
+    decision_preservation: MemoryPreservationResult
     refreshed_sources: tuple[str, ...]
     frontier_refresh: FrontierRefreshResult | None
     fact_recall: KeralaFactRecallResult
@@ -169,14 +170,6 @@ def _discover_values(memory: Memory):
 def recall_kerala_facts(memory_path: str | Path | None = None) -> tuple[KeralaLotteryFact, ...]:
     """Compatibility helper returning facts from the truthful recall receipt."""
     return recall_kerala_facts_result(memory_path).facts
-
-
-def _preserve_meaning(meaning: Meaning, memory_path: Path) -> str:
-    with Memory(memory_path) as memory:
-        disposition = Flow().encounter(meaning, [MemoryAdapter(memory)])
-    assert disposition.status == DispositionStatus.CLAIMED
-    assert len(disposition.feedback) == 1
-    return str(disposition.feedback[0].body["memory_id"])
 
 
 def refresh_current_frontier_result(
@@ -718,7 +711,7 @@ def preserve_decision_experience(
     astrology_observation: VimshottariSnapshot | None = None,
     astrology_observation_result: AstrologyObservationResult | None = None,
     memory_path: str | Path | None = None,
-) -> str:
+) -> MemoryPreservationResult:
     target = Path(memory_path) if memory_path is not None else living_memory_path()
     experience = Meaning(
         body={
@@ -757,7 +750,8 @@ def preserve_decision_experience(
             "decision": decision.to_dict(),
         }
     )
-    return _preserve_meaning(experience, target)
+    with Memory(target) as memory:
+        return preserve_meaning(memory, experience)
 
 
 def run_weekly_decision(
@@ -871,7 +865,7 @@ def run_weekly_decision(
         else None
     )
 
-    memory_id = preserve_decision_experience(
+    decision_preservation = preserve_decision_experience(
         request=request,
         anchor=anchor_date,
         decision=decision,
@@ -885,11 +879,13 @@ def run_weekly_decision(
         astrology_observation_result=astrology_observation_result,
         memory_path=memory_target,
     )
+    memory_id = decision_preservation.memory_id
 
     return LivingDecisionResult(
         decision=decision,
         decision_date=anchor_date,
         memory_id=memory_id,
+        decision_preservation=decision_preservation,
         refreshed_sources=refreshed,
         frontier_refresh=frontier_refresh,
         fact_recall=fact_recall,

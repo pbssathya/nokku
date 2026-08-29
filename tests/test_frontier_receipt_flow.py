@@ -69,6 +69,7 @@ def test_living_decision_preserves_frontier_refresh_failure_receipt(tmp_path, mo
         "attempted_sources": ["75364"],
         "refreshed_sources": [],
         "stop_reason": "collector_execution_not_usable",
+        "preservation_attempts": [],
         "failures": ["source 75364 collector execution status: failed"],
         "uncertainty": [],
     }

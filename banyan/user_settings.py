@@ -127,35 +127,34 @@ def validate_birth_profile(profile: UserBirthProfile) -> UserBirthProfile:
 
 def _load_birth_profile(user: dict[str, object]) -> UserBirthProfile | None:
     raw_birth = user.get("birth")
+    if raw_birth is None:
+        return None
     if not isinstance(raw_birth, dict):
-        return None
-    raw_date = raw_birth.get("date")
-    raw_time = raw_birth.get("time")
-    raw_location = raw_birth.get("location")
-    if raw_date is None or raw_time is None or raw_location is None:
-        return None
-    raw_timezone = raw_birth.get("timezone")
-    try:
-        return validate_birth_profile(
-            UserBirthProfile(
-                date=str(raw_date),
-                time=str(raw_time),
-                location=str(raw_location),
-                timezone=str(raw_timezone) if raw_timezone is not None else None,
-            )
+        raise ValueError("Stored birth setting must be a JSON object.")
+
+    required = ("date", "time", "location")
+    missing = [field for field in required if raw_birth.get(field) is None]
+    if missing:
+        raise ValueError(
+            "Stored birth setting is incomplete; missing: " + ", ".join(missing)
         )
-    except ValueError:
-        return None
+
+    raw_timezone = raw_birth.get("timezone")
+    return validate_birth_profile(
+        UserBirthProfile(
+            date=str(raw_birth["date"]),
+            time=str(raw_birth["time"]),
+            location=str(raw_birth["location"]),
+            timezone=str(raw_timezone) if raw_timezone is not None else None,
+        )
+    )
 
 
 def _preferences_from_payload(user: dict[str, object]) -> UserPreferences:
     timezone_name: str | None = None
     raw_timezone = user.get("timezone")
     if raw_timezone is not None:
-        try:
-            timezone_name = validate_timezone_name(str(raw_timezone))
-        except ValueError:
-            timezone_name = None
+        timezone_name = validate_timezone_name(str(raw_timezone))
 
     return UserPreferences(
         timezone=timezone_name,

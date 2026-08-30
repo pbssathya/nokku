@@ -11,6 +11,7 @@ It performs no numerology, recurrence scoring, astrology, or BUY/SKIP policy.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from typing import Iterable
 
 from .winning_corpus import WinningNumberEntry
@@ -33,7 +34,7 @@ class WinningNumberPattern:
 
     source: str
     draw_serial: int | None
-    draw_date: object
+    draw_date: date
     lottery_name: str
     lottery_code: str | None
     numeric_part: str

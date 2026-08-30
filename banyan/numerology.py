@@ -120,6 +120,56 @@ class NumberNumerologyAlignment:
     last_digit_matches: tuple[str, ...]
 
 
+@dataclass(frozen=True, slots=True)
+class HistoricalNumerologySample:
+    """One historical number with caller-supplied references and optional group."""
+
+    value: int | str
+    references: tuple[NumerologyReference, ...]
+    group: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class BaselineRate:
+    """Explicit caller-supplied expected rate for one historical metric."""
+
+    metric: str
+    reference_label: str
+    expected_rate: float
+    group: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class HistoricalMetric:
+    """Observed count/rate plus an optional explicit comparison baseline."""
+
+    metric: str
+    reference_label: str
+    observed_count: int
+    sample_size: int
+    observed_rate: float
+    baseline_rate: float | None
+    delta_from_baseline: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class HistoricalGroupSummary:
+    """Historical numerology metrics for one caller-defined group."""
+
+    group: str
+    sample_size: int
+    metrics: tuple[HistoricalMetric, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class HistoricalNumerologySummary:
+    """Domain-neutral historical numerology aggregation receipt."""
+
+    sample_size: int
+    metrics: tuple[HistoricalMetric, ...]
+    groups: tuple[HistoricalGroupSummary, ...]
+
+
 def build_profile(birth_date: date) -> NumerologyProfile:
     """Build the reusable numerology profile for a birth date."""
     return NumerologyProfile(
@@ -226,4 +276,127 @@ def align_number(
             for item in normalized
             if item.value == int(number.last_digit)
         ),
+    )
+
+
+_HISTORICAL_METRICS = (
+    "digital_root_match",
+    "reference_digit_present",
+    "reference_digit_repeated",
+    "last_digit_match",
+)
+
+
+def _validate_baselines(
+    baselines: Iterable[BaselineRate],
+) -> dict[tuple[str | None, str, str], float]:
+    result: dict[tuple[str | None, str, str], float] = {}
+    for baseline in baselines:
+        if baseline.metric not in _HISTORICAL_METRICS:
+            raise ValueError(f"Unsupported historical numerology metric: {baseline.metric}")
+        if not baseline.reference_label.strip():
+            raise ValueError("Baseline reference labels must not be empty")
+        if baseline.expected_rate < 0 or baseline.expected_rate > 1:
+            raise ValueError("Baseline expected_rate must be between 0 and 1")
+        key = (baseline.group, baseline.metric, baseline.reference_label)
+        if key in result:
+            raise ValueError(f"Duplicate baseline supplied for {key!r}")
+        result[key] = baseline.expected_rate
+    return result
+
+
+def _historical_metrics_for_samples(
+    samples: tuple[HistoricalNumerologySample, ...],
+    *,
+    baseline_lookup: dict[tuple[str | None, str, str], float],
+    group: str | None,
+) -> tuple[HistoricalMetric, ...]:
+    counters: dict[tuple[str, str], list[int]] = {}
+
+    for sample in samples:
+        alignment = align_number(sample.value, sample.references)
+        label_values: dict[str, int] = {
+            reference.label: reference.value for reference in alignment.references
+        }
+        digit_counts = dict(alignment.reference_digit_counts)
+        digital_root_matches = set(alignment.digital_root_matches)
+        last_digit_matches = set(alignment.last_digit_matches)
+
+        for label, value in label_values.items():
+            outcomes = {
+                "digital_root_match": label in digital_root_matches,
+                "reference_digit_present": digit_counts.get(value, 0) > 0,
+                "reference_digit_repeated": digit_counts.get(value, 0) > 1,
+                "last_digit_match": label in last_digit_matches,
+            }
+            for metric, matched in outcomes.items():
+                counter = counters.setdefault((metric, label), [0, 0])
+                counter[1] += 1
+                if matched:
+                    counter[0] += 1
+
+    metrics: list[HistoricalMetric] = []
+    for (metric, label), (observed_count, sample_size) in sorted(counters.items()):
+        observed_rate = observed_count / sample_size if sample_size else 0.0
+        baseline_rate = baseline_lookup.get((group, metric, label))
+        metrics.append(
+            HistoricalMetric(
+                metric=metric,
+                reference_label=label,
+                observed_count=observed_count,
+                sample_size=sample_size,
+                observed_rate=observed_rate,
+                baseline_rate=baseline_rate,
+                delta_from_baseline=(
+                    observed_rate - baseline_rate
+                    if baseline_rate is not None
+                    else None
+                ),
+            )
+        )
+    return tuple(metrics)
+
+
+def analyze_history(
+    samples: Iterable[HistoricalNumerologySample],
+    *,
+    baselines: Iterable[BaselineRate] = (),
+) -> HistoricalNumerologySummary:
+    """Aggregate historical relationships without inventing a domain baseline.
+
+    Baselines are optional and must be supplied explicitly by the caller because
+    expected rates depend on the domain's number-generating process. The analyzer
+    reports observed counts/rates whether or not a baseline is available.
+    """
+    normalized_samples = tuple(samples)
+    baseline_lookup = _validate_baselines(baselines)
+
+    overall_metrics = _historical_metrics_for_samples(
+        normalized_samples,
+        baseline_lookup=baseline_lookup,
+        group=None,
+    )
+
+    named_groups = sorted(
+        {sample.group for sample in normalized_samples if sample.group is not None}
+    )
+    group_summaries = tuple(
+        HistoricalGroupSummary(
+            group=group,
+            sample_size=len(
+                tuple(sample for sample in normalized_samples if sample.group == group)
+            ),
+            metrics=_historical_metrics_for_samples(
+                tuple(sample for sample in normalized_samples if sample.group == group),
+                baseline_lookup=baseline_lookup,
+                group=group,
+            ),
+        )
+        for group in named_groups
+    )
+
+    return HistoricalNumerologySummary(
+        sample_size=len(normalized_samples),
+        metrics=overall_metrics,
+        groups=group_summaries,
     )

@@ -1,8 +1,10 @@
-"""Recovered Project Lakshmi numerology signals for Kerala Lottery.
+"""Kerala Lottery numerology adapter over the reusable Banyan core.
 
-This module encodes only arithmetic that is reproducible from a preserved
-Lakshmi weekly analysis. It does not assign BUY/SKIP decisions, probabilities,
-or framework-strength scores.
+Banyan owns the domain-neutral numerology arithmetic. This module keeps the
+existing Nokku/Lakshmi public contract and adds only lottery-specific context
+such as draw-number reduction and the current Lakshmi 3/6/9 observations.
+It does not assign BUY/SKIP decisions, probabilities, or framework-strength
+scores.
 """
 
 from __future__ import annotations
@@ -10,66 +12,24 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
+from banyan.numerology import (
+    birth_number,
+    build_cycle,
+    build_profile,
+    life_path_number,
+    personal_day_values,
+    personal_month_values,
+    personal_year_number,
+    reduce_number,
+    universal_year_number,
+)
+
 
 LAKSHMI_FAMILY = frozenset({3, 6, 9})
 
 
-def reduce_number(value: int) -> int:
-    """Reduce a non-negative integer to one decimal digit."""
-    if value < 0:
-        raise ValueError("Numerology values must be non-negative")
-
-    while value >= 10:
-        value = sum(int(digit) for digit in str(value))
-    return value
-
-
-def birth_number(birth_date: date) -> int:
-    """Lakshmi birth number: reduce the calendar day of birth."""
-    return reduce_number(birth_date.day)
-
-
-def life_path_number(birth_date: date) -> int:
-    """Lakshmi life path: reduce all digits of the full birth date."""
-    digits = f"{birth_date.year:04d}{birth_date.month:02d}{birth_date.day:02d}"
-    return reduce_number(sum(int(digit) for digit in digits))
-
-
-def universal_year_number(year: int) -> int:
-    """Reduce the digits of a calendar year."""
-    if year < 1:
-        raise ValueError("year must be positive")
-    return reduce_number(sum(int(digit) for digit in str(year)))
-
-
-def personal_year_number(birth_date: date, year: int) -> int:
-    """Recovered Lakshmi personal-year arithmetic.
-
-    Example from the preserved 2026 analysis:
-    August birth month 8 + birth number 3 + universal year 1 = 12 -> 3.
-    """
-    return reduce_number(
-        birth_date.month
-        + birth_number(birth_date)
-        + universal_year_number(year)
-    )
-
-
-def personal_month_values(birth_date: date, target: date) -> tuple[int, int]:
-    """Return the compound and reduced Lakshmi personal-month values."""
-    compound = personal_year_number(birth_date, target.year) + target.month
-    return compound, reduce_number(compound)
-
-
-def personal_day_values(birth_date: date, target: date) -> tuple[int, int]:
-    """Return the compound and reduced Lakshmi personal-day values."""
-    _, month_reduced = personal_month_values(birth_date, target)
-    compound = month_reduced + target.day
-    return compound, reduce_number(compound)
-
-
 def draw_number_reduction(draw_number: int | str) -> int:
-    """Reduce the numeric draw code, e.g. 534 -> 3."""
+    """Reduce a numeric lottery draw code, e.g. 534 -> 3."""
     text = str(draw_number).strip()
     if not text or not text.isdigit():
         raise ValueError(f"Draw number must contain digits only: {draw_number!r}")
@@ -78,7 +38,7 @@ def draw_number_reduction(draw_number: int | str) -> int:
 
 @dataclass(frozen=True, slots=True)
 class LakshmiNumerologySignal:
-    """Explainable numerology observations for one candidate draw date."""
+    """Explainable lottery-specific numerology observations for one draw date."""
 
     target_date: date
     birth_number: int
@@ -118,9 +78,9 @@ def lakshmi_numerology_signal(
     target: date,
     draw_number: int | str | None = None,
 ) -> LakshmiNumerologySignal:
-    """Calculate only the reproducible Lakshmi numerology signal for a date."""
-    month_compound, month_reduced = personal_month_values(birth_date, target)
-    day_compound, day_reduced = personal_day_values(birth_date, target)
+    """Apply Nokku's lottery-specific observations to Banyan numerology values."""
+    profile = build_profile(birth_date)
+    cycle = build_cycle(birth_date, target)
     draw_text = str(draw_number) if draw_number is not None else None
     draw_reduced = (
         draw_number_reduction(draw_number) if draw_number is not None else None
@@ -128,13 +88,13 @@ def lakshmi_numerology_signal(
 
     return LakshmiNumerologySignal(
         target_date=target,
-        birth_number=birth_number(birth_date),
-        life_path=life_path_number(birth_date),
-        personal_year=personal_year_number(birth_date, target.year),
-        personal_month_compound=month_compound,
-        personal_month=month_reduced,
-        personal_day_compound=day_compound,
-        personal_day=day_reduced,
+        birth_number=profile.birth_number,
+        life_path=profile.life_path,
+        personal_year=cycle.personal_year,
+        personal_month_compound=cycle.personal_month_compound,
+        personal_month=cycle.personal_month,
+        personal_day_compound=cycle.personal_day_compound,
+        personal_day=cycle.personal_day,
         draw_number=draw_text,
         draw_reduction=draw_reduced,
     )

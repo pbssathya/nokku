@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
+from typing import Iterable
 
 
 def reduce_number(value: int) -> int:
@@ -99,6 +100,26 @@ class NumberPatternObservation:
     repeated_digits: tuple[int, ...]
 
 
+@dataclass(frozen=True, slots=True)
+class NumerologyReference:
+    """One labeled reduced numerology value supplied to an analysis."""
+
+    label: str
+    value: int
+
+
+@dataclass(frozen=True, slots=True)
+class NumberNumerologyAlignment:
+    """Truthful relationships between one number and supplied references."""
+
+    number: NumberPatternObservation
+    references: tuple[NumerologyReference, ...]
+    digital_root_matches: tuple[str, ...]
+    reference_digit_counts: tuple[tuple[int, int], ...]
+    repeated_reference_digits: tuple[int, ...]
+    last_digit_matches: tuple[str, ...]
+
+
 def build_profile(birth_date: date) -> NumerologyProfile:
     """Build the reusable numerology profile for a birth date."""
     return NumerologyProfile(
@@ -144,5 +165,65 @@ def observe_number(value: int | str) -> NumberPatternObservation:
         digit_frequency=frequency,
         repeated_digits=tuple(
             digit for digit, count in enumerate(frequency) if count > 1
+        ),
+    )
+
+
+def build_references(
+    profile: NumerologyProfile,
+    cycle: NumerologyCycle,
+) -> tuple[NumerologyReference, ...]:
+    """Build labeled references from the current Banyan profile/cycle convention."""
+    return (
+        NumerologyReference("birth_number", profile.birth_number),
+        NumerologyReference("life_path", profile.life_path),
+        NumerologyReference("personal_year", cycle.personal_year),
+        NumerologyReference("personal_month", cycle.personal_month),
+        NumerologyReference("personal_day", cycle.personal_day),
+    )
+
+
+def _validated_references(
+    references: Iterable[NumerologyReference],
+) -> tuple[NumerologyReference, ...]:
+    normalized = tuple(references)
+    for reference in normalized:
+        if not reference.label.strip():
+            raise ValueError("Numerology reference labels must not be empty")
+        if reference.value < 0 or reference.value > 9:
+            raise ValueError(
+                "Numerology alignment references must be reduced digits from 0 to 9"
+            )
+    return normalized
+
+
+def align_number(
+    value: int | str,
+    references: Iterable[NumerologyReference],
+) -> NumberNumerologyAlignment:
+    """Compare one number only with the explicitly supplied numerology references."""
+    number = observe_number(value)
+    normalized = _validated_references(references)
+    reference_digits = tuple(sorted({item.value for item in normalized}))
+    reference_digit_counts = tuple(
+        (digit, number.digit_frequency[digit]) for digit in reference_digits
+    )
+
+    return NumberNumerologyAlignment(
+        number=number,
+        references=normalized,
+        digital_root_matches=tuple(
+            item.label
+            for item in normalized
+            if item.value == number.digital_root
+        ),
+        reference_digit_counts=reference_digit_counts,
+        repeated_reference_digits=tuple(
+            digit for digit, count in reference_digit_counts if count > 1
+        ),
+        last_digit_matches=tuple(
+            item.label
+            for item in normalized
+            if item.value == int(number.last_digit)
         ),
     )

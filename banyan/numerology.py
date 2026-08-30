@@ -1,8 +1,9 @@
 """Reusable Banyan numerology primitives.
 
-This module contains domain-neutral arithmetic derived from a user's birth date
-and a target calendar date. It intentionally knows nothing about lotteries,
-prize tiers, BUY/SKIP decisions, or application-specific policy.
+This module contains domain-neutral arithmetic derived from a user's birth date,
+a target calendar date, or a numeric value. It intentionally knows nothing
+about lotteries, prize tiers, BUY/SKIP decisions, or application-specific
+policy.
 """
 
 from __future__ import annotations
@@ -82,6 +83,22 @@ class NumerologyCycle:
     personal_day: int
 
 
+@dataclass(frozen=True, slots=True)
+class NumberPatternObservation:
+    """Domain-neutral structural observation of one digits-only value."""
+
+    original: str
+    digits: tuple[int, ...]
+    digit_sum: int
+    digital_root: int
+    last_digit: str
+    last_two: str
+    last_three: str
+    last_four: str
+    digit_frequency: tuple[int, ...]
+    repeated_digits: tuple[int, ...]
+
+
 def build_profile(birth_date: date) -> NumerologyProfile:
     """Build the reusable numerology profile for a birth date."""
     return NumerologyProfile(
@@ -102,4 +119,30 @@ def build_cycle(birth_date: date, target: date) -> NumerologyCycle:
         personal_month=month_reduced,
         personal_day_compound=day_compound,
         personal_day=day_reduced,
+    )
+
+
+def observe_number(value: int | str) -> NumberPatternObservation:
+    """Describe the digit structure of a numeric value without domain semantics."""
+    text = str(value).strip()
+    if not text or not text.isdigit():
+        raise ValueError(f"Numerology number observations require digits only: {value!r}")
+
+    digits = tuple(int(digit) for digit in text)
+    digit_sum = sum(digits)
+    frequency = tuple(digits.count(digit) for digit in range(10))
+
+    return NumberPatternObservation(
+        original=text,
+        digits=digits,
+        digit_sum=digit_sum,
+        digital_root=reduce_number(digit_sum),
+        last_digit=text[-1:],
+        last_two=text[-2:],
+        last_three=text[-3:],
+        last_four=text[-4:],
+        digit_frequency=frequency,
+        repeated_digits=tuple(
+            digit for digit, count in enumerate(frequency) if count > 1
+        ),
     )

@@ -34,6 +34,7 @@ _EMBEDDED_CONSOLATION_PATTERN = re.compile(
     re.IGNORECASE,
 )
 _AMOUNT_ONLY_PATTERN = re.compile(r"^\s*:?\s*([\d,]+)\s*/-\s*$")
+_LOCATION_SUFFIX_PATTERN = re.compile(r"\([^()]+\)\s*$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,6 +128,24 @@ def _winner_tokens(raw_entry: object) -> tuple[tuple[str | None, str], ...]:
     return tuple((None, token) for token in digit_list.group(1).split())
 
 
+def _is_first_prize(label: str) -> bool:
+    return label.casefold() == "1st prize"
+
+
+def _is_consolation_prize(label: str) -> bool:
+    return label.casefold() in {"consolation prize", "cons prize"}
+
+
+def _first_prize_amount(prize_tiers: list[object]) -> int | None:
+    for tier in prize_tiers:
+        if not isinstance(tier, dict):
+            continue
+        label = " ".join(str(tier.get("label") or "").split())
+        if _is_first_prize(label):
+            return _prize_amount(tier.get("amount"))
+    return None
+
+
 def normalize_government_record(
     record: dict[str, object],
 ) -> WinningRecordNormalizationResult:
@@ -188,6 +207,7 @@ def normalize_government_record(
             uncertainty=tuple(uncertainty),
         )
 
+    first_prize_amount = _first_prize_amount(prize_tiers)
     normalized: list[WinningNumberEntry] = []
     tiers_examined = 0
     raw_lines_examined = 0
@@ -218,13 +238,14 @@ def normalize_government_record(
         effective_label = label
         effective_amount = amount
         embedded_consolation = False
+        consolation_numbers_seen: set[str] = set()
 
         for raw_entry in entries:
             raw_lines_examined += 1
             text = " ".join(str(raw_entry or "").split())
 
             if (
-                label.casefold() == "1st prize"
+                _is_first_prize(label)
                 and _EMBEDDED_CONSOLATION_PATTERN.search(text) is not None
             ):
                 embedded_consolation = True
@@ -244,6 +265,19 @@ def normalize_government_record(
             if not tokens:
                 ignored_lines += 1
                 continue
+
+            line_label = effective_label
+            line_amount = effective_amount
+            if (
+                _is_consolation_prize(label)
+                and len(tokens) == 1
+                and consolation_numbers_seen
+                and tokens[0][1] not in consolation_numbers_seen
+                and _LOCATION_SUFFIX_PATTERN.search(text) is not None
+            ):
+                line_label = "1st Prize"
+                line_amount = first_prize_amount
+
             for series, numeric_part in tokens:
                 full_number = (
                     f"{series} {numeric_part}" if series is not None else numeric_part
@@ -255,16 +289,19 @@ def normalize_government_record(
                         draw_date=draw_date,
                         lottery_name=lottery_name,
                         lottery_code=lottery_code,
-                        prize_tier=effective_label,
-                        prize_amount=effective_amount,
+                        prize_tier=line_label,
+                        prize_amount=line_amount,
                         series=series,
                         full_number=full_number,
                         numeric_part=numeric_part,
                         raw_entry=text,
                     )
                 )
-                if effective_label != label:
+                if line_label != label:
                     reclassified_entries += 1
+
+            if _is_consolation_prize(label) and line_label == label:
+                consolation_numbers_seen.update(numeric for _, numeric in tokens)
 
     if failures:
         status = "failed"

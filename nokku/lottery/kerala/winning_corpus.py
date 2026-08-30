@@ -29,6 +29,11 @@ _DIGIT_LIST_PATTERN = re.compile(
     r"^\s*(?:\d+\)\s*)?(\d{4,6}(?:\s+\d{4,6})*)\s*$"
 )
 _LOTTERY_CODE_PATTERN = re.compile(r"\b([A-Z]{1,5})\s*-\s*\d+", re.IGNORECASE)
+_EMBEDDED_CONSOLATION_PATTERN = re.compile(
+    r"\b(?:consolation|cons)\s+prize\b",
+    re.IGNORECASE,
+)
+_AMOUNT_ONLY_PATTERN = re.compile(r"^\s*:?\s*([\d,]+)\s*/-\s*$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,6 +62,7 @@ class WinningRecordNormalizationResult:
     prize_tiers_examined: int
     raw_entry_lines_examined: int
     ignored_entry_lines: int
+    reclassified_entry_count: int = 0
     failures: tuple[str, ...] = ()
     uncertainty: tuple[str, ...] = ()
 
@@ -75,6 +81,7 @@ class WinningCorpusResult:
     ignored_entry_lines: int
     normalized_entry_count: int
     cutoff_date: date | None
+    reclassified_entry_count: int = 0
     failures: tuple[str, ...] = ()
     uncertainty: tuple[str, ...] = ()
 
@@ -185,6 +192,7 @@ def normalize_government_record(
     tiers_examined = 0
     raw_lines_examined = 0
     ignored_lines = 0
+    reclassified_entries = 0
 
     for tier_index, tier in enumerate(prize_tiers):
         if not isinstance(tier, dict):
@@ -207,9 +215,31 @@ def normalize_government_record(
             )
             continue
 
+        effective_label = label
+        effective_amount = amount
+        embedded_consolation = False
+
         for raw_entry in entries:
             raw_lines_examined += 1
             text = " ".join(str(raw_entry or "").split())
+
+            if (
+                label.casefold() == "1st prize"
+                and _EMBEDDED_CONSOLATION_PATTERN.search(text) is not None
+            ):
+                embedded_consolation = True
+                effective_label = "Consolation Prize"
+                effective_amount = _prize_amount(text)
+                ignored_lines += 1
+                continue
+
+            if embedded_consolation:
+                amount_match = _AMOUNT_ONLY_PATTERN.fullmatch(text)
+                if amount_match is not None:
+                    effective_amount = int(amount_match.group(1).replace(",", ""))
+                    ignored_lines += 1
+                    continue
+
             tokens = _winner_tokens(text)
             if not tokens:
                 ignored_lines += 1
@@ -225,14 +255,16 @@ def normalize_government_record(
                         draw_date=draw_date,
                         lottery_name=lottery_name,
                         lottery_code=lottery_code,
-                        prize_tier=label,
-                        prize_amount=amount,
+                        prize_tier=effective_label,
+                        prize_amount=effective_amount,
                         series=series,
                         full_number=full_number,
                         numeric_part=numeric_part,
                         raw_entry=text,
                     )
                 )
+                if effective_label != label:
+                    reclassified_entries += 1
 
     if failures:
         status = "failed"
@@ -247,6 +279,7 @@ def normalize_government_record(
         prize_tiers_examined=tiers_examined,
         raw_entry_lines_examined=raw_lines_examined,
         ignored_entry_lines=ignored_lines,
+        reclassified_entry_count=reclassified_entries,
         failures=tuple(failures),
         uncertainty=tuple(uncertainty),
     )
@@ -331,6 +364,7 @@ def load_winning_corpus(
     tiers_examined = 0
     raw_lines_examined = 0
     ignored_lines = 0
+    reclassified_entries = 0
 
     for shard_index, shard_ref in enumerate(shards):
         if not isinstance(shard_ref, dict):
@@ -370,6 +404,7 @@ def load_winning_corpus(
             tiers_examined += record_result.prize_tiers_examined
             raw_lines_examined += record_result.raw_entry_lines_examined
             ignored_lines += record_result.ignored_entry_lines
+            reclassified_entries += record_result.reclassified_entry_count
             failures.extend(record_result.failures)
             uncertainty.extend(record_result.uncertainty)
 
@@ -395,6 +430,7 @@ def load_winning_corpus(
         ignored_entry_lines=ignored_lines,
         normalized_entry_count=len(normalized),
         cutoff_date=cutoff_date,
+        reclassified_entry_count=reclassified_entries,
         failures=tuple(failures),
         uncertainty=tuple(uncertainty),
     )

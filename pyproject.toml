@@ -7,11 +7,13 @@ name = "nokku"
 version = "0.0.1"
 description = "Conversational decision-support companion grown through living use"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "gooleos-banyan @ git+https://github.com/pbssathya/banyan.git@f9b7fcc126ddaeebc12740bf2c62ee97d88adbed",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["nokku*", "banyan*"]
+include = ["nokku*"]

@@ -14,6 +14,7 @@ upstream historical-number receipt.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from typing import Iterable
 
 from .historical_numbers import (
@@ -72,10 +73,10 @@ class AnonymousHistoricalNumerologyAnalysis:
     contract: str
     upstream_contract: str
     evidence_checkpoint: str
-    requested_start: object
-    requested_end: object
-    effective_start: object
-    effective_end: object
+    requested_start: date | None
+    requested_end: date | None
+    effective_start: date | None
+    effective_end: date | None
     references: tuple[NumerologyReference, ...]
     input_record_count: int
     selected_record_count: int

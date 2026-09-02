@@ -8,6 +8,27 @@ It helps users examine real-world choices by combining personal context, domain-
 
 Nokku is designed to grow through living applications and real use rather than speculative architecture.
 
+## Installation
+
+Nokku consumes established Banyan ecosystem capabilities as independent packages rather than embedding their source inside the Nokku repository.
+
+The current runtime dependencies are declared in `pyproject.toml` and pinned to verified Git commits:
+
+- **Banyan** — shared reusable capabilities;
+- **Collector** — external data collection;
+- **COSsse** — Flow and durable Memory capabilities.
+
+A fresh environment should therefore require no manual sibling-repository installation or `PYTHONPATH` adjustment.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install ".[dev]"
+```
+
+The repository includes a fresh-install regression workflow at `.github/workflows/fresh-install.yml`. It creates a new virtual environment, installs Nokku using only its declared dependencies, verifies that `banyan`, `collector`, `cossse`, and `nokku` import correctly, and runs the full Nokku test suite.
+
 ## First Living Habitat
 
 The first living use case is Kerala Lottery weekly participation support.

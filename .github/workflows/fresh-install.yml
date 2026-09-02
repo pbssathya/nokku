@@ -1,0 +1,51 @@
+name: Fresh install and regression
+
+on:
+  push:
+    branches:
+      - exp/lakshmi-numerology-signal
+  workflow_dispatch:
+
+jobs:
+  fresh-install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Nokku
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Create fresh virtual environment
+        run: python -m venv .venv
+
+      - name: Install Nokku with declared dependencies
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install ".[dev]"
+
+      - name: Verify dependency imports
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          python - <<'PY'
+          import banyan
+          import collector
+          import cossse
+          import nokku
+
+          print("banyan:", banyan.__file__)
+          print("collector:", collector.__file__)
+          print("cossse:", cossse.__file__)
+          print("nokku:", nokku.__file__)
+          PY
+
+      - name: Run Nokku regression suite
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          pytest -q

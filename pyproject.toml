@@ -9,6 +9,8 @@ description = "Conversational decision-support companion grown through living us
 requires-python = ">=3.10"
 dependencies = [
     "gooleos-banyan @ git+https://github.com/pbssathya/banyan.git@f9b7fcc126ddaeebc12740bf2c62ee97d88adbed",
+    "collector @ git+https://github.com/pbssathya/collector.git@35358217e50d230a328309641ad490fd3aaa7b68",
+    "cossse @ git+https://github.com/pbssathya/cossse.git@fa0781789e8248c61d71a37bfdb1756bd1f88ae1",
 ]
 
 [project.optional-dependencies]

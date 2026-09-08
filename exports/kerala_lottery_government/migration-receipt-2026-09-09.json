@@ -1,0 +1,35 @@
+{
+  "receipt_version": 1,
+  "migration": "legacy_kerala_prize_footer_cleanup",
+  "status": "success",
+  "collector_checkpoint": "e2bdedbd465104c7e11824bc94fb535482aedcc6",
+  "control_sources": [
+    "75363",
+    "75364",
+    "75365",
+    "75366",
+    "75367",
+    "75368",
+    "75369",
+    "75370"
+  ],
+  "control_equivalence": "exact_match_to_fresh_corrected_collector_output",
+  "records_before": 3180,
+  "records_after": 3180,
+  "records_migrated": 3179,
+  "legacy_footer_entries_removed": 24292,
+  "remaining_detected_contaminated_records": 0,
+  "source_identity_and_order_preserved": true,
+  "frontier": {
+    "latest_source": "75370",
+    "latest_draw_date": "2026-09-05",
+    "record_count": 3180
+  },
+  "validation": {
+    "repair_workflow_run": 34268749380,
+    "repair_regression": "179 passed",
+    "post_guard_workflow_run": 34269049449,
+    "post_guard_regression": "180 passed"
+  },
+  "scope_note": "One-time deterministic migration of legacy footer tails in preserved Government prize-tier entries. The migration rule was proven by exact equivalence against eight freshly re-fetched and re-parsed Government draws using the corrected Collector checkpoint before corpus-wide application."
+}

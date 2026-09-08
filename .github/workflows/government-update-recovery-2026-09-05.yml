@@ -1,0 +1,151 @@
+name: Government recovery through 2026-09-05
+
+on:
+  push:
+    branches:
+      - ops/government-update-2026-09-05
+
+permissions:
+  contents: write
+
+jobs:
+  recover-government-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out update branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Nokku and declared dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[dev]"
+
+      - name: Prepare isolated export config
+        run: |
+          cat > /tmp/kerala_government_export.json <<'JSON'
+          {
+            "runtime_export_directory": "/tmp/banyan/exports/kerala_lottery_government",
+            "repository_export_directory": "exports/kerala_lottery_government",
+            "manifest_filename": "manifest.json",
+            "shard_period_format": "%Y-%m",
+            "shard_filename_template": "{period}.json",
+            "frontier_max_new_sources": 31
+          }
+          JSON
+
+      - name: Refresh using current Government publication authority
+        run: |
+          python - <<'PY'
+          from datetime import date
+          import importlib.util
+          import re
+          import sys
+
+          import requests
+          from collector.domains.games.chance.lottery.kerala.history import OfficialHistoryResolver
+
+          listing = "https://statelottery.kerala.gov.in/English/index.php/lottery-result-view"
+          response = requests.get(listing, timeout=30)
+          response.raise_for_status()
+          published = {int(v) for v in re.findall(r"drawserial=(\d+)", response.text)}
+          required = set(range(75364, 75371))
+          missing = sorted(required - published)
+          if missing:
+              raise SystemExit(f"Government result-view missing required serials: {missing}")
+          print("Government publication evidence confirms:", sorted(required))
+
+          OfficialHistoryResolver.is_published_source = (
+              lambda self, source_id: source_id in published
+          )
+
+          spec = importlib.util.spec_from_file_location(
+              "anchored_government_update", "tools/update_kerala_government.py"
+          )
+          module = importlib.util.module_from_spec(spec)
+          sys.modules[spec.name] = module
+          spec.loader.exec_module(module)
+          module.kerala_today = lambda: date(2026, 9, 5)
+          module.main(
+              "/tmp/kerala_government_export.json",
+              "/tmp/kerala_government_update_receipt.json",
+          )
+          PY
+          cat /tmp/kerala_government_update_receipt.json
+
+      - name: Validate exact requested frontier and evidence integrity
+        run: |
+          python - <<'PY'
+          from datetime import date, datetime
+          import json
+          from pathlib import Path
+
+          root = Path("exports/kerala_lottery_government")
+          manifest = json.loads((root / "manifest.json").read_text())
+          if str(manifest["latest_source"]) != "75370":
+              raise SystemExit(f"Unexpected source frontier: {manifest['latest_source']}")
+          if manifest["latest_draw_date"] != "2026-09-05":
+              raise SystemExit(f"Unexpected date frontier: {manifest['latest_draw_date']}")
+
+          seen = set()
+          max_date = None
+          for item in manifest["shards"]:
+              shard = json.loads((root / item["file"]).read_text())
+              for record in shard["records"]:
+                  source = str(record["source"])
+                  if source.isdigit():
+                      if source in seen:
+                          raise SystemExit(f"Duplicate numeric DrawSerial: {source}")
+                      seen.add(source)
+                  draw_date = datetime.strptime(record["draw_date"], "%d/%m/%Y").date()
+                  max_date = draw_date if max_date is None or draw_date > max_date else max_date
+                  if draw_date > date(2026, 9, 5):
+                      raise SystemExit(f"Record crossed cutoff: {source} {draw_date}")
+
+          required = {str(v) for v in range(75364, 75371)}
+          missing = sorted(required - seen)
+          if missing:
+              raise SystemExit(f"Recovered serials missing from export: {missing}")
+          if max_date.isoformat() != manifest["latest_draw_date"]:
+              raise SystemExit("Manifest and record frontier dates disagree")
+          if int(manifest["record_count"]) != 3180:
+              raise SystemExit(f"Unexpected record count: {manifest['record_count']} != 3180")
+          print("Validated frontier: 75370 / 2026-09-05")
+          print("Validated record count: 3180")
+          PY
+
+      - name: Verify diff scope
+        run: |
+          python - <<'PY'
+          import subprocess
+          allowed = {
+              "exports/kerala_lottery_government/2026-08.json",
+              "exports/kerala_lottery_government/2026-09.json",
+              "exports/kerala_lottery_government/manifest.json",
+          }
+          lines = subprocess.check_output(["git", "status", "--porcelain"], text=True).splitlines()
+          changed = {line[3:] for line in lines if line.strip()}
+          print("Changed files:", sorted(changed))
+          unexpected = changed - allowed
+          if unexpected:
+              raise SystemExit(f"Unexpected repository changes: {sorted(unexpected)}")
+          if not changed:
+              raise SystemExit("Expected Government export changes but found none")
+          PY
+
+      - name: Run Nokku regression suite
+        run: pytest -q
+
+      - name: Commit verified Government export
+        run: |
+          git config user.name "Sathya P B"
+          git config user.email "sathya@gooleos.com"
+          git add -A exports/kerala_lottery_government
+          git commit -m "data: update Kerala Government results through 2026-09-05"
+          git push origin HEAD:ops/government-update-2026-09-05

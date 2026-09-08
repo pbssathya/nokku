@@ -45,7 +45,34 @@ jobs:
           python - <<'PY'
           from datetime import date
           import importlib.util
+          import re
           import sys
+
+          import requests
+          from collector.domains.games.chance.lottery.kerala.history import OfficialHistoryResolver
+
+          official_listing = (
+              "https://statelottery.kerala.gov.in/English/index.php/lottery-result-view"
+          )
+          response = requests.get(official_listing, timeout=30)
+          response.raise_for_status()
+          published = {
+              int(value)
+              for value in re.findall(r"drawserial=(\d+)", response.text)
+          }
+          required = set(range(75364, 75371))
+          missing = sorted(required - published)
+          if missing:
+              raise SystemExit(
+                  f"Current Government result-view does not publish required serials: {missing}"
+              )
+          print("Government result-view confirms serials:", sorted(required))
+
+          # The current Government result-view is the publication authority for this
+          # anchored recovery run. Retrieval and parsing remain Collector-owned.
+          OfficialHistoryResolver.is_published_source = (
+              lambda self, source_id: source_id in published
+          )
 
           spec = importlib.util.spec_from_file_location(
               "anchored_government_update", "tools/update_kerala_government.py"
@@ -76,8 +103,12 @@ jobs:
           root = Path("exports/kerala_lottery_government")
           manifest = json.loads((root / "manifest.json").read_text())
           latest = date.fromisoformat(manifest["latest_draw_date"])
-          if latest > cutoff:
-              raise SystemExit(f"Export crossed cutoff: {latest} > {cutoff}")
+          if latest != cutoff:
+              raise SystemExit(f"Export did not reach requested cutoff: {latest} != {cutoff}")
+          if str(manifest["latest_source"]) != "75370":
+              raise SystemExit(
+                  f"Unexpected frontier source: {manifest['latest_source']} != 75370"
+              )
 
           seen = set()
           max_date = None
@@ -94,6 +125,11 @@ jobs:
                   if draw_date > cutoff:
                       raise SystemExit(f"Record crossed cutoff: {source} {draw_date}")
 
+          required = {str(value) for value in range(75364, 75371)}
+          if not required.issubset(seen):
+              raise SystemExit(
+                  f"Missing recovered serials: {sorted(required - seen)}"
+              )
           if max_date != latest:
               raise SystemExit(f"Manifest frontier mismatch: manifest={latest}, records={max_date}")
           print("Validated frontier:", manifest["latest_source"], manifest["latest_draw_date"])
@@ -127,9 +163,7 @@ jobs:
         run: |
           git config user.name "Sathya P B"
           git config user.email "sathya@gooleos.com"
-          git add exports/kerala_lottery_government/2026-08.json \
-                  exports/kerala_lottery_government/2026-09.json \
-                  exports/kerala_lottery_government/manifest.json
+          git add -A exports/kerala_lottery_government
           if git diff --cached --quiet; then
             echo "No Government export changes to commit."
           else

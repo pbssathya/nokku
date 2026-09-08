@@ -29,10 +29,24 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install ".[dev]"
 
+      - name: Prepare Actions-only portable export config
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          source = Path('config/kerala_government_export.json')
+          payload = json.loads(source.read_text())
+          payload['runtime_export_directory'] = '/tmp/banyan/exports/kerala_lottery_government'
+          target = Path('/tmp/kerala_government_export.json')
+          target.write_text(json.dumps(payload, indent=2) + '\n')
+          print(target.read_text())
+          PY
+
       - name: Run manifest-first incremental Government update
         run: |
           python tools/update_kerala_government.py \
-            --config config/kerala_government_export.json \
+            --config /tmp/kerala_government_export.json \
             --receipt /tmp/kerala-government-update.json
           cat /tmp/kerala-government-update.json
 

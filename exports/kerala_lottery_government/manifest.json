@@ -1,13 +1,13 @@
 {
   "schema_version": 4,
   "domain_path": "games/chance/lottery/kerala",
-  "cutoff_date": "2026-09-05",
-  "generated_at": "2026-09-08T19:24:59.474403+00:00",
-  "record_count": 3180,
+  "cutoff_date": "2026-09-08",
+  "generated_at": "2026-09-08T20:44:20.818930+00:00",
+  "record_count": 3183,
   "oldest_source": "legacy:53773",
   "oldest_draw_date": "2017-01-01",
-  "latest_source": "75370",
-  "latest_draw_date": "2026-09-05",
+  "latest_source": "75373",
+  "latest_draw_date": "2026-09-08",
   "shard_period_format": "%Y-%m",
   "shard_filename_template": "{period}.json",
   "shards": [
@@ -1040,11 +1040,11 @@
     {
       "period": "2026-09",
       "file": "2026-09.json",
-      "record_count": 5,
+      "record_count": 8,
       "oldest_source": "75366",
       "oldest_draw_date": "2026-09-01",
-      "latest_source": "75370",
-      "latest_draw_date": "2026-09-05"
+      "latest_source": "75373",
+      "latest_draw_date": "2026-09-08"
     }
   ]
 }

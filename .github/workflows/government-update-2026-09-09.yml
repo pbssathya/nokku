@@ -1,0 +1,101 @@
+name: Kerala Government incremental update 2026-09-09
+
+on:
+  push:
+    branches:
+      - ops/government-update-2026-09-09
+    paths:
+      - .github/workflows/government-update-2026-09-09.yml
+
+permissions:
+  contents: write
+
+jobs:
+  update-government-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out update branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Nokku and declared dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[dev]"
+
+      - name: Run manifest-first incremental Government update
+        run: |
+          python tools/update_kerala_government.py \
+            --config config/kerala_government_export.json \
+            --receipt /tmp/kerala-government-update.json
+          cat /tmp/kerala-government-update.json
+
+      - name: Validate update receipt and canonical frontier
+        run: |
+          python - <<'PY'
+          from datetime import date
+          import json
+          from pathlib import Path
+
+          receipt = json.loads(Path('/tmp/kerala-government-update.json').read_text())
+          manifest = json.loads(Path('exports/kerala_lottery_government/manifest.json').read_text())
+
+          print('Receipt status:', receipt.get('status'))
+          print('Mode:', receipt.get('mode'))
+          print('Collector sources added:', receipt.get('collector_sources_added'))
+          print('Checkpoint after:', receipt.get('checkpoint_after'))
+          print('Manifest frontier:', manifest.get('latest_source'), manifest.get('latest_draw_date'))
+          print('Record count:', manifest.get('record_count'))
+
+          if receipt.get('status') != 'success':
+              raise SystemExit(f"Update receipt is not successful: {receipt}")
+          if receipt.get('mode') != 'incremental':
+              raise SystemExit(f"Expected incremental mode, got {receipt.get('mode')}")
+          if int(manifest.get('latest_source') or 0) < 75370:
+              raise SystemExit('Government frontier regressed')
+          if date.fromisoformat(str(manifest.get('latest_draw_date'))) > date(2026, 9, 9):
+              raise SystemExit('Manifest contains a future draw date')
+          if int(manifest.get('record_count') or 0) < 3180:
+              raise SystemExit('Government record count regressed')
+          if receipt.get('failures'):
+              raise SystemExit(f"Receipt failures present: {receipt.get('failures')}")
+          if receipt.get('uncertainty'):
+              raise SystemExit(f"Receipt uncertainty present: {receipt.get('uncertainty')}")
+          PY
+
+      - name: Run full Nokku regression suite
+        run: pytest -q
+
+      - name: Verify diff scope
+        run: |
+          python - <<'PY'
+          import subprocess
+          lines = subprocess.check_output(['git', 'status', '--porcelain'], text=True).splitlines()
+          changed = [line[3:] for line in lines if line.strip()]
+          print('Working-tree changes:', changed)
+          unexpected = [
+              path for path in changed
+              if not path.startswith('exports/kerala_lottery_government/')
+              and path != '.github/workflows/government-update-2026-09-09.yml'
+          ]
+          if unexpected:
+              raise SystemExit(f'Unexpected changes: {unexpected}')
+          PY
+
+      - name: Commit verified Government update
+        run: |
+          if git diff --quiet -- exports/kerala_lottery_government; then
+            echo "No Government export changes to commit."
+            exit 0
+          fi
+          git config user.name "Sathya P B"
+          git config user.email "sathya@gooleos.com"
+          git add exports/kerala_lottery_government
+          git commit -m "data: update Kerala Government results through current frontier"
+          git push origin HEAD:ops/government-update-2026-09-09

@@ -1,0 +1,138 @@
+name: Government update through 2026-09-05
+
+on:
+  push:
+    branches:
+      - ops/government-update-2026-09-05
+
+permissions:
+  contents: write
+
+jobs:
+  update-government-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out update branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Nokku and declared dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[dev]"
+
+      - name: Prepare isolated export config
+        run: |
+          cat > /tmp/kerala_government_export.json <<'JSON'
+          {
+            "runtime_export_directory": "/tmp/banyan/exports/kerala_lottery_government",
+            "repository_export_directory": "exports/kerala_lottery_government",
+            "manifest_filename": "manifest.json",
+            "shard_period_format": "%Y-%m",
+            "shard_filename_template": "{period}.json",
+            "frontier_max_new_sources": 31
+          }
+          JSON
+
+      - name: Refresh Government evidence through 5 September 2026
+        run: |
+          python - <<'PY'
+          from datetime import date
+          import importlib.util
+          import sys
+
+          spec = importlib.util.spec_from_file_location(
+              "anchored_government_update", "tools/update_kerala_government.py"
+          )
+          module = importlib.util.module_from_spec(spec)
+          sys.modules[spec.name] = module
+          spec.loader.exec_module(module)
+          module.kerala_today = lambda: date(2026, 9, 5)
+          module.main(
+              "/tmp/kerala_government_export.json",
+              "/tmp/kerala_government_update_receipt.json",
+          )
+          PY
+          cat /tmp/kerala_government_update_receipt.json
+
+      - name: Validate update receipt and export boundary
+        run: |
+          python - <<'PY'
+          from datetime import date, datetime
+          import json
+          from pathlib import Path
+
+          cutoff = date(2026, 9, 5)
+          receipt = json.loads(Path("/tmp/kerala_government_update_receipt.json").read_text())
+          if receipt.get("status") != "success":
+              raise SystemExit(f"Update receipt not successful: {receipt}")
+
+          root = Path("exports/kerala_lottery_government")
+          manifest = json.loads((root / "manifest.json").read_text())
+          latest = date.fromisoformat(manifest["latest_draw_date"])
+          if latest > cutoff:
+              raise SystemExit(f"Export crossed cutoff: {latest} > {cutoff}")
+
+          seen = set()
+          max_date = None
+          for shard_entry in manifest["shards"]:
+              shard = json.loads((root / shard_entry["file"]).read_text())
+              for record in shard["records"]:
+                  source = str(record["source"])
+                  if source.isdigit():
+                      if source in seen:
+                          raise SystemExit(f"Duplicate numeric DrawSerial: {source}")
+                      seen.add(source)
+                  draw_date = datetime.strptime(record["draw_date"], "%d/%m/%Y").date()
+                  max_date = draw_date if max_date is None or draw_date > max_date else max_date
+                  if draw_date > cutoff:
+                      raise SystemExit(f"Record crossed cutoff: {source} {draw_date}")
+
+          if max_date != latest:
+              raise SystemExit(f"Manifest frontier mismatch: manifest={latest}, records={max_date}")
+          print("Validated frontier:", manifest["latest_source"], manifest["latest_draw_date"])
+          print("Record count:", manifest["record_count"])
+          PY
+
+      - name: Verify diff scope
+        run: |
+          python - <<'PY'
+          import subprocess
+
+          allowed = {
+              "exports/kerala_lottery_government/2026-08.json",
+              "exports/kerala_lottery_government/2026-09.json",
+              "exports/kerala_lottery_government/manifest.json",
+          }
+          output = subprocess.check_output(
+              ["git", "status", "--porcelain"], text=True
+          ).splitlines()
+          changed = {line[3:] for line in output if line.strip()}
+          unexpected = changed - allowed
+          print("Changed files:", sorted(changed))
+          if unexpected:
+              raise SystemExit(f"Unexpected repository changes: {sorted(unexpected)}")
+          PY
+
+      - name: Run Nokku regression suite
+        run: pytest -q
+
+      - name: Commit verified Government export
+        run: |
+          git config user.name "Sathya P B"
+          git config user.email "sathya@gooleos.com"
+          git add exports/kerala_lottery_government/2026-08.json \
+                  exports/kerala_lottery_government/2026-09.json \
+                  exports/kerala_lottery_government/manifest.json
+          if git diff --cached --quiet; then
+            echo "No Government export changes to commit."
+          else
+            git commit -m "data: update Kerala Government results through 2026-09-05"
+            git push origin HEAD:ops/government-update-2026-09-05
+          fi

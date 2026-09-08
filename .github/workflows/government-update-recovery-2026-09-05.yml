@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - ops/government-update-2026-09-05
+    paths:
+      - .github/workflows/government-update-recovery-2026-09-05.yml
 
 permissions:
   contents: write
@@ -99,6 +101,7 @@ jobs:
 
           seen = set()
           recovered = {}
+          required = {str(v) for v in range(75364, 75371)}
           max_date = None
           for item in manifest["shards"]:
               shard = json.loads((root / item["file"]).read_text())
@@ -112,19 +115,19 @@ jobs:
                   max_date = draw_date if max_date is None or draw_date > max_date else max_date
                   if draw_date > date(2026, 9, 5):
                       raise SystemExit(f"Record crossed cutoff: {source} {draw_date}")
-                  if source in {str(v) for v in range(75364, 75371)}:
+                  if source in required:
+                      parsed = record.get("parsed") or {}
                       recovered[source] = {
                           "draw_date": record["draw_date"],
                           "lottery_name": record["lottery_name"],
-                          "prize_tier_count": len(record.get("prize_tiers") or []),
+                          "prize_tier_count": len(parsed.get("prize_tiers") or []),
                       }
 
-          required = {str(v) for v in range(75364, 75371)}
           missing = sorted(required - set(recovered))
           if missing:
               raise SystemExit(f"Recovered serials missing from export: {missing}")
           if any(item["prize_tier_count"] < 1 for item in recovered.values()):
-              raise SystemExit(f"A recovered draw has no prize tiers: {recovered}")
+              raise SystemExit(f"A recovered draw has no parsed prize tiers: {recovered}")
           if max_date.isoformat() != manifest["latest_draw_date"]:
               raise SystemExit("Manifest and record frontier dates disagree")
 

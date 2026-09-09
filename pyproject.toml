@@ -11,6 +11,8 @@ dependencies = [
     "gooleos-banyan @ git+https://github.com/pbssathya/banyan.git@f9b7fcc126ddaeebc12740bf2c62ee97d88adbed",
     "collector @ git+https://github.com/pbssathya/collector.git@e2bdedbd465104c7e11824bc94fb535482aedcc6",
     "cossse @ git+https://github.com/pbssathya/cossse.git@fa0781789e8248c61d71a37bfdb1756bd1f88ae1",
+    "skyfield==1.55",
+    "skyfield-data==7.0.0",
 ]
 
 [project.optional-dependencies]

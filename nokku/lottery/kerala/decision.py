@@ -26,6 +26,45 @@ WEEKDAYS = (
 )
 
 
+TimingEvidenceStatus = Literal[
+    "government_verified",
+    "operational_inferred",
+    "symbolic_derived",
+    "not_verified",
+    "not_established",
+    "not_applicable",
+]
+
+
+@dataclass(frozen=True, slots=True)
+class KeralaLotteryTimeWindow:
+    """One explicit time value/window with its timezone, basis, and provenance."""
+
+    value: str
+    timezone: str
+    basis: str
+    status: TimingEvidenceStatus
+
+
+@dataclass(frozen=True, slots=True)
+class KeralaLotteryDecisionTiming:
+    """Structured timing contract for the canonical Project Lakshmi decision card.
+
+    Official, operational, and symbolic time evidence stay separate. Fields may
+    remain ``None`` until the relevant layer has actually established them; the
+    caller must report the resulting uncertainty rather than silently inventing
+    a value.
+    """
+
+    official_draw_time: KeralaLotteryTimeWindow | None = None
+    official_sale_cutoff: KeralaLotteryTimeWindow | None = None
+    operational_purchase_window: KeralaLotteryTimeWindow | None = None
+    primary_preferred_window: KeralaLotteryTimeWindow | None = None
+    backup_window: KeralaLotteryTimeWindow | None = None
+    avoid_windows: tuple[KeralaLotteryTimeWindow, ...] = ()
+    uncertainty: tuple[str, ...] = ()
+
+
 @dataclass(frozen=True, slots=True)
 class KeralaLotteryFact:
     source: str
@@ -40,10 +79,13 @@ class KeralaLotteryDecision:
     week_end: date
     preferred_date: date | None
     backup_date: date | None
+    # Compatibility summary retained while the living loop migrates to the
+    # structured ``timing`` contract below.
     preferred_time: str
     evidence_summary: tuple[str, ...]
     uncertainty: str
     override: Literal["BUY", "SKIP"] | None = None
+    timing: KeralaLotteryDecisionTiming | None = None
 
     def to_dict(self) -> dict[str, object]:
         data = asdict(self)

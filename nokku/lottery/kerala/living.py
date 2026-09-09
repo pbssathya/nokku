@@ -852,6 +852,12 @@ def _candidate_transit_observation_payload(
                 "status": receipt.status,
                 "moon": _sidereal_position_payload(receipt.moon),
                 "jupiter": _sidereal_position_payload(receipt.jupiter),
+                "sun": (
+                    _sidereal_position_payload(receipt.sun)
+                    if receipt.sun is not None
+                    else None
+                ),
+                "moon_phase_angle_deg": receipt.moon_phase_angle_deg,
             }
             for receipt in result.receipts
         ],

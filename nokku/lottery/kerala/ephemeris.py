@@ -18,6 +18,7 @@ from datetime import datetime
 from math import floor
 from typing import Literal
 
+from skyfield import almanac
 from skyfield.api import Loader
 from skyfield_data import get_skyfield_data_path
 
@@ -42,10 +43,11 @@ SIGN_NAMES = (
     "Pisces",
 )
 
-SupportedBody = Literal["moon", "jupiter"]
+SupportedBody = Literal["moon", "jupiter", "sun"]
 _BODY_KEYS: dict[SupportedBody, str] = {
     "moon": "moon",
     "jupiter": "jupiter barycenter",
+    "sun": "sun",
 }
 
 
@@ -68,11 +70,13 @@ class SiderealPosition:
 
 @dataclass(frozen=True, slots=True)
 class LakshmiTransitReceipt:
-    """Factual Moon/Jupiter positions at one explicit Lakshmi target instant."""
+    """Factual luminary/planet positions at one explicit Lakshmi target instant."""
 
     target_at: datetime
     moon: SiderealPosition
     jupiter: SiderealPosition
+    sun: SiderealPosition | None = None
+    moon_phase_angle_deg: float | None = None
     ephemeris_kernel: str = EPHEMERIS_KERNEL
     ayanamsa_realization: str = LAHIRI_REALIZATION
     status: str = "experimental"
@@ -106,14 +110,18 @@ def _loader() -> Loader:
     return Loader(get_skyfield_data_path(), expire=False)
 
 
+def _require_aware_target(target_at: datetime) -> None:
+    if target_at.tzinfo is None or target_at.utcoffset() is None:
+        raise ValueError("Ephemeris target instant must be timezone-aware.")
+
+
 def sidereal_position(body: SupportedBody, *, target_at: datetime) -> SiderealPosition:
-    """Return one Moon/Jupiter sidereal position at an aware target instant.
+    """Return one supported body's sidereal position at an aware target instant.
 
     No network access is needed: DE421 is supplied by ``skyfield-data`` and the
     Skyfield built-in timescale is used.
     """
-    if target_at.tzinfo is None or target_at.utcoffset() is None:
-        raise ValueError("Ephemeris target instant must be timezone-aware.")
+    _require_aware_target(target_at)
     if body not in _BODY_KEYS:
         raise ValueError(f"Unsupported Lakshmi ephemeris body: {body}")
 
@@ -143,17 +151,39 @@ def sidereal_position(body: SupportedBody, *, target_at: datetime) -> SiderealPo
         ephemeris.close()
 
 
-def lakshmi_transit_receipt(*, target_at: datetime) -> LakshmiTransitReceipt:
-    """Return the minimal factual transit receipt currently used by Lakshmi.
+def moon_phase_angle_deg(*, target_at: datetime) -> float:
+    """Return Skyfield's geocentric Moon phase angle in degrees.
 
-    This deliberately contains no astrological judgment. It only preserves the
-    two independently proven astronomical inputs needed by the current living
-    experiment: Moon and Jupiter Lahiri-sidereal positions.
+    The stable Skyfield convention is 0° at New Moon, 90° at First Quarter,
+    180° at Full Moon, and 270° at Last Quarter.  This is an astronomical fact
+    receipt only; Nokku does not assign symbolic meaning here.
+    """
+    _require_aware_target(target_at)
+    load = _loader()
+    timescale = load.timescale(builtin=True)
+    target = timescale.from_datetime(target_at)
+    ephemeris = load(EPHEMERIS_KERNEL)
+    try:
+        return float(almanac.moon_phase(ephemeris, target).degrees % 360.0)
+    finally:
+        ephemeris.close()
+
+
+def lakshmi_transit_receipt(*, target_at: datetime) -> LakshmiTransitReceipt:
+    """Return the factual transit receipt currently used by Lakshmi.
+
+    This deliberately contains no astrological judgment. It preserves the
+    independently observed Moon/Jupiter positions plus Sun and lunar-phase
+    facts needed to test the next living interpretation slice.
     """
     moon = sidereal_position("moon", target_at=target_at)
     jupiter = sidereal_position("jupiter", target_at=target_at)
+    sun = sidereal_position("sun", target_at=target_at)
+    phase = moon_phase_angle_deg(target_at=target_at)
     return LakshmiTransitReceipt(
         target_at=target_at,
         moon=moon,
         jupiter=jupiter,
+        sun=sun,
+        moon_phase_angle_deg=phase,
     )

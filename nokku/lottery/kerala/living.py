@@ -44,6 +44,11 @@ from .decision import (
     decide_weekly_participation,
     resolve_week,
 )
+from .ephemeris import (
+    LakshmiTransitReceipt,
+    SiderealPosition,
+    lakshmi_transit_receipt,
+)
 from .fact_recall import KeralaFactRecallResult, recall_kerala_facts_result
 from .numerology import LakshmiNumerologySignal, lakshmi_numerology_signal
 
@@ -89,6 +94,16 @@ class ScheduleCollectionResult:
 
 
 @dataclass(frozen=True, slots=True)
+class CandidateTransitObservationResult:
+    """Truthful factual transit receipts at official candidate draw instants."""
+
+    status: str
+    receipts: tuple[LakshmiTransitReceipt, ...]
+    failures: tuple[str, ...] = ()
+    uncertainty: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class LivingDecisionResult:
     decision: KeralaLotteryDecision
     decision_date: date
@@ -104,6 +119,7 @@ class LivingDecisionResult:
     numerology_signals: tuple[LakshmiNumerologySignal, ...]
     astrology_observation: VimshottariSnapshot | None
     astrology_observation_result: AstrologyObservationResult | None
+    candidate_transit_observations: CandidateTransitObservationResult
 
 
 def local_today(timezone_name: str, now: datetime | None = None) -> date:
@@ -512,6 +528,54 @@ def collect_upcoming_draw_dates(*, collector: Callable = collect) -> tuple[date,
     return collect_upcoming_draw_schedule(collector=collector).dates
 
 
+def _candidate_transit_observations(
+    *,
+    candidate_dates: tuple[date, ...],
+    draw_times: dict[date, str],
+) -> CandidateTransitObservationResult:
+    """Observe Moon/Jupiter at official draw instants without interpretation."""
+    candidates = tuple(sorted(set(candidate_dates)))
+    if not candidates:
+        return CandidateTransitObservationResult(
+            status="not_applicable",
+            receipts=(),
+        )
+
+    receipts: list[LakshmiTransitReceipt] = []
+    failures: list[str] = []
+    uncertainty: list[str] = []
+    for candidate in candidates:
+        draw_time = draw_times.get(candidate)
+        if draw_time is None:
+            uncertainty.append(
+                f"official draw time not available for {candidate.isoformat()}"
+            )
+            continue
+        try:
+            local_time = datetime.strptime(draw_time, "%H:%M").time()
+            target_at = datetime.combine(
+                candidate,
+                local_time,
+                tzinfo=KERALA_TIMEZONE,
+            )
+            receipts.append(lakshmi_transit_receipt(target_at=target_at))
+        except Exception as exc:  # isolate optional experimental evidence
+            failures.append(
+                f"{candidate.isoformat()}: {type(exc).__name__}: {exc}"
+            )
+
+    if failures or uncertainty:
+        status = "partial" if receipts else "unavailable"
+    else:
+        status = "success"
+    return CandidateTransitObservationResult(
+        status=status,
+        receipts=tuple(receipts),
+        failures=tuple(failures),
+        uncertainty=tuple(uncertainty),
+    )
+
+
 def _numerology_signals_for_candidates(
     *,
     user_preferences: UserPreferences,
@@ -747,6 +811,45 @@ def _schedule_collection_payload(
     }
 
 
+def _sidereal_position_payload(position: SiderealPosition) -> dict[str, object]:
+    return {
+        "body": position.body,
+        "target_at": position.target_at.isoformat(),
+        "tropical_longitude_deg": position.tropical_longitude_deg,
+        "sidereal_longitude_deg": position.sidereal_longitude_deg,
+        "ayanamsa_deg": position.ayanamsa_deg,
+        "sign_index": position.sign_index,
+        "sign_name": position.sign_name,
+        "degrees_in_sign": position.degrees_in_sign,
+        "ephemeris_kernel": position.ephemeris_kernel,
+        "ayanamsa_realization": position.ayanamsa_realization,
+        "status": position.status,
+    }
+
+
+def _candidate_transit_observation_payload(
+    result: CandidateTransitObservationResult | None,
+) -> dict[str, object]:
+    if result is None:
+        return {"status": "not_requested", "receipts": []}
+    return {
+        "status": result.status,
+        "failures": list(result.failures),
+        "uncertainty": list(result.uncertainty),
+        "receipts": [
+            {
+                "target_at": receipt.target_at.isoformat(),
+                "ephemeris_kernel": receipt.ephemeris_kernel,
+                "ayanamsa_realization": receipt.ayanamsa_realization,
+                "status": receipt.status,
+                "moon": _sidereal_position_payload(receipt.moon),
+                "jupiter": _sidereal_position_payload(receipt.jupiter),
+            }
+            for receipt in result.receipts
+        ],
+    }
+
+
 def _astrology_observation_payload(
     result: AstrologyObservationResult | None,
 ) -> dict[str, object]:
@@ -773,6 +876,7 @@ def preserve_decision_experience(
     numerology_signals: tuple[LakshmiNumerologySignal, ...] = (),
     astrology_observation: VimshottariSnapshot | None = None,
     astrology_observation_result: AstrologyObservationResult | None = None,
+    candidate_transit_observations: CandidateTransitObservationResult | None = None,
     memory_path: str | Path | None = None,
 ) -> MemoryPreservationResult:
     target = Path(memory_path) if memory_path is not None else living_memory_path()
@@ -795,6 +899,11 @@ def preserve_decision_experience(
                 ],
                 "official_upcoming_draw_schedule_collection": _schedule_collection_payload(
                     schedule_collection
+                ),
+                "candidate_draw_transit_observations": (
+                    _candidate_transit_observation_payload(
+                        candidate_transit_observations
+                    )
                 ),
                 "astrology_observation_attempt": _astrology_observation_payload(
                     astrology_observation_result
@@ -893,6 +1002,10 @@ def run_weekly_decision(
         for candidate in scheduled_draw_dates
         if earliest <= candidate <= resolved_week_end
     )
+    candidate_transit_observations = _candidate_transit_observations(
+        candidate_dates=scheduled_candidates,
+        draw_times=scheduled_draw_times,
+    )
     candidate_numerology = _numerology_signals_for_candidates(
         user_preferences=user_preferences,
         candidate_dates=scheduled_candidates,
@@ -949,6 +1062,7 @@ def run_weekly_decision(
         numerology_signals=numerology_signals,
         astrology_observation=astrology_observation,
         astrology_observation_result=astrology_observation_result,
+        candidate_transit_observations=candidate_transit_observations,
         memory_path=memory_target,
     )
     memory_id = decision_preservation.memory_id
@@ -968,4 +1082,5 @@ def run_weekly_decision(
         numerology_signals=numerology_signals,
         astrology_observation=astrology_observation,
         astrology_observation_result=astrology_observation_result,
+        candidate_transit_observations=candidate_transit_observations,
     )

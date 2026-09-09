@@ -22,21 +22,19 @@ jobs:
           from pathlib import Path
           p = Path('nokku/lottery/kerala/living.py')
           s = p.read_text()
-          old = '''                "moon": _sidereal_position_payload(receipt.moon),
-                "jupiter": _sidereal_position_payload(receipt.jupiter),
-'''
-          new = '''                "moon": _sidereal_position_payload(receipt.moon),
-                "jupiter": _sidereal_position_payload(receipt.jupiter),
-                "sun": (
-                    _sidereal_position_payload(receipt.sun)
-                    if receipt.sun is not None
-                    else None
-                ),
-                "moon_phase_angle_deg": receipt.moon_phase_angle_deg,
-'''
-          if old not in s:
+          needle = '                "jupiter": _sidereal_position_payload(receipt.jupiter),\n'
+          replacement = (
+              needle
+              + '                "sun": (\n'
+              + '                    _sidereal_position_payload(receipt.sun)\n'
+              + '                    if receipt.sun is not None\n'
+              + '                    else None\n'
+              + '                ),\n'
+              + '                "moon_phase_angle_deg": receipt.moon_phase_angle_deg,\n'
+          )
+          if needle not in s:
               raise SystemExit('candidate transit payload anchor not found')
-          p.write_text(s.replace(old, new, 1))
+          p.write_text(s.replace(needle, replacement, 1))
           PY
       - name: Fresh install and regression
         shell: bash

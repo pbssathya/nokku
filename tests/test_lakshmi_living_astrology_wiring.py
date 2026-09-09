@@ -71,6 +71,12 @@ def test_living_loop_derives_and_preserves_candidate_astrology_without_policy_ef
     assert result.natal_astrology_context.moon is not None
     assert result.natal_astrology_context.jupiter is not None
 
+    assert len(result.candidate_transit_observations.receipts) == 1
+    transit = result.candidate_transit_observations.receipts[0]
+    assert transit.sun is not None
+    assert transit.sun.body == "sun"
+    assert transit.moon_phase_angle_deg is not None
+
     assert len(result.candidate_astrology_interpretations) == 1
     interpretation = result.candidate_astrology_interpretations[0]
     assert interpretation.status == "success"
@@ -82,6 +88,14 @@ def test_living_loop_derives_and_preserves_candidate_astrology_without_policy_ef
 
     with Memory(memory_path) as memory:
         recalled = memory.recall(result.memory_id)
+
+    operational = recalled["body"]["operational_context"]
+    receipts = operational["candidate_draw_transit_observations"]["receipts"]
+    assert len(receipts) == 1
+    stored_transit = receipts[0]
+    assert stored_transit["sun"] is not None
+    assert stored_transit["sun"]["body"] == "sun"
+    assert stored_transit["moon_phase_angle_deg"] is not None
 
     signals = recalled["body"]["signals"]
     assert signals["natal_astrology_context"]["status"] == "success"

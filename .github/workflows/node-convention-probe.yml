@@ -1,0 +1,82 @@
+name: Probe Lakshmi lunar node conventions
+on:
+  push:
+    branches: [exp/lakshmi-numerology-signal]
+    paths: [.github/workflows/node-convention-probe.yml]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: exp/lakshmi-numerology-signal
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install declared dependencies
+        shell: bash
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install ".[dev]"
+      - name: Compare explicit node conventions
+        shell: bash
+        run: |
+          source .venv/bin/activate
+          python - <<'PY'
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+
+          from skyfield.api import Loader
+          from skyfield.elementslib import osculating_elements_of
+          from skyfield.framelib import ecliptic_frame
+          from skyfield_data import get_skyfield_data_path
+
+          from nokku.lottery.kerala.ephemeris import (
+              EPHEMERIS_KERNEL,
+              lahiri_ayanamsa_deg,
+          )
+
+          birth_at = datetime(1969, 8, 12, 5, 23, tzinfo=ZoneInfo("Asia/Kolkata"))
+          recovered_ketu = 120.0 + 27.0 + 58.0 / 60.0
+
+          load = Loader(get_skyfield_data_path(), expire=False)
+          ts = load.timescale(builtin=True)
+          t = ts.from_datetime(birth_at)
+          eph = load(EPHEMERIS_KERNEL)
+          try:
+              ayanamsa = lahiri_ayanamsa_deg(t.tt)
+
+              T = (float(t.tt) - 2451545.0) / 36525.0
+              mean_rahu_tropical = (
+                  125.04452
+                  - 1934.136261 * T
+                  + 0.0020708 * T**2
+                  + T**3 / 450000.0
+              ) % 360.0
+              mean_ketu_sidereal = (mean_rahu_tropical - ayanamsa + 180.0) % 360.0
+
+              position = (eph["moon"] - eph["earth"]).at(t)
+              rotation = ecliptic_frame.rotation_at(t)
+              elements = osculating_elements_of(position, rotation)
+              true_rahu_tropical = elements.longitude_of_ascending_node.degrees % 360.0
+              true_ketu_sidereal = (true_rahu_tropical - ayanamsa + 180.0) % 360.0
+
+              def separation(a, b):
+                  d = abs((a - b) % 360.0)
+                  return min(d, 360.0 - d)
+
+              print(f"recovered_ketu_sidereal_deg={recovered_ketu:.9f}")
+              print(f"ayanamsa_deg={ayanamsa:.9f}")
+              print(f"mean_rahu_tropical_deg={mean_rahu_tropical:.9f}")
+              print(f"mean_ketu_sidereal_deg={mean_ketu_sidereal:.9f}")
+              print(f"mean_error_deg={separation(mean_ketu_sidereal, recovered_ketu):.9f}")
+              print(f"osculating_rahu_tropical_deg={true_rahu_tropical:.9f}")
+              print(f"osculating_ketu_sidereal_deg={true_ketu_sidereal:.9f}")
+              print(f"osculating_error_deg={separation(true_ketu_sidereal, recovered_ketu):.9f}")
+          finally:
+              eph.close()
+          PY

@@ -1,0 +1,84 @@
+name: Candidate astrology wiring
+on:
+  push:
+    branches: [exp/lakshmi-numerology-signal]
+    paths: [.github/workflows/candidate-astrology-wiring.yml]
+permissions:
+  contents: write
+jobs:
+  wire:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: exp/lakshmi-numerology-signal
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Wire interpretation receipts
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('nokku/lottery/kerala/living.py')
+          s = p.read_text()
+          changes = [
+            (
+              'from .astrology import VimshottariSnapshot\n',
+              'from .astrology import VimshottariSnapshot\nfrom .astrology_interpretation import (\n    CandidateAstrologyInterpretation,\n    NatalAstrologyContextResult,\n    interpret_candidate_transit,\n    natal_astrology_context,\n)\n'
+            ),
+            (
+              '    candidate_transit_observations: CandidateTransitObservationResult\n',
+              '    candidate_transit_observations: CandidateTransitObservationResult\n    natal_astrology_context: NatalAstrologyContextResult\n    candidate_astrology_interpretations: tuple[CandidateAstrologyInterpretation, ...]\n'
+            ),
+            (
+              '    candidate_numerology = _numerology_signals_for_candidates(\n',
+              '    derived_natal_astrology_context = natal_astrology_context(\n        user_preferences=user_preferences\n    )\n    candidate_astrology_interpretations = tuple(\n        interpret_candidate_transit(\n            transit=receipt,\n            natal_context=derived_natal_astrology_context,\n        )\n        for receipt in candidate_transit_observations.receipts\n    )\n    candidate_numerology = _numerology_signals_for_candidates(\n'
+            ),
+            (
+              '    candidate_transit_observations: CandidateTransitObservationResult | None = None,\n    memory_path: str | Path | None = None,\n',
+              '    candidate_transit_observations: CandidateTransitObservationResult | None = None,\n    natal_astrology_context: NatalAstrologyContextResult | None = None,\n    candidate_astrology_interpretations: tuple[CandidateAstrologyInterpretation, ...] = (),\n    memory_path: str | Path | None = None,\n'
+            ),
+            (
+              '        candidate_transit_observations=candidate_transit_observations,\n        memory_path=memory_target,\n',
+              '        candidate_transit_observations=candidate_transit_observations,\n        natal_astrology_context=derived_natal_astrology_context,\n        candidate_astrology_interpretations=candidate_astrology_interpretations,\n        memory_path=memory_target,\n'
+            ),
+            (
+              '        candidate_transit_observations=candidate_transit_observations,\n    )\n',
+              '        candidate_transit_observations=candidate_transit_observations,\n        natal_astrology_context=derived_natal_astrology_context,\n        candidate_astrology_interpretations=candidate_astrology_interpretations,\n    )\n'
+            ),
+          ]
+          for old, new in changes:
+              if old not in s:
+                  raise SystemExit(f'missing anchor: {old[:80]!r}')
+              s = s.replace(old, new, 1)
+
+          anchor = 'def _astrology_observation_payload(\n'
+          payload = '''def _natal_astrology_context_payload(result: NatalAstrologyContextResult | None) -> dict[str, object]:\n    if result is None:\n        return {"status": "not_requested"}\n    return {\n        "status": result.status,\n        "moon": _sidereal_position_payload(result.moon) if result.moon is not None else None,\n        "jupiter": _sidereal_position_payload(result.jupiter) if result.jupiter is not None else None,\n        "failures": list(result.failures),\n        "uncertainty": list(result.uncertainty),\n    }\n\n\ndef _candidate_astrology_interpretation_payload(signal: CandidateAstrologyInterpretation) -> dict[str, object]:\n    return {\n        "target_at": signal.target_at.isoformat(),\n        "status": signal.status,\n        "reading": signal.reading,\n        "transit_moon_to_natal_jupiter_separation_deg": signal.transit_moon_to_natal_jupiter_separation_deg,\n        "transit_moon_to_natal_moon_separation_deg": signal.transit_moon_to_natal_moon_separation_deg,\n        "signals": list(signal.signals),\n        "method": signal.method,\n        "failures": list(signal.failures),\n        "uncertainty": list(signal.uncertainty),\n    }\n\n\n'''
+          if anchor not in s:
+              raise SystemExit('missing payload anchor')
+          s = s.replace(anchor, payload + anchor, 1)
+
+          old = '''                "astrology": (\n                    _astrology_signal_payload(astrology_observation)\n                    if astrology_observation is not None\n                    else None\n                ),\n'''
+          new = old + '''                "natal_astrology_context": _natal_astrology_context_payload(\n                    natal_astrology_context\n                ),\n                "candidate_astrology": [\n                    _candidate_astrology_interpretation_payload(signal)\n                    for signal in candidate_astrology_interpretations\n                ],\n'''
+          if old not in s:
+              raise SystemExit('missing signals anchor')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+      - name: Fresh install and regression
+        shell: bash
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install ".[dev]"
+          pytest -q
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "Sathya P B"
+          git config user.email "sathya@gooleos.com"
+          git add nokku/lottery/kerala/living.py
+          git commit -m "feat: wire candidate astrology interpretations"
+          git push origin HEAD:exp/lakshmi-numerology-signal

@@ -3,14 +3,17 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from nokku.lottery.kerala.ephemeris import (
+    LUNAR_NODE_CONVENTION,
     lahiri_ayanamsa_deg,
     lakshmi_transit_receipt,
+    lunar_node_receipt,
     moon_phase_angle_deg,
     sidereal_position,
 )
 
 
 IST = timezone(timedelta(hours=5, minutes=30))
+NATAL_AT = datetime(1969, 8, 12, 5, 23, tzinfo=IST)
 KR_768_DRAW_AT = datetime(2026, 9, 12, 15, 0, tzinfo=IST)
 NEW_MOON_AT = datetime(2026, 9, 11, 8, 57, tzinfo=IST)
 SK_69_DRAW_AT = datetime(2026, 9, 11, 15, 0, tzinfo=IST)
@@ -54,6 +57,23 @@ def test_existing_skyfield_path_supplies_sun_without_new_dependency():
     assert 0.0 <= sun.sidereal_longitude_deg < 360.0
 
 
+def test_recovered_lakshmi_ketu_uses_osculating_true_node_convention():
+    nodes = lunar_node_receipt(target_at=NATAL_AT)
+
+    assert nodes.status == "experimental"
+    assert nodes.convention == LUNAR_NODE_CONVENTION
+    assert nodes.ephemeris_kernel == "de421.bsp"
+    assert nodes.ketu_sign_name == "Leo"
+    assert nodes.ketu_sign_index == 4
+    assert nodes.rahu_tropical_longitude_deg == pytest.approx(351.392195483, abs=1e-6)
+    assert nodes.ketu_sidereal_longitude_deg == pytest.approx(147.959572725, abs=1e-6)
+
+    # Recovered Lakshmi analysis recorded natal Ketu ~ Leo 27°58′.
+    recovered_ketu = 27 + 58 / 60
+    error_arcmin = abs(nodes.ketu_degrees_in_sign - recovered_ketu) * 60
+    assert error_arcmin < 1.0
+
+
 def test_skyfield_moon_phase_reproduces_11_sep_new_moon_near_zero_angle():
     phase = moon_phase_angle_deg(target_at=NEW_MOON_AT)
 
@@ -88,3 +108,6 @@ def test_ephemeris_requires_timezone_aware_target():
 
     with pytest.raises(ValueError, match="timezone-aware"):
         moon_phase_angle_deg(target_at=datetime(2026, 9, 11, 8, 57))
+
+    with pytest.raises(ValueError, match="timezone-aware"):
+        lunar_node_receipt(target_at=datetime(1969, 8, 12, 5, 23))

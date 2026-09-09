@@ -7,7 +7,7 @@ weekly participation policy, and preserves the decision experience.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, timezone
 from pathlib import Path
 import re
@@ -38,7 +38,9 @@ from .astrology_signal import (
 )
 from .decision import (
     KeralaLotteryDecision,
+    KeralaLotteryDecisionTiming,
     KeralaLotteryFact,
+    KeralaLotteryTimeWindow,
     decide_weekly_participation,
     resolve_week,
 )
@@ -79,6 +81,7 @@ class ScheduleCollectionResult:
     status: str
     dates: tuple[date, ...]
     draw_numbers: dict[date, str]
+    draw_times: dict[date, str]
     disposition_status: str
     execution_status: str | None
     failures: tuple[str, ...] = ()
@@ -384,6 +387,8 @@ def refresh_current_frontier_result(
             )
         ),
     )
+
+
 def refresh_current_frontier(
     *,
     anchor: date,
@@ -424,6 +429,7 @@ def collect_upcoming_draw_schedule(
             status="unavailable",
             dates=(),
             draw_numbers={},
+            draw_times={},
             disposition_status=disposition_status,
             execution_status=None,
             failures=(
@@ -439,6 +445,7 @@ def collect_upcoming_draw_schedule(
             status="failed",
             dates=(),
             draw_numbers={},
+            draw_times={},
             disposition_status=disposition_status,
             execution_status=execution_status,
             failures=(f"schedule collector execution status: {execution_status}",),
@@ -451,6 +458,7 @@ def collect_upcoming_draw_schedule(
             status="partial",
             dates=(),
             draw_numbers={},
+            draw_times={},
             disposition_status=disposition_status,
             execution_status=execution_status,
             uncertainty=("schedule payload has no usable upcoming_draws list",),
@@ -458,6 +466,7 @@ def collect_upcoming_draw_schedule(
 
     dates: set[date] = set()
     draw_numbers: dict[date, str] = {}
+    draw_times: dict[date, str] = {}
     invalid_entries = 0
     for item in raw_draws:
         if not isinstance(item, dict):
@@ -472,6 +481,12 @@ def collect_upcoming_draw_schedule(
         draw_number = _draw_number_from_code(item.get("draw_code"))
         if draw_number is not None:
             draw_numbers[draw_date] = draw_number
+        draw_time = str(item.get("draw_time") or "").strip()
+        if draw_time:
+            if re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d", draw_time):
+                draw_times[draw_date] = draw_time
+            else:
+                invalid_entries += 1
 
     uncertainty: tuple[str, ...] = ()
     status = execution_status
@@ -485,6 +500,7 @@ def collect_upcoming_draw_schedule(
         status=status,
         dates=tuple(sorted(dates)),
         draw_numbers=draw_numbers,
+        draw_times=draw_times,
         disposition_status=disposition_status,
         execution_status=execution_status,
         uncertainty=uncertainty,
@@ -560,6 +576,53 @@ def _numerology_priority(
             int(signal.draw_in_369_family),
         )
     return priorities
+
+
+def _decision_timing_from_schedule(
+    *,
+    decision: KeralaLotteryDecision,
+    draw_times: dict[date, str],
+) -> KeralaLotteryDecisionTiming:
+    """Build the factual timing layer without inventing missing time evidence."""
+    uncertainty: list[str] = []
+    official_draw_time: KeralaLotteryTimeWindow | None = None
+
+    if decision.preferred_date is not None:
+        draw_time = draw_times.get(decision.preferred_date)
+        if draw_time is not None:
+            official_draw_time = KeralaLotteryTimeWindow(
+                value=draw_time,
+                timezone=KERALA_TIMEZONE_NAME,
+                basis="Kerala State Lotteries LOTIS upcoming draw schedule via Collector",
+                status="government_verified",
+            )
+        else:
+            uncertainty.append("official draw time not available for preferred date")
+
+    official_sale_cutoff = (
+        KeralaLotteryTimeWindow(
+            value="NOT VERIFIED",
+            timezone=KERALA_TIMEZONE_NAME,
+            basis="current Collector schedule contract does not expose a sale/purchase cutoff",
+            status="not_verified",
+        )
+        if decision.preferred_date is not None
+        else None
+    )
+    if decision.preferred_date is not None:
+        uncertainty.append("official sale/purchase cutoff not verified")
+        uncertainty.append("operational purchase window not established without a verified cutoff")
+        uncertainty.append("symbolic preferred/backup/avoid windows not yet supplied by the symbolic layer")
+
+    return KeralaLotteryDecisionTiming(
+        official_draw_time=official_draw_time,
+        official_sale_cutoff=official_sale_cutoff,
+        operational_purchase_window=None,
+        primary_preferred_window=None,
+        backup_window=None,
+        avoid_windows=(),
+        uncertainty=tuple(uncertainty),
+    )
 
 
 def _numerology_signal_payload(signal: LakshmiNumerologySignal) -> dict[str, object]:
@@ -677,6 +740,10 @@ def _schedule_collection_payload(
         "uncertainty": list(result.uncertainty),
         "draw_count": len(result.dates),
         "draw_dates": [item.isoformat() for item in result.dates],
+        "draw_times": {
+            item.isoformat(): draw_time
+            for item, draw_time in sorted(result.draw_times.items())
+        },
     }
 
 
@@ -799,6 +866,7 @@ def run_weekly_decision(
     frontier_refresh: FrontierRefreshResult | None = None
     scheduled_draw_dates: tuple[date, ...] = ()
     scheduled_draw_numbers: dict[date, str] = {}
+    scheduled_draw_times: dict[date, str] = {}
     schedule_collection: ScheduleCollectionResult | None = None
     eligible_dates: tuple[date, ...] | None = None
     if refresh:
@@ -815,6 +883,7 @@ def run_weekly_decision(
         schedule_collection = collect_upcoming_draw_schedule(collector=collector)
         scheduled_draw_dates = schedule_collection.dates
         scheduled_draw_numbers = schedule_collection.draw_numbers
+        scheduled_draw_times = schedule_collection.draw_times
         eligible_dates = scheduled_draw_dates
 
     resolved_week_start, resolved_week_end = resolve_week(anchor_date, week_start)
@@ -839,6 +908,13 @@ def run_weekly_decision(
         eligible_dates=eligible_dates,
         eligible_dates_status=(schedule_collection.status if schedule_collection is not None else None),
         numerology_priority=numerology_priority or None,
+    )
+    decision = replace(
+        decision,
+        timing=_decision_timing_from_schedule(
+            decision=decision,
+            draw_times=scheduled_draw_times,
+        ),
     )
     numerology_signals = candidate_numerology or _numerology_signals_for_decision(
         user_preferences=user_preferences,

@@ -32,6 +32,12 @@ from nokku.memory_flow import MemoryPreservationResult, preserve_meaning
 from nokku.runtime import living_memory_path
 
 from .astrology import VimshottariSnapshot
+from .astrology_interpretation import (
+    CandidateAstrologyInterpretation,
+    NatalAstrologyContextResult,
+    interpret_candidate_transit,
+    natal_astrology_context,
+)
 from .astrology_signal import (
     AstrologyObservationResult,
     lakshmi_astrology_observation_result,
@@ -120,6 +126,8 @@ class LivingDecisionResult:
     astrology_observation: VimshottariSnapshot | None
     astrology_observation_result: AstrologyObservationResult | None
     candidate_transit_observations: CandidateTransitObservationResult
+    natal_astrology_context: NatalAstrologyContextResult
+    candidate_astrology_interpretations: tuple[CandidateAstrologyInterpretation, ...]
 
 
 def local_today(timezone_name: str, now: datetime | None = None) -> date:
@@ -850,6 +858,32 @@ def _candidate_transit_observation_payload(
     }
 
 
+def _natal_astrology_context_payload(result: NatalAstrologyContextResult | None) -> dict[str, object]:
+    if result is None:
+        return {"status": "not_requested"}
+    return {
+        "status": result.status,
+        "moon": _sidereal_position_payload(result.moon) if result.moon is not None else None,
+        "jupiter": _sidereal_position_payload(result.jupiter) if result.jupiter is not None else None,
+        "failures": list(result.failures),
+        "uncertainty": list(result.uncertainty),
+    }
+
+
+def _candidate_astrology_interpretation_payload(signal: CandidateAstrologyInterpretation) -> dict[str, object]:
+    return {
+        "target_at": signal.target_at.isoformat(),
+        "status": signal.status,
+        "reading": signal.reading,
+        "transit_moon_to_natal_jupiter_separation_deg": signal.transit_moon_to_natal_jupiter_separation_deg,
+        "transit_moon_to_natal_moon_separation_deg": signal.transit_moon_to_natal_moon_separation_deg,
+        "signals": list(signal.signals),
+        "method": signal.method,
+        "failures": list(signal.failures),
+        "uncertainty": list(signal.uncertainty),
+    }
+
+
 def _astrology_observation_payload(
     result: AstrologyObservationResult | None,
 ) -> dict[str, object]:
@@ -877,6 +911,8 @@ def preserve_decision_experience(
     astrology_observation: VimshottariSnapshot | None = None,
     astrology_observation_result: AstrologyObservationResult | None = None,
     candidate_transit_observations: CandidateTransitObservationResult | None = None,
+    natal_astrology_context: NatalAstrologyContextResult | None = None,
+    candidate_astrology_interpretations: tuple[CandidateAstrologyInterpretation, ...] = (),
     memory_path: str | Path | None = None,
 ) -> MemoryPreservationResult:
     target = Path(memory_path) if memory_path is not None else living_memory_path()
@@ -918,6 +954,13 @@ def preserve_decision_experience(
                     if astrology_observation is not None
                     else None
                 ),
+                "natal_astrology_context": _natal_astrology_context_payload(
+                    natal_astrology_context
+                ),
+                "candidate_astrology": [
+                    _candidate_astrology_interpretation_payload(signal)
+                    for signal in candidate_astrology_interpretations
+                ],
             },
             "decision": decision.to_dict(),
         }
@@ -1006,6 +1049,16 @@ def run_weekly_decision(
         candidate_dates=scheduled_candidates,
         draw_times=scheduled_draw_times,
     )
+    derived_natal_astrology_context = natal_astrology_context(
+        user_preferences=user_preferences
+    )
+    candidate_astrology_interpretations = tuple(
+        interpret_candidate_transit(
+            transit=receipt,
+            natal_context=derived_natal_astrology_context,
+        )
+        for receipt in candidate_transit_observations.receipts
+    )
     candidate_numerology = _numerology_signals_for_candidates(
         user_preferences=user_preferences,
         candidate_dates=scheduled_candidates,
@@ -1063,6 +1116,8 @@ def run_weekly_decision(
         astrology_observation=astrology_observation,
         astrology_observation_result=astrology_observation_result,
         candidate_transit_observations=candidate_transit_observations,
+        natal_astrology_context=derived_natal_astrology_context,
+        candidate_astrology_interpretations=candidate_astrology_interpretations,
         memory_path=memory_target,
     )
     memory_id = decision_preservation.memory_id
@@ -1083,4 +1138,6 @@ def run_weekly_decision(
         astrology_observation=astrology_observation,
         astrology_observation_result=astrology_observation_result,
         candidate_transit_observations=candidate_transit_observations,
+        natal_astrology_context=derived_natal_astrology_context,
+        candidate_astrology_interpretations=candidate_astrology_interpretations,
     )

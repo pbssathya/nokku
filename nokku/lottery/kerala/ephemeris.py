@@ -9,6 +9,10 @@ anchor of 23°51′25.53″ evolved with the IAU 2006 general-precession-in-
 longitude polynomial. This realization was validated in the living habitat
 against the recovered 12 Sep 2026 Lakshmi Moon observation before being added
 here.
+
+The lunar-node convention is also evidence-recovered: the osculating/true node
+in the ecliptic/equinox-of-date frame reproduces the recovered natal Ketu to
+about 0.007°, while the tested mean-node convention misses by about 1.406°.
 """
 
 from __future__ import annotations
@@ -20,6 +24,8 @@ from typing import Literal
 
 from skyfield import almanac
 from skyfield.api import Loader
+from skyfield.elementslib import osculating_elements_of
+from skyfield.framelib import ecliptic_frame
 from skyfield_data import get_skyfield_data_path
 
 
@@ -27,6 +33,7 @@ J2000_TT_JD = 2451545.0
 LAHIRI_J2000_DEG = 23.0 + 51.0 / 60.0 + 25.53 / 3600.0
 LAHIRI_REALIZATION = "lahiri_j2000_23d51m25.53s_iau2006_pA"
 EPHEMERIS_KERNEL = "de421.bsp"
+LUNAR_NODE_CONVENTION = "osculating_true_ecliptic_equinox_of_date"
 
 SIGN_NAMES = (
     "Aries",
@@ -63,6 +70,28 @@ class SiderealPosition:
     sign_index: int
     sign_name: str
     degrees_in_sign: float
+    ephemeris_kernel: str = EPHEMERIS_KERNEL
+    ayanamsa_realization: str = LAHIRI_REALIZATION
+    status: str = "experimental"
+
+
+@dataclass(frozen=True, slots=True)
+class LunarNodeReceipt:
+    """One factual Rahu/Ketu longitude receipt under the recovered convention."""
+
+    target_at: datetime
+    rahu_tropical_longitude_deg: float
+    ketu_tropical_longitude_deg: float
+    rahu_sidereal_longitude_deg: float
+    ketu_sidereal_longitude_deg: float
+    ayanamsa_deg: float
+    rahu_sign_index: int
+    rahu_sign_name: str
+    rahu_degrees_in_sign: float
+    ketu_sign_index: int
+    ketu_sign_name: str
+    ketu_degrees_in_sign: float
+    convention: str = LUNAR_NODE_CONVENTION
     ephemeris_kernel: str = EPHEMERIS_KERNEL
     ayanamsa_realization: str = LAHIRI_REALIZATION
     status: str = "experimental"
@@ -115,6 +144,12 @@ def _require_aware_target(target_at: datetime) -> None:
         raise ValueError("Ephemeris target instant must be timezone-aware.")
 
 
+def _zodiac_parts(longitude_deg: float) -> tuple[int, str, float]:
+    normalized = float(longitude_deg) % 360.0
+    sign_index = floor(normalized / 30.0)
+    return sign_index, SIGN_NAMES[sign_index], normalized - sign_index * 30.0
+
+
 def sidereal_position(body: SupportedBody, *, target_at: datetime) -> SiderealPosition:
     """Return one supported body's sidereal position at an aware target instant.
 
@@ -135,8 +170,7 @@ def sidereal_position(body: SupportedBody, *, target_at: datetime) -> SiderealPo
         _, tropical_longitude, _ = apparent.ecliptic_latlon(epoch="date")
         ayanamsa = lahiri_ayanamsa_deg(target.tt)
         sidereal = (tropical_longitude.degrees - ayanamsa) % 360.0
-        sign_index = floor(sidereal / 30.0)
-        degrees_in_sign = sidereal - sign_index * 30.0
+        sign_index, sign_name, degrees_in_sign = _zodiac_parts(sidereal)
         return SiderealPosition(
             body=body,
             target_at=target_at,
@@ -144,8 +178,51 @@ def sidereal_position(body: SupportedBody, *, target_at: datetime) -> SiderealPo
             sidereal_longitude_deg=sidereal,
             ayanamsa_deg=ayanamsa,
             sign_index=sign_index,
-            sign_name=SIGN_NAMES[sign_index],
+            sign_name=sign_name,
             degrees_in_sign=degrees_in_sign,
+        )
+    finally:
+        ephemeris.close()
+
+
+def lunar_node_receipt(*, target_at: datetime) -> LunarNodeReceipt:
+    """Return Rahu/Ketu under Lakshmi's recovered osculating-node convention.
+
+    Skyfield derives the Moon's osculating orbital plane from the Moon–Earth
+    state vector.  Rotating that vector into the true ecliptic/equinox-of-date
+    frame gives the tropical ascending-node longitude (Rahu).  Ketu is the
+    opposite point.  Nokku then applies the same explicit Lahiri realization
+    used by the other sidereal receipts.
+    """
+    _require_aware_target(target_at)
+    load = _loader()
+    timescale = load.timescale(builtin=True)
+    target = timescale.from_datetime(target_at)
+    ephemeris = load(EPHEMERIS_KERNEL)
+    try:
+        position = (ephemeris["moon"] - ephemeris["earth"]).at(target)
+        rotation = ecliptic_frame.rotation_at(target)
+        elements = osculating_elements_of(position, rotation)
+        rahu_tropical = elements.longitude_of_ascending_node.degrees % 360.0
+        ketu_tropical = (rahu_tropical + 180.0) % 360.0
+        ayanamsa = lahiri_ayanamsa_deg(target.tt)
+        rahu_sidereal = (rahu_tropical - ayanamsa) % 360.0
+        ketu_sidereal = (ketu_tropical - ayanamsa) % 360.0
+        rahu_sign_index, rahu_sign_name, rahu_degrees = _zodiac_parts(rahu_sidereal)
+        ketu_sign_index, ketu_sign_name, ketu_degrees = _zodiac_parts(ketu_sidereal)
+        return LunarNodeReceipt(
+            target_at=target_at,
+            rahu_tropical_longitude_deg=rahu_tropical,
+            ketu_tropical_longitude_deg=ketu_tropical,
+            rahu_sidereal_longitude_deg=rahu_sidereal,
+            ketu_sidereal_longitude_deg=ketu_sidereal,
+            ayanamsa_deg=ayanamsa,
+            rahu_sign_index=rahu_sign_index,
+            rahu_sign_name=rahu_sign_name,
+            rahu_degrees_in_sign=rahu_degrees,
+            ketu_sign_index=ketu_sign_index,
+            ketu_sign_name=ketu_sign_name,
+            ketu_degrees_in_sign=ketu_degrees,
         )
     finally:
         ephemeris.close()

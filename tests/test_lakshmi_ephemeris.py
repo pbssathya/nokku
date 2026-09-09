@@ -4,12 +4,16 @@ import pytest
 
 from nokku.lottery.kerala.ephemeris import (
     lahiri_ayanamsa_deg,
+    lakshmi_transit_receipt,
+    moon_phase_angle_deg,
     sidereal_position,
 )
 
 
 IST = timezone(timedelta(hours=5, minutes=30))
 KR_768_DRAW_AT = datetime(2026, 9, 12, 15, 0, tzinfo=IST)
+NEW_MOON_AT = datetime(2026, 9, 11, 8, 57, tzinfo=IST)
+SK_69_DRAW_AT = datetime(2026, 9, 11, 15, 0, tzinfo=IST)
 
 
 def test_lahiri_ephemeris_reproduces_recovered_12_sep_moon_observation():
@@ -40,6 +44,37 @@ def test_lahiri_ephemeris_returns_jupiter_in_cancer_for_same_habitat_instant():
     assert jupiter.degrees_in_sign == pytest.approx(21.814433032, abs=1e-6)
 
 
+def test_existing_skyfield_path_supplies_sun_without_new_dependency():
+    sun = sidereal_position("sun", target_at=KR_768_DRAW_AT)
+
+    assert sun.body == "sun"
+    assert sun.status == "experimental"
+    assert sun.ephemeris_kernel == "de421.bsp"
+    assert sun.sign_name == "Leo"
+    assert 0.0 <= sun.sidereal_longitude_deg < 360.0
+
+
+def test_skyfield_moon_phase_reproduces_11_sep_new_moon_near_zero_angle():
+    phase = moon_phase_angle_deg(target_at=NEW_MOON_AT)
+
+    distance_from_new = min(phase, 360.0 - phase)
+    assert distance_from_new < 0.25
+
+
+def test_lakshmi_transit_receipt_preserves_sun_and_dark_moon_facts():
+    receipt = lakshmi_transit_receipt(target_at=SK_69_DRAW_AT)
+
+    assert receipt.sun is not None
+    assert receipt.sun.body == "sun"
+    assert receipt.moon_phase_angle_deg is not None
+    # 3 PM IST is only a few hours after the astronomical New Moon.
+    distance_from_new = min(
+        receipt.moon_phase_angle_deg,
+        360.0 - receipt.moon_phase_angle_deg,
+    )
+    assert distance_from_new < 5.0
+
+
 def test_lahiri_ayanamsa_is_explicitly_anchored_at_j2000():
     assert lahiri_ayanamsa_deg(2451545.0) == pytest.approx(
         23 + 51 / 60 + 25.53 / 3600,
@@ -50,3 +85,6 @@ def test_lahiri_ayanamsa_is_explicitly_anchored_at_j2000():
 def test_ephemeris_requires_timezone_aware_target():
     with pytest.raises(ValueError, match="timezone-aware"):
         sidereal_position("moon", target_at=datetime(2026, 9, 12, 15, 0))
+
+    with pytest.raises(ValueError, match="timezone-aware"):
+        moon_phase_angle_deg(target_at=datetime(2026, 9, 11, 8, 57))

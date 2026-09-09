@@ -1,0 +1,95 @@
+name: Wire Ketu living receipt
+on:
+  push:
+    branches: [exp/lakshmi-numerology-signal]
+    paths: [.github/workflows/wire-ketu-living-receipt.yml]
+permissions:
+  contents: write
+jobs:
+  wire:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: exp/lakshmi-numerology-signal
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Wire lunar-node and Ketu fields into preserved astrology receipts
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('nokku/lottery/kerala/living.py')
+          s = p.read_text()
+
+          # Lunar-node payload helper.
+          anchor = 'def _natal_astrology_context_payload(result: NatalAstrologyContextResult | None) -> dict[str, object]:\n'
+          helper = (
+              'def _lunar_node_payload(nodes) -> dict[str, object]:\n'
+              '    return {\n'
+              '        "target_at": nodes.target_at.isoformat(),\n'
+              '        "rahu_tropical_longitude_deg": nodes.rahu_tropical_longitude_deg,\n'
+              '        "ketu_tropical_longitude_deg": nodes.ketu_tropical_longitude_deg,\n'
+              '        "rahu_sidereal_longitude_deg": nodes.rahu_sidereal_longitude_deg,\n'
+              '        "ketu_sidereal_longitude_deg": nodes.ketu_sidereal_longitude_deg,\n'
+              '        "ayanamsa_deg": nodes.ayanamsa_deg,\n'
+              '        "rahu_sign_index": nodes.rahu_sign_index,\n'
+              '        "rahu_sign_name": nodes.rahu_sign_name,\n'
+              '        "rahu_degrees_in_sign": nodes.rahu_degrees_in_sign,\n'
+              '        "ketu_sign_index": nodes.ketu_sign_index,\n'
+              '        "ketu_sign_name": nodes.ketu_sign_name,\n'
+              '        "ketu_degrees_in_sign": nodes.ketu_degrees_in_sign,\n'
+              '        "convention": nodes.convention,\n'
+              '        "ephemeris_kernel": nodes.ephemeris_kernel,\n'
+              '        "ayanamsa_realization": nodes.ayanamsa_realization,\n'
+              '        "status": nodes.status,\n'
+              '    }\n\n\n'
+          )
+          if anchor not in s:
+              raise SystemExit('natal payload anchor not found')
+          s = s.replace(anchor, helper + anchor, 1)
+
+          # Preserve derived natal nodes.
+          needle = '        "jupiter": _sidereal_position_payload(result.jupiter) if result.jupiter is not None else None,\n'
+          replacement = (
+              needle
+              + '        "lunar_nodes": (\n'
+              + '            _lunar_node_payload(result.lunar_nodes)\n'
+              + '            if result.lunar_nodes is not None\n'
+              + '            else None\n'
+              + '        ),\n'
+          )
+          if needle not in s:
+              raise SystemExit('natal jupiter payload anchor not found')
+          s = s.replace(needle, replacement, 1)
+
+          # Preserve candidate Moon-to-Ketu separation.
+          needle = '        "transit_moon_to_natal_moon_separation_deg": signal.transit_moon_to_natal_moon_separation_deg,\n'
+          replacement = (
+              needle
+              + '        "transit_moon_to_natal_ketu_separation_deg": signal.transit_moon_to_natal_ketu_separation_deg,\n'
+          )
+          if needle not in s:
+              raise SystemExit('candidate Moon payload anchor not found')
+          s = s.replace(needle, replacement, 1)
+
+          p.write_text(s)
+          PY
+      - name: Fresh install and regression
+        shell: bash
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install ".[dev]"
+          pytest -q
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "Sathya P B"
+          git config user.email "sathya@gooleos.com"
+          git add nokku/lottery/kerala/living.py
+          git commit -m "feat: preserve recovered Ketu evidence"
+          git push origin HEAD:exp/lakshmi-numerology-signal

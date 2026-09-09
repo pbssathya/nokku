@@ -7,7 +7,7 @@ weekly participation policy, and preserves the decision experience.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timezone
 from pathlib import Path
 import re
@@ -81,9 +81,9 @@ class ScheduleCollectionResult:
     status: str
     dates: tuple[date, ...]
     draw_numbers: dict[date, str]
-    draw_times: dict[date, str]
     disposition_status: str
     execution_status: str | None
+    draw_times: dict[date, str] = field(default_factory=dict)
     failures: tuple[str, ...] = ()
     uncertainty: tuple[str, ...] = ()
 

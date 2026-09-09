@@ -1,12 +1,12 @@
 """Minimal astronomical position capability for Project Lakshmi.
 
-This module deliberately stops at astronomical facts.  It does not rank dates,
+This module deliberately stops at astronomical facts. It does not rank dates,
 interpret planets, or influence BUY/SKIP policy.
 
-The tropical positions come from Skyfield + the packaged JPL DE421 kernel.  The
+The tropical positions come from Skyfield + the packaged JPL DE421 kernel. The
 sidereal conversion uses Nokku's declared Lahiri convention: a J2000 Lahiri
 anchor of 23°51′25.53″ evolved with the IAU 2006 general-precession-in-
-longitude polynomial.  This realization was validated in the living habitat
+longitude polynomial. This realization was validated in the living habitat
 against the recovered 12 Sep 2026 Lakshmi Moon observation before being added
 here.
 """
@@ -66,10 +66,22 @@ class SiderealPosition:
     status: str = "experimental"
 
 
+@dataclass(frozen=True, slots=True)
+class LakshmiTransitReceipt:
+    """Factual Moon/Jupiter positions at one explicit Lakshmi target instant."""
+
+    target_at: datetime
+    moon: SiderealPosition
+    jupiter: SiderealPosition
+    ephemeris_kernel: str = EPHEMERIS_KERNEL
+    ayanamsa_realization: str = LAHIRI_REALIZATION
+    status: str = "experimental"
+
+
 def general_precession_iau2006_deg(tt_jd: float) -> float:
     """Return IAU 2006 general precession in longitude from J2000, in degrees.
 
-    ``T`` is Julian centuries of TT from J2000.0.  Coefficients are the IAU
+    ``T`` is Julian centuries of TT from J2000.0. Coefficients are the IAU
     2006 / P03 ``p_A`` polynomial, expressed here in arcseconds before
     conversion to degrees.
     """
@@ -129,3 +141,19 @@ def sidereal_position(body: SupportedBody, *, target_at: datetime) -> SiderealPo
         )
     finally:
         ephemeris.close()
+
+
+def lakshmi_transit_receipt(*, target_at: datetime) -> LakshmiTransitReceipt:
+    """Return the minimal factual transit receipt currently used by Lakshmi.
+
+    This deliberately contains no astrological judgment. It only preserves the
+    two independently proven astronomical inputs needed by the current living
+    experiment: Moon and Jupiter Lahiri-sidereal positions.
+    """
+    moon = sidereal_position("moon", target_at=target_at)
+    jupiter = sidereal_position("jupiter", target_at=target_at)
+    return LakshmiTransitReceipt(
+        target_at=target_at,
+        moon=moon,
+        jupiter=jupiter,
+    )

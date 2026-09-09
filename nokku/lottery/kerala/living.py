@@ -864,6 +864,27 @@ def _candidate_transit_observation_payload(
     }
 
 
+def _lunar_node_payload(nodes) -> dict[str, object]:
+    return {
+        "target_at": nodes.target_at.isoformat(),
+        "rahu_tropical_longitude_deg": nodes.rahu_tropical_longitude_deg,
+        "ketu_tropical_longitude_deg": nodes.ketu_tropical_longitude_deg,
+        "rahu_sidereal_longitude_deg": nodes.rahu_sidereal_longitude_deg,
+        "ketu_sidereal_longitude_deg": nodes.ketu_sidereal_longitude_deg,
+        "ayanamsa_deg": nodes.ayanamsa_deg,
+        "rahu_sign_index": nodes.rahu_sign_index,
+        "rahu_sign_name": nodes.rahu_sign_name,
+        "rahu_degrees_in_sign": nodes.rahu_degrees_in_sign,
+        "ketu_sign_index": nodes.ketu_sign_index,
+        "ketu_sign_name": nodes.ketu_sign_name,
+        "ketu_degrees_in_sign": nodes.ketu_degrees_in_sign,
+        "convention": nodes.convention,
+        "ephemeris_kernel": nodes.ephemeris_kernel,
+        "ayanamsa_realization": nodes.ayanamsa_realization,
+        "status": nodes.status,
+    }
+
+
 def _natal_astrology_context_payload(result: NatalAstrologyContextResult | None) -> dict[str, object]:
     if result is None:
         return {"status": "not_requested"}
@@ -871,6 +892,11 @@ def _natal_astrology_context_payload(result: NatalAstrologyContextResult | None)
         "status": result.status,
         "moon": _sidereal_position_payload(result.moon) if result.moon is not None else None,
         "jupiter": _sidereal_position_payload(result.jupiter) if result.jupiter is not None else None,
+        "lunar_nodes": (
+            _lunar_node_payload(result.lunar_nodes)
+            if result.lunar_nodes is not None
+            else None
+        ),
         "failures": list(result.failures),
         "uncertainty": list(result.uncertainty),
     }
@@ -883,6 +909,7 @@ def _candidate_astrology_interpretation_payload(signal: CandidateAstrologyInterp
         "reading": signal.reading,
         "transit_moon_to_natal_jupiter_separation_deg": signal.transit_moon_to_natal_jupiter_separation_deg,
         "transit_moon_to_natal_moon_separation_deg": signal.transit_moon_to_natal_moon_separation_deg,
+        "transit_moon_to_natal_ketu_separation_deg": signal.transit_moon_to_natal_ketu_separation_deg,
         "signals": list(signal.signals),
         "method": signal.method,
         "failures": list(signal.failures),
